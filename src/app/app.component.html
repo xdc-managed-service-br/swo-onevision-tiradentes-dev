@@ -2,274 +2,278 @@
 <a class="skip-link" href="#main">Skip to main content</a>
 
 <div *ngIf="isAuthenticated" class="app-container">
-  <!-- Overlay para mobile quando a sidebar está aberta -->
-  <div
-    class="sidebar-overlay"
-    [class.active]="isSidebarOpen && isMobile"
-    (click)="toggleSidebar()"
-    aria-hidden="true">
-  </div>
+  <!-- Top Bar (Fixed Full Width) -->
+  <header class="top-bar">
+    <!-- Hamburger Menu Button (Mobile) -->
+    <button
+      class="hamburger-menu"
+      (click)="toggleSidebar()"
+      [class.active]="isSidebarOpen"
+      aria-label="Toggle navigation menu"
+      [attr.aria-expanded]="isSidebarOpen"
+      aria-controls="main-navigation">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
 
-  <!-- Sidebar -->
-  <aside
-    id="main-navigation"
-    class="sidebar"
-    [class.open]="isSidebarOpen"
-    role="navigation"
-    aria-label="Main navigation">
-    <div class="sidebar-header">
-      <h2>OneVision</h2>
+    <div class="brand-container">
+      <img
+        class="company-logo"
+        src="/assets/icons/SoftwareOne_Logo_Sml_RGB_Blk.svg"
+        alt="SoftwareOne"
+        loading="lazy" />
+      <h1>OneVision</h1>
+      <img
+        class="company-logo marca-logo"
+        src="/assets/icons/marca.png"
+        alt="OneVision Brand Mark"
+        loading="lazy" />
     </div>
 
-    <nav aria-label="Primary">
-      <ul class="nav-links" role="list">
-        <li role="listitem">
-          <a
-            routerLink="/dashboard"
-            routerLinkActive="active"
-            (click)="closeSidebarOnMobile()"
-            aria-label="Go to Dashboard">
-            <img src="assets/icons/RDS.png" alt="Dashboard" class="service-icon" />
-            Dashboard
-          </a>
-        </li>
-
-        <li role="listitem">
-          <a
-            routerLink="/resources"
-            routerLinkActive="active"
-            (click)="closeSidebarOnMobile()"
-            aria-label="View All Resources">
-            <img src="assets/icons/RDS.png" alt="All Resources" class="service-icon" />
-            All Resources
-          </a>
-        </li>
-
-        <!-- Compute -->
-        <li class="service-category" role="listitem">
-          <span>Compute</span>
-          <ul role="list">
-            <li role="listitem">
-              <a
-                routerLink="/resources/ec2"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View EC2 Instances">
-                <img src="assets/icons/EC2.png" alt="EC2 Instances" class="service-icon" />
-                EC2 Instances
-              </a>
-            </li>
-            <li role="listitem">
-              <a
-                routerLink="/resources/ami-snapshots"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View AMI Snapshots">
-                <img src="assets/icons/RDS.png" alt="AMI Snapshots" class="service-icon" />
-                AMI Snapshots
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- Storage -->
-        <li class="service-category" role="listitem">
-          <span>Storage</span>
-          <ul role="list">
-            <li role="listitem">
-              <a
-                routerLink="/resources/s3"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View S3 Buckets">
-                <img src="assets/icons/RDS.png" alt="S3 Buckets" class="service-icon" />
-                S3 Buckets
-              </a>
-            </li>
-            <li role="listitem">
-              <a
-                routerLink="/resources/ebs"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View EBS Volumes">
-                <img src="assets/icons/RDS.png" alt="EBS Volumes" class="service-icon" />
-                EBS Volumes
-              </a>
-            </li>
-            <li role="listitem">
-              <a
-                routerLink="/resources/ebs-snapshots"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View EBS Snapshots">
-                <img src="assets/icons/RDS.png" alt="EBS Snapshots" class="service-icon" />
-                EBS Snapshots
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- Database -->
-        <li class="service-category" role="listitem">
-          <span>Database</span>
-          <ul role="list">
-            <li role="listitem">
-              <a
-                routerLink="/resources/rds"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View RDS Instances">
-                <img src="assets/icons/RDS.png" alt="RDS Instances" class="service-icon" />
-                RDS Instances
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- Networking -->
-        <li class="service-category" role="listitem">
-          <span>Networking</span>
-          <ul role="list">
-            <li role="listitem">
-              <a
-                routerLink="/resources/security-groups"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View Security Groups">
-                <img src="assets/icons/RDS.png" alt="Security Groups" class="service-icon" />
-                Security Groups
-              </a>
-            </li>
-            <li role="listitem">
-              <a
-                routerLink="/resources/vpcs"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View VPCs">
-                <img src="assets/icons/RDS.png" alt="VPCs" class="service-icon" />
-                VPCs
-              </a>
-            </li>
-            <li role="listitem">
-              <a
-                routerLink="/resources/subnets"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View Subnets">
-                <img src="assets/icons/RDS.png" alt="Subnets" class="service-icon" />
-                Subnets
-              </a>
-            </li>
-            <li role="listitem">
-              <a
-                routerLink="/resources/internet-gateways"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View Internet Gateways">
-                <img src="assets/icons/RDS.png" alt="Internet Gateways" class="service-icon" />
-                Internet Gateways
-              </a>
-            </li>
-            <li role="listitem">
-              <a
-                routerLink="/resources/nat-gateways"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View NAT Gateways">
-                <img src="assets/icons/RDS.png" alt="NAT Gateways" class="service-icon" />
-                NAT Gateways
-              </a>
-            </li>
-            <li role="listitem">
-              <a
-                routerLink="/resources/route-tables"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View Route Tables">
-                <img src="assets/icons/RDS.png" alt="Route Tables" class="service-icon" />
-                Route Tables
-              </a>
-            </li>
-            <li role="listitem">
-              <a
-                routerLink="/resources/load-balancers"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View Load Balancers">
-                <img src="assets/icons/RDS.png" alt="Load Balancers" class="service-icon" />
-                Load Balancers
-              </a>
-            </li>
-            <li role="listitem">
-              <a
-                routerLink="/resources/vpn-gateways"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View VPN Gateways">
-                <img src="assets/icons/RDS.png" alt="VPN Gateways" class="service-icon" />
-                VPN Gateways
-              </a>
-            </li>
-            <li role="listitem">
-              <a
-                routerLink="/resources/transit-gateways"
-                routerLinkActive="active"
-                (click)="closeSidebarOnMobile()"
-                aria-label="View Transit Gateways">
-                <img src="assets/icons/RDS.png" alt="Transit Gateways" class="service-icon" />
-                Transit Gateways
-              </a>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </nav>
-  </aside>
-
-  <!-- Main content region -->
-  <div class="content">
-    <header class="top-bar">
-      <!-- Hamburger Menu Button -->
+    <div class="user-controls">
+      <span class="user-welcome" aria-label="Current user">Welcome, {{ username }}</span>
       <button
-        class="hamburger-menu"
-        (click)="toggleSidebar()"
-        [class.active]="isSidebarOpen"
-        aria-label="Toggle navigation menu"
-        [attr.aria-expanded]="isSidebarOpen"
-        aria-controls="main-navigation">
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
+        (click)="handleSignOut()"
+        class="sign-out-button"
+        aria-label="Sign out of application">
+        Sign Out
       </button>
+    </div>
+  </header>
 
-      <div class="brand-container">
-        <img
-          class="company-logo"
-          src="/assets/icons/SoftwareOne_Logo_Sml_RGB_Blk.svg"
-          alt="SoftwareOne"
-          loading="lazy" />
-        <h1>OneVision</h1>
-        <img
-          class="company-logo marca-logo"
-          src="/assets/icons/marca.png"
-          alt="OneVision Brand Mark"
-          loading="lazy" />
+  <!-- Main Wrapper (Below Top Bar) -->
+  <div class="main-wrapper">
+    <!-- Overlay para mobile quando a sidebar está aberta -->
+    <div
+      class="sidebar-overlay"
+      [class.active]="isSidebarOpen && isMobile"
+      (click)="toggleSidebar()"
+      aria-hidden="true">
+    </div>
+
+    <!-- Sidebar -->
+    <aside
+      id="main-navigation"
+      class="sidebar"
+      [class.open]="isSidebarOpen"
+      role="navigation"
+      aria-label="Main navigation">
+      <div class="sidebar-header">
+        <h2>OneVision</h2>
       </div>
 
-      <div class="user-controls">
-        <span class="user-welcome" aria-label="Current user">Welcome, {{ username }}</span>
-        <button
-          (click)="handleSignOut()"
-          class="sign-out-button"
-          aria-label="Sign out of application">
-          Sign Out
-        </button>
-      </div>
-    </header>
+      <nav aria-label="Primary">
+        <ul class="nav-links" role="list">
+          <li role="listitem">
+            <a
+              routerLink="/dashboard"
+              routerLinkActive="active"
+              (click)="closeSidebarOnMobile()"
+              aria-label="Go to Dashboard">
+              <img src="assets/icons/RDS.png" alt="Dashboard" class="service-icon" />
+              Dashboard
+            </a>
+          </li>
 
-    <main id="main" class="main-content" role="main" tabindex="-1">
-      <router-outlet></router-outlet>
-    </main>
+          <li role="listitem">
+            <a
+              routerLink="/resources"
+              routerLinkActive="active"
+              (click)="closeSidebarOnMobile()"
+              aria-label="View All Resources">
+              <img src="assets/icons/RDS.png" alt="All Resources" class="service-icon" />
+              All Resources
+            </a>
+          </li>
+
+          <!-- Compute -->
+          <li class="service-category" role="listitem">
+            <span>Compute</span>
+            <ul role="list">
+              <li role="listitem">
+                <a
+                  routerLink="/resources/ec2"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View EC2 Instances">
+                  <img src="assets/icons/EC2.png" alt="EC2 Instances" class="service-icon" />
+                  EC2 Instances
+                </a>
+              </li>
+              <li role="listitem">
+                <a
+                  routerLink="/resources/ami-snapshots"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View AMI Snapshots">
+                  <img src="assets/icons/RDS.png" alt="AMI Snapshots" class="service-icon" />
+                  AMI Snapshots
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <!-- Storage -->
+          <li class="service-category" role="listitem">
+            <span>Storage</span>
+            <ul role="list">
+              <li role="listitem">
+                <a
+                  routerLink="/resources/s3"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View S3 Buckets">
+                  <img src="assets/icons/RDS.png" alt="S3 Buckets" class="service-icon" />
+                  S3 Buckets
+                </a>
+              </li>
+              <li role="listitem">
+                <a
+                  routerLink="/resources/ebs"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View EBS Volumes">
+                  <img src="assets/icons/RDS.png" alt="EBS Volumes" class="service-icon" />
+                  EBS Volumes
+                </a>
+              </li>
+              <li role="listitem">
+                <a
+                  routerLink="/resources/ebs-snapshots"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View EBS Snapshots">
+                  <img src="assets/icons/RDS.png" alt="EBS Snapshots" class="service-icon" />
+                  EBS Snapshots
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <!-- Database -->
+          <li class="service-category" role="listitem">
+            <span>Database</span>
+            <ul role="list">
+              <li role="listitem">
+                <a
+                  routerLink="/resources/rds"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View RDS Instances">
+                  <img src="assets/icons/RDS.png" alt="RDS Instances" class="service-icon" />
+                  RDS Instances
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <!-- Networking -->
+          <li class="service-category" role="listitem">
+            <span>Networking</span>
+            <ul role="list">
+              <li role="listitem">
+                <a
+                  routerLink="/resources/security-groups"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View Security Groups">
+                  <img src="assets/icons/RDS.png" alt="Security Groups" class="service-icon" />
+                  Security Groups
+                </a>
+              </li>
+              <li role="listitem">
+                <a
+                  routerLink="/resources/vpcs"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View VPCs">
+                  <img src="assets/icons/RDS.png" alt="VPCs" class="service-icon" />
+                  VPCs
+                </a>
+              </li>
+              <li role="listitem">
+                <a
+                  routerLink="/resources/subnets"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View Subnets">
+                  <img src="assets/icons/RDS.png" alt="Subnets" class="service-icon" />
+                  Subnets
+                </a>
+              </li>
+              <li role="listitem">
+                <a
+                  routerLink="/resources/internet-gateways"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View Internet Gateways">
+                  <img src="assets/icons/RDS.png" alt="Internet Gateways" class="service-icon" />
+                  Internet Gateways
+                </a>
+              </li>
+              <li role="listitem">
+                <a
+                  routerLink="/resources/nat-gateways"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View NAT Gateways">
+                  <img src="assets/icons/RDS.png" alt="NAT Gateways" class="service-icon" />
+                  NAT Gateways
+                </a>
+              </li>
+              <li role="listitem">
+                <a
+                  routerLink="/resources/route-tables"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View Route Tables">
+                  <img src="assets/icons/RDS.png" alt="Route Tables" class="service-icon" />
+                  Route Tables
+                </a>
+              </li>
+              <li role="listitem">
+                <a
+                  routerLink="/resources/load-balancers"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View Load Balancers">
+                  <img src="assets/icons/RDS.png" alt="Load Balancers" class="service-icon" />
+                  Load Balancers
+                </a>
+              </li>
+              <li role="listitem">
+                <a
+                  routerLink="/resources/vpn-gateways"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View VPN Gateways">
+                  <img src="assets/icons/RDS.png" alt="VPN Gateways" class="service-icon" />
+                  VPN Gateways
+                </a>
+              </li>
+              <li role="listitem">
+                <a
+                  routerLink="/resources/transit-gateways"
+                  routerLinkActive="active"
+                  (click)="closeSidebarOnMobile()"
+                  aria-label="View Transit Gateways">
+                  <img src="assets/icons/RDS.png" alt="Transit Gateways" class="service-icon" />
+                  Transit Gateways
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="content">
+      <main id="main" class="main-content" role="main" tabindex="-1">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
   </div>
 </div>
 

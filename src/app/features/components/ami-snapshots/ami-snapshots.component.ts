@@ -1,356 +1,375 @@
+// src/app/features/resources/ami-snapshots/ami-snapshots.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ResourceService } from '../../../core/services/resource.service';
-import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
-import { ExportService, ExportColumn } from '../../../core/services/export.service';
+import { ExportService } from '../../../core/services/export.service';
+import { ErrorService } from '../../../core/services/error.service';
+
+interface AMISnapshot {
+  id?: string;
+  imageId: string;
+  nameTag?: string;
+  amiName: string;
+  platform: string;
+  region: string;
+  accountId: string;
+  accountName?: string;
+  creationTime: string;
+  state?: string;
+  description?: string;
+  architecture?: string;
+  virtualizationType?: string;
+  hypervisor?: string;
+  tags?: any;
+}
+
+interface FilterState {
+  platform: string;
+  region: string;
+  account: string;
+}
 
 @Component({
   selector: 'app-ami-snapshots',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './ami-snapshots.component.html',
-  styleUrls: ['./ami-snapshots.component.css']
+  styleUrls: [
+    './ami-snapshots.component.css',
+    '../../../shared/styles/onevision-base.css' // Import the shared header styles
+  ]
 })
-export class AmiSnapshotsComponent implements OnInit, OnDestroy {
-  resources: any[] = [];
-  filteredResources: any[] = [];
-  paginatedResources: any[] = [];
-  loading = true;
-  selectedResource: any = null;
+export class AMISnapshotsComponent implements OnInit, OnDestroy {
+  // Data properties
+  resources: AMISnapshot[] = [];
+  filteredResources: AMISnapshot[] = [];
+  paginatedResources: AMISnapshot[] = [];
+  selectedResource: AMISnapshot | null = null;
   
-  // Search functionality
+  // Filter properties
+  filters: FilterState = {
+    platform: '',
+    region: '',
+    account: ''
+  };
+  
   searchTerm: string = '';
+  private searchSubject = new Subject<string>();
   
-  // Unique values for filters
-  uniquePlatforms: string[] = [];
-  uniqueRegions: string[] = [];
-  uniqueAccounts: string[] = [];
-  
-  // Sorting
-  sortColumn: string = '';
-  sortDirection: 'asc' | 'desc' = 'asc';
-  
-  // Current filter values
-  platformFilter: string = '';
-  regionFilter: string = '';
-  accountFilter: string = '';
-  
-  // Pagination
-  currentPage: number = 1;
-  pageSize: number = 100;
-  totalPages: number = 1;
-  
-  // Math for template
-  Math = Math;
-  
-  // Define export columns for AMI snapshots
-  exportColumns: ExportColumn[] = [
-    { key: 'imageId', label: 'Image ID' },
-    { key: 'name', label: 'Name' },
-    { 
-      key: 'platform', 
-      label: 'Platform',
-      transform: (resource) => resource.platform || 'Linux/Unix'
-    },
-    { key: 'region', label: 'Region' },
-    { 
-      key: 'accountId', 
-      label: 'Account',
-      transform: (resource) => resource.accountName || resource.accountId
-    },
-    { 
-      key: 'createdAt',
-      label: 'Creation Time',
-      transform: (resource) => this.formatDate(resource.createdAt)
-    },
-    { key: 'state', label: 'State' }
+  // Available options for filters
+  availableAccounts = [
+    { id: 'acc-001', name: 'Production Account' },
+    { id: 'acc-002', name: 'Development Account' },
+    { id: 'acc-003', name: 'Staging Account' }
   ];
+  
+  availableRegions: string[] = [];
+  availablePlatforms: string[] = [];
+  
+  // Sorting properties
+  sortColumn: string = 'creationTime';
+  sortDirection: 'asc' | 'desc' = 'desc';
+  
+  // Pagination properties
+  currentPage: number = 1;
+  itemsPerPage: number = 20;
+  totalPages: number = 0;
+  startIndex: number = 0;
+  endIndex: number = 0;
+  
+  // State properties
+  loading: boolean = true;
+  error: string | null = null;
   
   private destroy$ = new Subject<void>();
   
   constructor(
     private resourceService: ResourceService,
-    private exportService: ExportService
+    private exportService: ExportService,
+    private errorService: ErrorService
   ) {}
   
   ngOnInit(): void {
+    this.setupSearchDebounce();
     this.loadResources();
-  }
-  
-  loadResources(): void {
-    this.loading = true;
-    
-    // Try with 'AMI' as the resource type
-    this.resourceService.getResourcesByType('AMI')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.resources = data;
-          this.filteredResources = [...this.resources];
-          
-          // Extract unique values for filters
-          this.uniquePlatforms = [...new Set(data.map(r => r.platform || 'Linux/Unix').filter(Boolean))].sort();
-          this.uniqueRegions = [...new Set(data.map(r => r.region).filter(Boolean))].sort();
-          this.uniqueAccounts = [...new Set(data.map(r => r.accountName || r.accountId).filter(Boolean))].sort();
-          
-          this.loading = false;
-          this.updatePagination();
-        },
-        error: (error) => {
-          console.error('Error loading AMI snapshots:', error);
-          this.loading = false;
-        }
-      });
-  }
-  
-  // Search functionality
-  searchImages(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.searchTerm = value.trim().toLowerCase();
-    this.applyFilters();
-  }
-  
-  clearSearch(inputElement: HTMLInputElement): void {
-    inputElement.value = '';
-    this.searchTerm = '';
-    this.applyFilters();
-  }
-  
-  // Filter by platform
-  filterByPlatform(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.platformFilter = value;
-    this.applyFilters();
-  }
-  
-  // Filter by region
-  filterByRegion(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.regionFilter = value;
-    this.applyFilters();
-  }
-
-  getPlatformClass(platform?: string) {
-  if (!platform) return 'status-available';
-  const p = platform.toLowerCase();
-  if (p.includes('windows')) return 'status-pending';
-  if (p.includes('mac')) return 'status-stopped';
-  return 'status-available'; // Linux/Unix default
-}
-  
-  // Filter by account ID
-  filterByAccount(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.accountFilter = value;
-    this.applyFilters();
-  }
-  
-  // Apply all filters
-  applyFilters(): void {
-    this.filteredResources = this.resources.filter(resource => {
-      // Apply search filter
-      if (this.searchTerm) {
-        const imageId = resource.imageId ? resource.imageId.toLowerCase() : '';
-        const name = resource.name ? resource.name.toLowerCase() : '';
-        
-        if (!imageId.includes(this.searchTerm) && !name.includes(this.searchTerm)) {
-          return false;
-        }
-      }
-      
-      // Apply platform filter
-      if (this.platformFilter && 
-          (resource.platform || 'Linux/Unix') !== this.platformFilter) {
-        return false;
-      }
-      
-      // Apply region filter
-      if (this.regionFilter && resource.region !== this.regionFilter) {
-        return false;
-      }
-      
-      // Apply account filter
-      if (this.accountFilter && 
-          (resource.accountName || resource.accountId) !== this.accountFilter) {
-        return false;
-      }
-      
-      return true;
-    });
-    
-    // Reset to first page when applying filters
-    this.currentPage = 1;
-    
-    // Reapply sorting if active
-    if (this.sortColumn) {
-      this.sortData(this.sortColumn);
-    }
-    
-    // Update pagination
-    this.updatePagination();
-  }
-  
-  // Reset all filters
-  resetFilters(): void {
-    this.platformFilter = '';
-    this.regionFilter = '';
-    this.accountFilter = '';
-    this.searchTerm = '';
-    
-    // Reset select elements
-    const selects = document.querySelectorAll('select');
-    selects.forEach(select => select.value = '');
-    
-    // Reset search input
-    const searchInput = document.getElementById('imageSearch') as HTMLInputElement;
-    if (searchInput) {
-      searchInput.value = '';
-    }
-    
-    this.filteredResources = [...this.resources];
-    this.currentPage = 1;
-    this.updatePagination();
-  }
-  
-  // Sort table by column
-  sortData(column: string): void {
-    if (this.sortColumn === column) {
-      // Toggle direction if already sorting by this column
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    
-    this.filteredResources.sort((a, b) => {
-      const valueA = a[column];
-      const valueB = b[column];
-      
-      // Handle null/undefined values
-      if (valueA === undefined || valueA === null) return this.sortDirection === 'asc' ? -1 : 1;
-      if (valueB === undefined || valueB === null) return this.sortDirection === 'asc' ? 1 : -1;
-      
-      // Special handling for dates
-      if (column === 'createdAt') {
-        const dateA = valueA ? new Date(valueA) : new Date(0);
-        const dateB = valueB ? new Date(valueB) : new Date(0);
-        return this.sortDirection === 'asc' 
-          ? dateA.getTime() - dateB.getTime() 
-          : dateB.getTime() - dateA.getTime();
-      }
-      
-      // Default string comparison
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        return this.sortDirection === 'asc'
-          ? valueA.localeCompare(valueB)
-          : valueB.localeCompare(valueA);
-      }
-      
-      // Default numeric comparison
-      return this.sortDirection === 'asc'
-        ? valueA - valueB
-        : valueB - valueA;
-    });
-    
-    // Update pagination after sorting
-    this.updatePaginatedResources();
-  }
-  
-  // Show resource details
-  showDetails(resource: any): void {
-    this.selectedResource = resource;
-  }
-  
-  // Close details modal
-  closeDetails(): void {
-    this.selectedResource = null;
-  }
-  
-  // Helper: Format date
-  formatDate(dateString: string): string {
-    if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString();
-    } catch (e) {
-      return dateString;
-    }
-  }
-  
-  // Export to CSV
-  exportToCSV(): void {
-    if (!this.filteredResources.length) return;
-    
-    const filename = 'ami-snapshots.csv';
-    this.exportService.exportDataToCSV(
-      this.filteredResources, 
-      this.exportColumns,
-      filename
-    );
-  }
-  
-  // Pagination methods
-  updatePagination(): void {
-    this.totalPages = Math.ceil(this.filteredResources.length / this.pageSize);
-    this.updatePaginatedResources();
-  }
-  
-  updatePaginatedResources(): void {
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.paginatedResources = this.filteredResources.slice(startIndex, endIndex);
-  }
-  
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePaginatedResources();
-    }
-  }
-  
-  goToFirstPage(): void {
-    this.goToPage(1);
-  }
-  
-  goToLastPage(): void {
-    this.goToPage(this.totalPages);
-  }
-  
-  goToPreviousPage(): void {
-    this.goToPage(this.currentPage - 1);
-  }
-  
-  goToNextPage(): void {
-    this.goToPage(this.currentPage + 1);
-  }
-  
-  getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const maxVisiblePages = 5;
-    
-    if (this.totalPages <= maxVisiblePages) {
-      // Show all pages if total is less than max visible
-      for (let i = 1; i <= this.totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Show limited pages with ellipsis
-      const halfVisible = Math.floor(maxVisiblePages / 2);
-      const startPage = Math.max(1, this.currentPage - halfVisible);
-      const endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-      
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
-    }
-    
-    return pages;
   }
   
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+  
+  // Setup search with debounce
+  private setupSearchDebounce(): void {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.applyFilters();
+    });
+  }
+  
+  // Load resources from service
+  loadResources(): void {
+    this.loading = true;
+    this.error = null;
+    
+    this.resourceService.getResourcesByType('AMISnapshot')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.resources = data as AMISnapshot[];
+          this.extractFilterOptions();
+          this.applyFilters();
+          this.loading = false;
+        },
+        error: (error) => {
+          this.error = 'Failed to load AMI Snapshots';
+          this.errorService.handleError({
+            message: this.error,
+            details: error
+          });
+          this.loading = false;
+        }
+      });
+  }
+  
+  // Extract unique values for filter dropdowns
+  private extractFilterOptions(): void {
+    const regions = new Set<string>();
+    const platforms = new Set<string>();
+    
+    this.resources.forEach(resource => {
+      if (resource.region) regions.add(resource.region);
+      if (resource.platform) platforms.add(resource.platform);
+    });
+    
+    this.availableRegions = Array.from(regions).sort();
+    this.availablePlatforms = Array.from(platforms).sort();
+  }
+  
+  // Apply all filters and search
+  applyFilters(): void {
+    let filtered = [...this.resources];
+    
+    // Apply platform filter
+    if (this.filters.platform) {
+      filtered = filtered.filter(r => 
+        r.platform.toLowerCase().includes(this.filters.platform.toLowerCase())
+      );
+    }
+    
+    // Apply region filter
+    if (this.filters.region) {
+      filtered = filtered.filter(r => 
+        r.region === this.filters.region
+      );
+    }
+    
+    // Apply account filter
+    if (this.filters.account) {
+      filtered = filtered.filter(r => 
+        r.accountId === this.filters.account
+      );
+    }
+    
+    // Apply search term
+    if (this.searchTerm) {
+      const search = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(r => 
+        r.imageId?.toLowerCase().includes(search) ||
+        r.nameTag?.toLowerCase().includes(search) ||
+        r.amiName?.toLowerCase().includes(search)
+      );
+    }
+    
+    this.filteredResources = filtered;
+    this.sortData();
+    this.updatePagination();
+  }
+  
+  // Handle search input
+  onSearch(): void {
+    this.searchSubject.next(this.searchTerm);
+  }
+  
+  // Reset all filters
+  resetFilters(): void {
+    this.filters = {
+      platform: '',
+      region: '',
+      account: ''
+    };
+    this.searchTerm = '';
+    this.currentPage = 1;
+    this.applyFilters();
+  }
+  
+  // Check if any filters are active
+  hasActiveFilters(): boolean {
+    return !!(
+      this.filters.platform ||
+      this.filters.region ||
+      this.filters.account ||
+      this.searchTerm
+    );
+  }
+  
+  // Sort data by column
+  sortData(column?: string): void {
+    if (column) {
+      if (this.sortColumn === column) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortColumn = column;
+        this.sortDirection = 'asc';
+      }
+    }
+    
+    this.filteredResources.sort((a, b) => {
+      const valueA = this.getValueForSort(a, this.sortColumn);
+      const valueB = this.getValueForSort(b, this.sortColumn);
+      
+      if (valueA === valueB) return 0;
+      
+      const comparison = valueA < valueB ? -1 : 1;
+      return this.sortDirection === 'asc' ? comparison : -comparison;
+    });
+    
+    this.updatePagination();
+  }
+  
+  // Get value for sorting
+  private getValueForSort(resource: any, column: string): any {
+    const value = resource[column];
+    
+    // Handle dates
+    if (column.includes('Time') || column.includes('Date')) {
+      return new Date(value).getTime();
+    }
+    
+    // Handle strings
+    if (typeof value === 'string') {
+      return value.toLowerCase();
+    }
+    
+    return value;
+  }
+  
+  // Pagination methods
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredResources.length / this.itemsPerPage);
+    
+    // Reset to page 1 if current page is out of bounds
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = 1;
+    }
+    
+    this.startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    this.endIndex = Math.min(
+      this.startIndex + this.itemsPerPage,
+      this.filteredResources.length
+    );
+    
+    this.paginatedResources = this.filteredResources.slice(
+      this.startIndex,
+      this.endIndex
+    );
+  }
+  
+  goToPage(page: number): void {
+    this.currentPage = page;
+    this.updatePagination();
+    
+    // Scroll to top of content area
+    const contentArea = document.querySelector('.resource-content');
+    if (contentArea) {
+      contentArea.scrollTop = 0;
+    }
+  }
+  
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.goToPage(this.currentPage + 1);
+    }
+  }
+  
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
+  }
+  
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPages = 5;
+    let start = Math.max(1, this.currentPage - Math.floor(maxPages / 2));
+    let end = Math.min(this.totalPages, start + maxPages - 1);
+    
+    if (end - start < maxPages - 1) {
+      start = Math.max(1, end - maxPages + 1);
+    }
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
+  }
+  
+  // View resource details
+  viewDetails(resource: AMISnapshot): void {
+    this.selectedResource = resource;
+    // You can implement a modal or navigate to a detail page
+    console.log('View details for:', resource);
+  }
+  
+  // Export data
+  exportData(): void {
+    const filename = `ami-snapshots-${new Date().toISOString().split('T')[0]}.csv`;
+    
+    const columns = [
+      { key: 'imageId', label: 'Image ID' },
+      { key: 'nameTag', label: 'Name Tag' },
+      { key: 'amiName', label: 'AMI Name' },
+      { key: 'platform', label: 'Platform' },
+      { key: 'region', label: 'Region' },
+      { key: 'accountId', label: 'Account ID' },
+      { key: 'creationTime', label: 'Creation Time' }
+    ];
+    
+    this.exportService.exportDataToCSV(
+      this.filteredResources,
+      columns,
+      filename
+    );
+  }
+  
+  // Format date for display
+  formatDate(dateString: string): string {
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    } catch (e) {
+      return dateString;
+    }
+  }
+  
+  // Get platform CSS class
+  getPlatformClass(platform: string): string {
+    if (!platform) return '';
+    
+    const p = platform.toLowerCase();
+    if (p.includes('linux') || p.includes('unix')) return 'status-running';
+    if (p.includes('windows')) return 'status-available';
+    
+    return 'status-pending';
   }
 }

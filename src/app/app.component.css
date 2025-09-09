@@ -11,8 +11,55 @@
 
 .app-container {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: var(--ov-bg);
+}
+
+/* ========================================
+   TOP BAR (FIXED FULL WIDTH)
+   ======================================== */
+
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: var(--ov-surface);
+  border-bottom: 1px solid var(--ov-border);
+  padding: var(--ov-space-4) var(--ov-space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ov-space-4);
+  box-shadow: var(--ov-shadow-1);
+  height: 64px;
+}
+
+@media (max-width: 768px) {
+  .top-bar {
+    padding: var(--ov-space-3) var(--ov-space-4);
+    height: 56px;
+  }
+}
+
+/* ========================================
+   MAIN WRAPPER (BELOW TOP BAR)
+   ======================================== */
+
+.main-wrapper {
+  display: flex;
+  flex: 1;
+  margin-top: 64px; /* Height of top bar */
+  width: 100%;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .main-wrapper {
+    margin-top: 56px; /* Smaller top bar on mobile */
+  }
 }
 
 /* ========================================
@@ -21,31 +68,35 @@
 
 .sidebar {
   position: fixed;
-  top: 0;
+  top: 64px; /* Below top bar */
   left: 0;
-  height: 100vh;
+  height: calc(100vh - 64px);
   width: 260px;
   background-color: var(--ov-surface);
   border-right: 1px solid var(--ov-border);
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
   z-index: 999;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s ease;
 }
 
-.sidebar.open {
-  transform: translateX(0);
-}
-
-@media (min-width: 769px) {
+/* Mobile sidebar behavior */
+@media (max-width: 768px) {
   .sidebar {
-    position: relative;
-    transform: translateX(0);
+    top: 56px;
+    height: calc(100vh - 56px);
+    transform: translateX(-100%);
   }
   
   .sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+/* Desktop sidebar always visible */
+@media (min-width: 769px) {
+  .sidebar {
     transform: translateX(0);
   }
 }
@@ -165,22 +216,18 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 998;
-  opacity: 0;
   transition: opacity 0.3s ease;
-}
-
-.sidebar-overlay.active {
-  display: block;
-  opacity: 1;
 }
 
 @media (max-width: 768px) {
   .sidebar-overlay {
     display: block;
+    opacity: 0;
     pointer-events: none;
   }
   
   .sidebar-overlay.active {
+    opacity: 1;
     pointer-events: auto;
   }
 }
@@ -193,43 +240,24 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: 0;
   width: 100%;
+  margin-left: 260px; /* Space for sidebar on desktop */
+  min-height: calc(100vh - 64px);
 }
 
-@media (min-width: 769px) {
+@media (max-width: 768px) {
   .content {
-    margin-left: 260px;
+    margin-left: 0; /* No margin on mobile */
+    min-height: calc(100vh - 56px);
   }
 }
 
 /* ========================================
-   TOP BAR
+   HAMBURGER MENU
    ======================================== */
 
-.top-bar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background-color: var(--ov-surface);
-  border-bottom: 1px solid var(--ov-border);
-  padding: var(--ov-space-4) var(--ov-space-6);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ov-space-4);
-  box-shadow: var(--ov-shadow-1);
-}
-
-@media (max-width: 768px) {
-  .top-bar {
-    padding: var(--ov-space-3) var(--ov-space-4);
-  }
-}
-
-/* Hamburger Menu */
 .hamburger-menu {
-  display: flex;
+  display: none; /* Hidden by default on desktop */
   flex-direction: column;
   justify-content: center;
   gap: 4px;
@@ -242,9 +270,10 @@
   transition: var(--ov-transition-fast);
 }
 
-@media (min-width: 769px) {
+/* Show hamburger on mobile */
+@media (max-width: 768px) {
   .hamburger-menu {
-    display: none;
+    display: flex;
   }
 }
 
@@ -387,7 +416,9 @@
   flex: 1;
   padding: var(--ov-space-6);
   background-color: var(--ov-bg);
-  min-height: calc(100vh - 64px);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 @media (max-width: 768px) {
