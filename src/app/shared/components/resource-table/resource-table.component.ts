@@ -24,7 +24,12 @@ export class ResourceTableComponent {
     if (!dateString) return '';
     return new Date(dateString).toLocaleString();
   }
-  
+  /** Valor seguro da célula, evita (row as any)[col.key] no template */
+  getCell(row: any, key: string): any {
+    if (!row || !key) return '';
+    const v = (row as any)[key];
+    return v === undefined || v === null ? '' : v;
+  }
   getStatusClass(status: string): string {
     if (!status) return '';
     
