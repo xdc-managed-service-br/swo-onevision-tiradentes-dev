@@ -1,4 +1,4 @@
-// src/app/dashboard/monitoring-widget/monitoring-widget.component.ts
+// src/app/features/dashboard/monitoring-widget/monitoring-widget.component.ts
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -10,9 +10,21 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./monitoring-widget.component.css']
 })
 export class MonitoringWidgetComponent {
-  @Input() title: string = '';
-  @Input() percentage: number = 0;
-  @Input() label: string = '';
-  @Input() color: string = '#4fd1c5';
-  @Input() bgColor: string = '#e6e6e6';
+  /** Título do card (ex: "Disk Monitoring") */
+  @Input() title = 'Monitoring';
+
+  /** Percentual (0–100) */
+  @Input() percentage = 0;
+
+  /** Texto auxiliar (ex: "Active Monitoring on Resources") */
+  @Input() label = '';
+
+  /** Cor opcional da barra (hex/rgb), fallback para var(--ov-accent) */
+  @Input() color?: string;
+
+  clamp(p: number): number {
+    if (p < 0) return 0;
+    if (p > 100) return 100;
+    return Math.round(p);
+  }
 }

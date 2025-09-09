@@ -1,41 +1,37 @@
 <!-- src/app/dashboard/instance-status-widget/instance-status-widget.component.html -->
-<div class="status-widget">
-  <div class="donut-chart">
-    <div class="donut-container">
-      <div class="donut-count">{{ total }}</div>
-      <div class="donut-label">Total</div>
-      <svg width="100%" height="100%" viewBox="0 0 80 80" class="responsive-svg">
-        <circle 
-          cx="40" 
-          cy="40" 
-          r="32" 
-          fill="none" 
-          stroke="#4299e1" 
-          stroke-width="8"
-          stroke-dasharray="201 201"
-        />
-        <circle 
-          cx="40" 
-          cy="40" 
-          r="32" 
-          fill="none" 
-          stroke="#f56565" 
-          stroke-width="8"
-          [attr.stroke-dasharray]="(stopped / (total || 1) * 201) + ' 201'"
-          stroke-dashoffset="0" 
-          transform="rotate(-90 40 40)"
-        />
-      </svg>
+<div class="ov-card isw-card">
+  <div class="ov-card__head">
+    <div>
+      <div class="ov-card__title">EC2 Status</div>
+      <div class="ov-card__sub">Overview of instance states</div>
     </div>
-    <div class="status-legend">
-      <div class="legend-item">
-        <span class="running-color"></span>
-        <span>Running: {{ running }}</span>
-      </div>
-      <div class="legend-item">
-        <span class="stopped-color"></span>
-        <span>Stopped: {{ stopped }}</span>
-      </div>
+    <span class="status-available">{{ runningPct }}% running</span>
+  </div>
+
+  <div class="isw-grid">
+    <div class="isw-item">
+      <div class="ov-k">Total</div>
+      <div class="ov-v">{{ total }}</div>
+    </div>
+
+    <div class="isw-item">
+      <div class="ov-k">Running</div>
+      <div class="ov-v"><span class="status-running">{{ running }}</span></div>
+    </div>
+
+    <div class="isw-item">
+      <div class="ov-k">Stopped</div>
+      <div class="ov-v"><span class="status-stopped">{{ stopped }}</span></div>
+    </div>
+
+    <div class="isw-item" *ngIf="pending">
+      <div class="ov-k">Pending</div>
+      <div class="ov-v"><span class="status-pending">{{ pending }}</span></div>
+    </div>
+
+    <div class="isw-item" *ngIf="terminated">
+      <div class="ov-k">Terminated</div>
+      <div class="ov-v"><span class="status-terminated">{{ terminated }}</span></div>
     </div>
   </div>
 </div>

@@ -1,0 +1,167 @@
+/* Usa os tokens do onevision-base.css; tudo escopado com prefixo rh- */
+
+/* Card container */
+.rh-card {
+  background-color: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius);
+  padding: var(--ov-space-4);
+  box-shadow: var(--ov-shadow-1);
+}
+
+/* Header */
+.rh-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--ov-space-3);
+}
+
+.rh-title {
+  margin: 0;
+  font-size: var(--ov-text-lg);
+  font-weight: 600;
+  color: var(--ov-text);
+  letter-spacing: -0.01em;
+}
+
+/* Grid */
+.rh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--ov-space-3);
+}
+
+/* Item (link) */
+.rh-item {
+  display: block;
+  background-color: var(--ov-surface-raised);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius);
+  padding: var(--ov-space-4);
+  text-decoration: none;
+  color: inherit;
+  transition: var(--ov-transition);
+  box-shadow: var(--ov-shadow-1);
+}
+
+.rh-item:hover {
+  transform: translateY(-2px);
+  background-color: var(--ov-surface-overlay);
+  border-color: var(--ov-border-strong);
+}
+
+/* Item head */
+.rh-item__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--ov-space-3);
+}
+
+.rh-name {
+  font-weight: 600;
+  color: var(--ov-text);
+}
+
+.rh-badge {
+  background-color: var(--ov-accent);
+  color: var(--ov-accent-contrast);
+  border-radius: var(--ov-radius-full);
+  padding: 2px 10px;
+  font-size: var(--ov-text-sm);
+  font-weight: 600;
+}
+
+/* Bars */
+.rh-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ov-space-2);
+}
+
+.rh-bar {
+  height: 22px;
+  border-radius: var(--ov-radius-sm);
+  overflow: hidden;
+  display: flex;
+  background-color: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+}
+
+/* Segmentos */
+.rh-seg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: width 0.35s ease;
+  min-width: 22px; /* mantém rótulo legível */
+}
+
+.rh-seg__label {
+  color: #fff;
+  font-size: var(--ov-text-xs);
+  font-weight: 600;
+}
+
+/* Cores dos segmentos (tokens + opacidade) */
+.rh-seg.is-healthy {
+  background-color: rgba(16, 185, 129, 0.9); /* --ov-success aproximado */
+}
+
+.rh-seg.is-warning {
+  background-color: rgba(245, 158, 11, 0.9); /* --ov-warning */
+}
+
+.rh-seg.is-critical {
+  background-color: rgba(239, 68, 68, 0.9); /* --ov-danger */
+}
+
+/* Status linha de texto */
+.rh-status {
+  text-align: right;
+  font-size: var(--ov-text-sm);
+}
+
+.rh-inactive {
+  color: var(--ov-text-secondary);
+  margin-left: var(--ov-space-2);
+  font-style: italic;
+}
+
+/* Classes de cor do percentual */
+.rh-health--ok {
+  color: var(--ov-success);
+  font-weight: 600;
+}
+.rh-health--warn {
+  color: var(--ov-warning);
+  font-weight: 600;
+}
+.rh-health--crit {
+  color: var(--ov-danger);
+  font-weight: 600;
+}
+
+/* Detalhes extras (EC2) */
+.rh-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ov-space-2);
+  margin-top: var(--ov-space-2);
+  font-size: var(--ov-text-xs);
+}
+
+.rh-detail {
+  background-color: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+  color: var(--ov-text-secondary);
+  padding: 2px 8px;
+  border-radius: var(--ov-radius-sm);
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+  .rh-bar { height: 26px; }
+  .rh-seg__label { font-size: 0.75rem; }
+}

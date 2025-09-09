@@ -10,7 +10,14 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./instance-status-widget.component.css']
 })
 export class InstanceStatusWidgetComponent {
-  @Input() total: number = 0;
-  @Input() running: number = 0;
-  @Input() stopped: number = 0;
+  /** Totais (os únicos obrigatórios no seu template são total/running/stopped) */
+  @Input() total = 0;
+  @Input() running = 0;
+  @Input() stopped = 0;
+  @Input() pending = 0;
+  @Input() terminated = 0;
+
+  get runningPct(): number {
+    return this.total > 0 ? Math.round((this.running / this.total) * 100) : 0;
+  }
 }
