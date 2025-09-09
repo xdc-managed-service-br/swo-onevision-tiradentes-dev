@@ -7,11 +7,11 @@ Contexto
 	•	Quero zerar todo CSS e reconstruir um design system único via onevision-base.css.
 	•	Preciso padronizar o HTML dos componentes para usar as mesmas classes .ov-* (sem CSS por-tela).
 	•	Estilo: técnico/enterprise, vibe AWS, dark por padrão com light alternável via CSS variables.
-    •	Existe alguns estilos de widgets ou de dashboard que estão com css embedded on html, like this one: src/app/features/dashboard/instance-status-widget/instance-status-widget.component.html. Você deve evitar esse tipo de situação, de css e html junto, e se tiver outro html com css, corrige, me traz ele totalmente refatorado.
+    •	Existe alguns estilos de widgets ou de dashboard que estão com css embedded on html or ts, like this one: src/app/features/dashboard/instance-status-widget/instance-status-widget.component.html and src/app/features/dashboard/resource-health/resource-health.component.ts. Você deve evitar esse tipo de situação, de css e html junto, e se tiver outro html com css, corrige, me traz ele totalmente refatorado.
 
 Escopo desta iteração
 	1.	Criar src/app/shared/styles/onevision-base.css (única fonte global).
-	2.	Padronizar HTML dos 2 primeiros componentes para usar .ov-*:
+	2.	Padronizar HTML do primeiro componente (ami-snapshots) para usar .ov-*:
 	•	EC2 Instances
 	•	AMI Snapshots
 	4.	Não alterar a lógica de dados/serviços/rotas; apenas markup/atributos, classes e mínimos ajustes para acessibilidade.
@@ -54,7 +54,7 @@ Especificação do Design System (onevision-base.css)
 	•	Quebra para cards < ~900px.
 	•	Inputs/click targets ≥44px no mobile.
 
-Pode ajustar o HTML dos demais para bater nesse contrato .ov-* (sem mexer em lógica TS).
+Pode ajustar o HTML dos demais para bater nesse contrato .ov-* (e mexer em arquivos TS quando houver componentes de estilo css).
 
 <article class="ov-container" aria-labelledby="ec2-title">
   <!-- Page Title -->
