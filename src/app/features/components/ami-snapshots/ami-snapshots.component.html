@@ -1,213 +1,282 @@
-<div class="resource-container">
-  <div class="header-section">
-    <div class="filter-controls">
-      <div class="search-bar">
-        <input
-          type="text"
-          placeholder="Search by Image ID, Name Tag, or AMI Name"
-          (input)="searchImages($event)"
-          id="imageSearch"
-          #searchInput
-        />
-        <button
-          *ngIf="searchTerm"
-          class="clear-search"
-          (click)="clearSearch(searchInput)"
-        >
-          ✕
-        </button>
-      </div>
-      <div class="filter-group-container">
-        <div class="filter-group">
-          <label for="platformFilter">Platform:</label>
+<!-- src/app/features/components/ami-snapshots/ami-snapshots.component.html -->
+<article class="ov-container" aria-labelledby="ami-title">
+  <!-- Page Title -->
+  <h1 id="ami-title" class="ov-title">AMI Snapshots</h1>
+
+  <!-- Header: Filters + Search -->
+  <header class="ov-header">
+    <!-- Left: Filters -->
+    <div>
+      <div class="ov-filterbar" role="group" aria-label="Filters">
+        <!-- Platform Filter -->
+        <div class="ov-filter">
+          <label for="platformFilter">Platform</label>
           <select id="platformFilter" (change)="filterByPlatform($event)">
             <option value="">All Platforms</option>
             <option *ngFor="let platform of uniquePlatforms" [value]="platform">{{ platform }}</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label for="regionFilter">Region:</label>
+
+        <!-- Region Filter -->
+        <div class="ov-filter">
+          <label for="regionFilter">Region</label>
           <select id="regionFilter" (change)="filterByRegion($event)">
             <option value="">All Regions</option>
             <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label for="accountFilter">Account:</label>
+
+        <!-- Account Filter -->
+        <div class="ov-filter">
+          <label for="accountFilter">Account</label>
           <select id="accountFilter" (change)="filterByAccount($event)">
             <option value="">All Accounts</option>
             <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
           </select>
         </div>
-        <button (click)="resetFilters()" class="reset-button">Reset Filters</button>
+
+        <!-- Filter Actions -->
+        <div class="ov-filterbar__actions">
+          <button class="ov-btn ov-btn--subtle" (click)="resetFilters()">
+            Reset Filters
+          </button>
+        </div>
       </div>
     </div>
+
+    <!-- Right: Search -->
+    <form class="ov-search" role="search" aria-label="Search AMI snapshots">
+      <input
+        id="imageSearch"
+        type="search"
+        placeholder="Search by Image ID, Name Tag, or AMI Name"
+        (input)="searchImages($event)"
+        #searchInput />
+      <button 
+        type="button" 
+        class="ov-clear-btn" 
+        *ngIf="searchTerm" 
+        (click)="clearSearch(searchInput)"
+        aria-label="Clear search">
+        ✕
+      </button>
+    </form>
+  </header>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="ov-loading">
+    Loading AMI snapshots…
   </div>
 
-  <div *ngIf="loading" class="loading">
-    Loading AMI snapshots...
-  </div>
-  
-  <div *ngIf="!loading && filteredResources.length === 0" class="no-data">
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
     No AMI snapshots found matching the current filters.
   </div>
-  
-  <!-- Desktop table view -->
-  <table *ngIf="!loading && filteredResources.length > 0" class="resource-table">
-    <thead>
-      <tr>
-        <th (click)="sortData('imageId')">
-          Image ID
-          <span *ngIf="sortColumn === 'imageId'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('name')">
-          Name Tag
-          <span *ngIf="sortColumn === 'name'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('imageName')">
-          AMI Name
-          <span *ngIf="sortColumn === 'imageName'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('platform')">
-          Platform
-          <span *ngIf="sortColumn === 'platform'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('region')">
-          Region
-          <span *ngIf="sortColumn === 'region'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('createdAt')">
-          Creation Time
-          <span *ngIf="sortColumn === 'createdAt'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let resource of paginatedResources">
-        <td>{{ resource.imageId }}</td>
-        <td>{{ resource.name || 'N/A' }}</td>
-        <td [title]="resource.imageName || 'N/A'">{{ resource.imageName || 'N/A' }}</td>
-        <td>{{ resource.platform || 'Linux/Unix' }}</td>
-        <td>{{ resource.region }}</td>
-        <td>{{ formatDate(resource.createdAt) }}</td>
-        <td>
-          <button (click)="showDetails(resource)" class="view-button">View Details</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
 
-  <!-- Mobile card view -->
-  <div *ngIf="!loading && filteredResources.length > 0" class="mobile-cards">
-    <div *ngFor="let resource of paginatedResources" class="resource-card">
-      <div class="card-header">
+  <!-- Desktop Table View -->
+  <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
+    <table class="ov-table" role="table" aria-label="AMI snapshots table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sortData('imageId')">
+            Image ID
+            <span *ngIf="sortColumn === 'imageId'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="sortable" (click)="sortData('name')">
+            Name Tag
+            <span *ngIf="sortColumn === 'name'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="sortable" (click)="sortData('imageName')">
+            AMI Name
+            <span *ngIf="sortColumn === 'imageName'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="sortable" (click)="sortData('platform')">
+            Platform
+            <span *ngIf="sortColumn === 'platform'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="sortable" (click)="sortData('region')">
+            Region
+            <span *ngIf="sortColumn === 'region'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="sortable" (click)="sortData('createdAt')">
+            Creation Time
+            <span *ngIf="sortColumn === 'createdAt'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="ov-cell--right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let resource of paginatedResources">
+          <td>{{ resource.imageId }}</td>
+          <td>{{ resource.name || 'N/A' }}</td>
+          <td [title]="resource.imageName || 'N/A'" class="ov-text-truncate">
+            {{ resource.imageName || 'N/A' }}
+          </td>
+          <td>
+            <span [ngClass]="getPlatformClass(resource.platform)">
+              {{ resource.platform || 'Linux/Unix' }}
+            </span>
+          </td>
+          <td>{{ resource.region }}</td>
+          <td>{{ formatDate(resource.createdAt) }}</td>
+          <td>
+            <div class="ov-actions">
+              <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">
+                View Details
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Mobile Cards View -->
+  <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
+    <article class="ov-card" *ngFor="let resource of paginatedResources">
+      <header class="ov-card__head">
         <div>
-          <div class="card-title">{{ resource.name || 'Unnamed AMI' }}</div>
-          <div class="card-id">{{ resource.imageId }}</div>
+          <div class="ov-card__title">{{ resource.name || 'Unnamed AMI' }}</div>
+          <div class="ov-card__sub">{{ resource.imageId }}</div>
         </div>
         <span class="status-available">
           {{ resource.platform || 'Linux/Unix' }}
         </span>
+      </header>
+
+      <div class="ov-card__grid">
+        <div>
+          <div class="ov-k">Name Tag</div>
+          <div class="ov-v">{{ resource.name || 'N/A' }}</div>
+        </div>
+        
+        <div>
+          <div class="ov-k">Platform</div>
+          <div class="ov-v">{{ resource.platform || 'Linux/Unix' }}</div>
+        </div>
+        
+        <div class="full-width">
+          <div class="ov-k">AMI Name</div>
+          <div class="ov-v">{{ resource.imageName || 'N/A' }}</div>
+        </div>
+        
+        <div>
+          <div class="ov-k">Region</div>
+          <div class="ov-v">{{ resource.region }}</div>
+        </div>
+        
+        <div>
+          <div class="ov-k">Account</div>
+          <div class="ov-v">{{ resource.accountName || resource.accountId }}</div>
+        </div>
+        
+        <div class="full-width">
+          <div class="ov-k">Creation Time</div>
+          <div class="ov-v">{{ formatDate(resource.createdAt) }}</div>
+        </div>
       </div>
-      
-      <div class="card-body">
-        <div class="card-field">
-          <span class="card-label">Name Tag</span>
-          <span class="card-value">{{ resource.name || 'N/A' }}</span>
-        </div>
-        
-        <div class="card-field">
-          <span class="card-label">AMI Name</span>
-          <span class="card-value">{{ resource.imageName || 'N/A' }}</span>
-        </div>
-        
-        <div class="card-field">
-          <span class="card-label">Platform</span>
-          <span class="card-value">{{ resource.platform || 'Linux/Unix' }}</span>
-        </div>
-        
-        <div class="card-field">
-          <span class="card-label">Region</span>
-          <span class="card-value">{{ resource.region }}</span>
-        </div>
-        
-        <div class="card-field">
-          <span class="card-label">Account</span>
-          <span class="card-value">{{ resource.accountName || resource.accountId }}</span>
-        </div>
-        
-        <div class="card-field">
-          <span class="card-label">Creation Time</span>
-          <span class="card-value">{{ formatDate(resource.createdAt) }}</span>
+
+      <div style="margin-top: 12px;">
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">
+            View Details
+          </button>
         </div>
       </div>
-      
-      <div class="card-actions">
-        <button (click)="showDetails(resource)" class="view-button">
-          View Details
-        </button>
-      </div>
-    </div>
+    </article>
   </div>
 
-  <!-- Pagination Controls -->
-  <div *ngIf="!loading && filteredResources.length > 0" class="pagination-controls">
-    <div class="pagination-info">
-      Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, filteredResources.length) }} of {{ filteredResources.length }} items
+  <!-- Pagination -->
+  <nav class="ov-pagination" *ngIf="!loading && filteredResources.length > 0" aria-label="Pagination">
+    <div class="ov-pagination__info">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} - 
+      {{ Math.min(currentPage * pageSize, filteredResources.length) }} 
+      of {{ filteredResources.length }} items
     </div>
-    <div class="pagination-buttons">
-      <button (click)="goToFirstPage()" [disabled]="currentPage === 1" class="pagination-btn">
+    
+    <div class="ov-pagination__controls">
+      <button 
+        (click)="goToFirstPage()" 
+        [disabled]="currentPage === 1"
+        aria-label="Go to first page">
         First
       </button>
-      <button (click)="goToPreviousPage()" [disabled]="currentPage === 1" class="pagination-btn">
+      
+      <button 
+        (click)="goToPreviousPage()" 
+        [disabled]="currentPage === 1"
+        aria-label="Go to previous page">
         Previous
       </button>
       
-      <span class="page-numbers">
-        <button *ngFor="let page of getPageNumbers()" 
-                (click)="goToPage(page)" 
-                [class.active]="page === currentPage"
-                class="page-number-btn">
+      <div class="ov-pagination__pages">
+        <button 
+          *ngFor="let page of getPageNumbers()" 
+          (click)="goToPage(page)" 
+          [class.is-active]="page === currentPage"
+          [attr.aria-label]="'Go to page ' + page"
+          [attr.aria-current]="page === currentPage ? 'page' : null">
           {{ page }}
         </button>
-      </span>
+      </div>
       
-      <button (click)="goToNextPage()" [disabled]="currentPage === totalPages" class="pagination-btn">
+      <button 
+        (click)="goToNextPage()" 
+        [disabled]="currentPage === totalPages"
+        aria-label="Go to next page">
         Next
       </button>
-      <button (click)="goToLastPage()" [disabled]="currentPage === totalPages" class="pagination-btn">
+      
+      <button 
+        (click)="goToLastPage()" 
+        [disabled]="currentPage === totalPages"
+        aria-label="Go to last page">
         Last
       </button>
     </div>
+  </nav>
+
+  <!-- Export Button -->
+  <div class="ov-export" *ngIf="!loading && filteredResources.length > 0">
+    <button class="ov-btn" (click)="exportToCSV()">
+      Export to CSV
+    </button>
   </div>
 
-  <div *ngIf="!loading && filteredResources.length > 0" class="export-controls">
-    <button (click)="exportToCSV()" class="export-button">Export to CSV</button>
-  </div>
-  
   <!-- Resource Details Modal -->
-  <div *ngIf="selectedResource" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>AMI Snapshot Details: {{ selectedResource.imageId }}</h2>
-        <button (click)="closeDetails()" class="close-footer-button">Close</button>
+  <div class="ov-modal" *ngIf="selectedResource" (click)="closeDetails()">
+    <div class="ov-modal__dialog" 
+         role="dialog" 
+         aria-modal="true" 
+         aria-labelledby="ami-details-title" 
+         (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="ov-modal__head">
+        <h2 id="ami-details-title" class="ov-modal__title">
+          AMI Snapshot Details: {{ selectedResource.imageId }}
+        </h2>
+        <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">
+          ×
+        </button>
       </div>
-      <div class="modal-body">
-        <div class="detail-section">
-          <h3>AMI Information</h3>
+
+      <!-- Modal Body -->
+      <div class="ov-modal__body">
+        <!-- AMI Information Section -->
+        <section aria-labelledby="ami-info-title">
+          <h3 id="ami-info-title">AMI Information</h3>
           <table class="details-table">
             <tr>
               <th>Image ID</th>
@@ -230,10 +299,11 @@
               <td>{{ formatDate(selectedResource.createdAt) }}</td>
             </tr>
           </table>
-        </div>
+        </section>
 
-        <div class="detail-section">
-          <h3>Location Information</h3>
+        <!-- Location Information Section -->
+        <section aria-labelledby="location-info-title">
+          <h3 id="location-info-title">Location Information</h3>
           <table class="details-table">
             <tr>
               <th>Region</th>
@@ -248,14 +318,24 @@
               <td>{{ selectedResource.accountName }}</td>
             </tr>
           </table>
-        </div>
+        </section>
 
-        <!-- Tags Section - Using ResourceTagsComponent -->
-        <div class="detail-section" *ngIf="selectedResource.tags">
-          <h3>Tags</h3>
+        <!-- Tags Section -->
+        <section *ngIf="selectedResource.tags" aria-labelledby="tags-title">
+          <h3 id="tags-title">Tags</h3>
           <app-resource-tags [tags]="selectedResource.tags"></app-resource-tags>
-        </div>
+        </section>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="ov-modal__foot">
+        <button class="ov-btn" (click)="exportToCSV()">
+          Export to CSV
+        </button>
+        <button class="ov-btn ov-btn--primary" (click)="closeDetails()">
+          Done
+        </button>
       </div>
     </div>
   </div>
-</div>
+</article>

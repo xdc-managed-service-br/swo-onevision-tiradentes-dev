@@ -131,6 +131,14 @@ export class AmiSnapshotsComponent implements OnInit, OnDestroy {
     this.regionFilter = value;
     this.applyFilters();
   }
+
+  getPlatformClass(platform?: string) {
+  if (!platform) return 'status-available';
+  const p = platform.toLowerCase();
+  if (p.includes('windows')) return 'status-pending';
+  if (p.includes('mac')) return 'status-stopped';
+  return 'status-available'; // Linux/Unix default
+}
   
   // Filter by account ID
   filterByAccount(event: Event): void {

@@ -13,7 +13,6 @@ Escopo desta iteração
 	1.	Criar src/app/shared/styles/onevision-base.css (única fonte global).
 	2.	Padronizar HTML do primeiro componente (ami-snapshots) para usar .ov-*:
 	•	EC2 Instances
-	•	AMI Snapshots
 	4.	Não alterar a lógica de dados/serviços/rotas; apenas markup/atributos, classes e mínimos ajustes para acessibilidade.
 
 Como integrar
@@ -251,6 +250,7 @@ O que você deve entregar
 	•	Como importar (src/styles.css → apenas @import onevision-base.css).
 	•	Como ativar light mode (document.documentElement.setAttribute('data-theme','light')).
 	•	Checklist para criar um novo recurso reaproveitando as mesmas classes.
+  4.  Eu quero que você me fale quais arquivos devo focar a minha atenção, para replicar para o próximo componente (EBS). Alguns componentes vão precisar de estilos próprios, específicos aquele componente, traz no final uma explicação curta, apenas uma lista dos componentes que mais se dependem um do outro.
 
 Critérios de aceite
 	•	Com apenas onevision-base.css.

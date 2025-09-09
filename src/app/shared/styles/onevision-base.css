@@ -1,0 +1,902 @@
+/**
+ * OneVision Design System
+ * Enterprise-grade design system with AWS-inspired technical aesthetic
+ * Dark mode by default with light theme support
+ * Version 1.0.0
+ */
+
+/* ========================================
+   1. CSS VARIABLES (Design Tokens)
+   ======================================== */
+
+:root {
+  /* Dark Theme (Default) */
+  --ov-bg: #0f1114;
+  --ov-surface: #1a1d23;
+  --ov-surface-raised: #22262e;
+  --ov-surface-overlay: #2a2f39;
+  --ov-text: #e1e4e8;
+  --ov-text-secondary: #9ca3af;
+  --ov-muted: #6b7280;
+  --ov-border: #2d3340;
+  --ov-border-strong: #404754;
+  
+  /* Brand & Accent Colors */
+  --ov-accent: #6366f1;
+  --ov-accent-hover: #5558e3;
+  --ov-accent-contrast: #ffffff;
+  --ov-success: #10b981;
+  --ov-warning: #f59e0b;
+  --ov-danger: #ef4444;
+  --ov-info: #3b82f6;
+  
+  /* Status Colors */
+  --ov-status-running: #10b981;
+  --ov-status-stopped: #6b7280;
+  --ov-status-pending: #f59e0b;
+  --ov-status-terminated: #ef4444;
+  --ov-status-available: #3b82f6;
+  
+  /* Typography */
+  --ov-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --ov-font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  --ov-text-xs: 0.75rem;
+  --ov-text-sm: 0.875rem;
+  --ov-text-base: 1rem;
+  --ov-text-lg: 1.125rem;
+  --ov-text-xl: 1.25rem;
+  --ov-text-2xl: 1.5rem;
+  
+  /* Spacing */
+  --ov-space-1: 0.25rem;
+  --ov-space-2: 0.5rem;
+  --ov-space-3: 0.75rem;
+  --ov-space-4: 1rem;
+  --ov-space-5: 1.25rem;
+  --ov-space-6: 1.5rem;
+  --ov-space-8: 2rem;
+  
+  /* Borders & Radius */
+  --ov-radius: 6px;
+  --ov-radius-sm: 4px;
+  --ov-radius-lg: 8px;
+  --ov-radius-full: 9999px;
+  
+  /* Shadows */
+  --ov-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --ov-shadow-2: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --ov-shadow-3: 0 10px 15px rgba(0, 0, 0, 0.3);
+  --ov-shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  
+  /* Button specific */
+  --ov-btn-bg: var(--ov-accent);
+  --ov-btn-bg-hover: var(--ov-accent-hover);
+  --ov-btn-text: var(--ov-accent-contrast);
+  --ov-btn-bg-subtle: var(--ov-surface-raised);
+  --ov-btn-bg-subtle-hover: var(--ov-surface-overlay);
+  --ov-btn-text-subtle: var(--ov-text);
+  
+  /* Transitions */
+  --ov-transition: all 0.2s ease;
+  --ov-transition-fast: all 0.15s ease;
+}
+
+/* Light Theme */
+:root[data-theme="light"] {
+  --ov-bg: #ffffff;
+  --ov-surface: #f9fafb;
+  --ov-surface-raised: #ffffff;
+  --ov-surface-overlay: #ffffff;
+  --ov-text: #111827;
+  --ov-text-secondary: #6b7280;
+  --ov-muted: #9ca3af;
+  --ov-border: #e5e7eb;
+  --ov-border-strong: #d1d5db;
+  
+  --ov-btn-bg-subtle: #f3f4f6;
+  --ov-btn-bg-subtle-hover: #e5e7eb;
+  --ov-btn-text-subtle: var(--ov-text);
+  
+  --ov-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --ov-shadow-2: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --ov-shadow-3: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --ov-shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================
+   2. RESET & BASE
+   ======================================== */
+
+.ov-container {
+  background-color: var(--ov-bg);
+  color: var(--ov-text);
+  font-family: var(--ov-font-sans);
+  line-height: 1.6;
+  min-height: 100vh;
+  padding: var(--ov-space-6);
+}
+
+@media (max-width: 768px) {
+  .ov-container {
+    padding: var(--ov-space-4);
+  }
+}
+
+/* ========================================
+   3. TYPOGRAPHY
+   ======================================== */
+
+.ov-title {
+  font-size: var(--ov-text-2xl);
+  font-weight: 600;
+  color: var(--ov-text);
+  margin: 0 0 var(--ov-space-6) 0;
+  letter-spacing: -0.025em;
+}
+
+.ov-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ========================================
+   4. LAYOUT COMPONENTS
+   ======================================== */
+
+/* Header */
+.ov-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ov-space-4);
+  justify-content: space-between;
+  margin-bottom: var(--ov-space-6);
+}
+
+@media (max-width: 900px) {
+  .ov-header {
+    flex-direction: column;
+  }
+}
+
+/* Filter Bar */
+.ov-filterbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ov-space-3);
+  align-items: center;
+}
+
+.ov-filter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ov-space-1);
+}
+
+.ov-filter label {
+  font-size: var(--ov-text-sm);
+  color: var(--ov-text-secondary);
+  font-weight: 500;
+}
+
+.ov-filter select {
+  background-color: var(--ov-surface);
+  color: var(--ov-text);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius-sm);
+  padding: var(--ov-space-2) var(--ov-space-3);
+  font-size: var(--ov-text-sm);
+  min-width: 140px;
+  cursor: pointer;
+  transition: var(--ov-transition-fast);
+}
+
+.ov-filter select:hover {
+  border-color: var(--ov-border-strong);
+  background-color: var(--ov-surface-raised);
+}
+
+.ov-filter select:focus {
+  outline: none;
+  border-color: var(--ov-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.ov-filterbar__actions {
+  display: flex;
+  gap: var(--ov-space-2);
+  margin-left: auto;
+}
+
+/* Search */
+.ov-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.ov-search input {
+  width: 100%;
+  background-color: var(--ov-surface);
+  color: var(--ov-text);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius-sm);
+  padding: var(--ov-space-2) var(--ov-space-3);
+  padding-right: var(--ov-space-8);
+  font-size: var(--ov-text-sm);
+  transition: var(--ov-transition-fast);
+}
+
+.ov-search input:hover {
+  border-color: var(--ov-border-strong);
+  background-color: var(--ov-surface-raised);
+}
+
+.ov-search input:focus {
+  outline: none;
+  border-color: var(--ov-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.ov-search input::placeholder {
+  color: var(--ov-muted);
+}
+
+.ov-clear-btn {
+  position: absolute;
+  right: var(--ov-space-2);
+  background: transparent;
+  border: none;
+  color: var(--ov-muted);
+  cursor: pointer;
+  padding: var(--ov-space-1);
+  font-size: var(--ov-text-lg);
+  transition: var(--ov-transition-fast);
+}
+
+.ov-clear-btn:hover {
+  color: var(--ov-text);
+}
+
+/* ========================================
+   5. TABLE
+   ======================================== */
+
+.ov-tablewrap {
+  background-color: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius);
+  overflow: hidden;
+  box-shadow: var(--ov-shadow-1);
+  margin-bottom: var(--ov-space-6);
+}
+
+@media (max-width: 900px) {
+  .ov-tablewrap {
+    display: none;
+  }
+}
+
+.ov-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ov-table thead {
+  background-color: var(--ov-surface-raised);
+  border-bottom: 1px solid var(--ov-border);
+}
+
+.ov-table th {
+  text-align: left;
+  padding: var(--ov-space-3) var(--ov-space-4);
+  font-size: var(--ov-text-sm);
+  font-weight: 600;
+  color: var(--ov-text-secondary);
+  white-space: nowrap;
+}
+
+.ov-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: var(--ov-transition-fast);
+}
+
+.ov-table th.sortable:hover {
+  color: var(--ov-text);
+  background-color: var(--ov-surface-overlay);
+}
+
+.ov-table th.ov-cell--right {
+  text-align: right;
+}
+
+.ov-table tbody tr {
+  border-bottom: 1px solid var(--ov-border);
+  transition: var(--ov-transition-fast);
+}
+
+.ov-table tbody tr:hover {
+  background-color: var(--ov-surface-raised);
+}
+
+.ov-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.ov-table td {
+  padding: var(--ov-space-3) var(--ov-space-4);
+  font-size: var(--ov-text-sm);
+  color: var(--ov-text);
+}
+
+/* ========================================
+   6. CARDS (Mobile)
+   ======================================== */
+
+.ov-cards {
+  display: none;
+  gap: var(--ov-space-4);
+  margin-bottom: var(--ov-space-6);
+}
+
+@media (max-width: 900px) {
+  .ov-cards {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.ov-card {
+  background-color: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius);
+  padding: var(--ov-space-4);
+  box-shadow: var(--ov-shadow-1);
+}
+
+.ov-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--ov-space-3);
+  padding-bottom: var(--ov-space-3);
+  border-bottom: 1px solid var(--ov-border);
+}
+
+.ov-card__title {
+  font-size: var(--ov-text-base);
+  font-weight: 600;
+  color: var(--ov-text);
+  margin: 0;
+}
+
+.ov-card__sub {
+  font-size: var(--ov-text-sm);
+  color: var(--ov-text-secondary);
+  margin-top: var(--ov-space-1);
+}
+
+.ov-card__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ov-space-3);
+}
+
+.ov-card__grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ov-space-1);
+}
+
+.ov-card__grid .full-width {
+  grid-column: 1 / -1;
+}
+
+.ov-k {
+  font-size: var(--ov-text-xs);
+  color: var(--ov-text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ov-v {
+  font-size: var(--ov-text-sm);
+  color: var(--ov-text);
+  word-break: break-word;
+}
+
+/* ========================================
+   7. BUTTONS
+   ======================================== */
+
+.ov-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ov-space-2);
+  padding: var(--ov-space-2) var(--ov-space-4);
+  font-size: var(--ov-text-sm);
+  font-weight: 500;
+  border-radius: var(--ov-radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: var(--ov-transition);
+  white-space: nowrap;
+  background-color: var(--ov-btn-bg-subtle);
+  color: var(--ov-btn-text-subtle);
+  min-height: 36px;
+}
+
+.ov-btn:hover:not(:disabled) {
+  background-color: var(--ov-btn-bg-subtle-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--ov-shadow-1);
+}
+
+.ov-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.ov-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ov-btn--primary {
+  background-color: var(--ov-btn-bg);
+  color: var(--ov-btn-text);
+}
+
+.ov-btn--primary:hover:not(:disabled) {
+  background-color: var(--ov-btn-bg-hover);
+}
+
+.ov-btn--subtle {
+  background-color: transparent;
+  color: var(--ov-text-secondary);
+  border: 1px solid var(--ov-border);
+}
+
+.ov-btn--subtle:hover:not(:disabled) {
+  background-color: var(--ov-surface-raised);
+  border-color: var(--ov-border-strong);
+  color: var(--ov-text);
+}
+
+/* ========================================
+   8. ACTIONS
+   ======================================== */
+
+.ov-actions {
+  display: flex;
+  gap: var(--ov-space-2);
+  justify-content: flex-end;
+}
+
+.ov-export {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--ov-space-4);
+}
+
+/* ========================================
+   9. STATUS INDICATORS
+   ======================================== */
+
+.status-running,
+.status-available {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ov-space-1) var(--ov-space-3);
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--ov-status-running);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: var(--ov-radius-full);
+  font-size: var(--ov-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-stopped {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ov-space-1) var(--ov-space-3);
+  background-color: rgba(107, 114, 128, 0.1);
+  color: var(--ov-status-stopped);
+  border: 1px solid rgba(107, 114, 128, 0.2);
+  border-radius: var(--ov-radius-full);
+  font-size: var(--ov-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-pending {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ov-space-1) var(--ov-space-3);
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--ov-status-pending);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: var(--ov-radius-full);
+  font-size: var(--ov-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-terminated {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ov-space-1) var(--ov-space-3);
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--ov-status-terminated);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--ov-radius-full);
+  font-size: var(--ov-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ========================================
+   10. STATES
+   ======================================== */
+
+.ov-loading,
+.ov-empty {
+  text-align: center;
+  padding: var(--ov-space-8) var(--ov-space-4);
+  color: var(--ov-text-secondary);
+  font-size: var(--ov-text-sm);
+  background-color: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius);
+  margin: var(--ov-space-6) 0;
+}
+
+.ov-loading::before {
+  content: "";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--ov-border);
+  border-top-color: var(--ov-accent);
+  border-radius: 50%;
+  animation: ov-spin 0.8s linear infinite;
+  margin-right: var(--ov-space-2);
+  vertical-align: middle;
+}
+
+@keyframes ov-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   11. MODAL
+   ======================================== */
+
+.ov-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--ov-space-4);
+  animation: ov-fade-in 0.2s ease;
+}
+
+@keyframes ov-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ov-modal__dialog {
+  background-color: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius-lg);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--ov-shadow-3);
+  animation: ov-slide-up 0.3s ease;
+}
+
+@keyframes ov-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ov-modal__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--ov-space-4) var(--ov-space-6);
+  border-bottom: 1px solid var(--ov-border);
+  background-color: var(--ov-surface-raised);
+  border-radius: var(--ov-radius-lg) var(--ov-radius-lg) 0 0;
+}
+
+.ov-modal__title {
+  font-size: var(--ov-text-lg);
+  font-weight: 600;
+  color: var(--ov-text);
+  margin: 0;
+}
+
+.ov-modal__body {
+  padding: var(--ov-space-6);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ov-modal__foot {
+  display: flex;
+  gap: var(--ov-space-3);
+  justify-content: flex-end;
+  padding: var(--ov-space-4) var(--ov-space-6);
+  border-top: 1px solid var(--ov-border);
+  background-color: var(--ov-surface-raised);
+  border-radius: 0 0 var(--ov-radius-lg) var(--ov-radius-lg);
+}
+
+/* Column Customizer Specific */
+.column-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--ov-space-3);
+}
+
+.column-list label {
+  display: flex;
+  align-items: center;
+  gap: var(--ov-space-2);
+  padding: var(--ov-space-2);
+  border-radius: var(--ov-radius-sm);
+  cursor: pointer;
+  transition: var(--ov-transition-fast);
+}
+
+.column-list label:hover {
+  background-color: var(--ov-surface-raised);
+}
+
+.column-list input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.column-list .required {
+  color: var(--ov-text-secondary);
+}
+
+.column-list .required-badge {
+  display: inline-block;
+  margin-left: var(--ov-space-2);
+  padding: 0 var(--ov-space-2);
+  background-color: var(--ov-accent);
+  color: var(--ov-accent-contrast);
+  border-radius: var(--ov-radius-full);
+  font-size: var(--ov-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* ========================================
+   12. KEY-VALUE & DETAILS TABLE
+   ======================================== */
+
+.ov-kv,
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ov-kv tr,
+.details-table tr {
+  border-bottom: 1px solid var(--ov-border);
+}
+
+.ov-kv tr:last-child,
+.details-table tr:last-child {
+  border-bottom: none;
+}
+
+.ov-kv th,
+.details-table th {
+  text-align: left;
+  padding: var(--ov-space-3);
+  font-size: var(--ov-text-sm);
+  font-weight: 600;
+  color: var(--ov-text-secondary);
+  width: 35%;
+  background-color: var(--ov-surface-raised);
+}
+
+.ov-kv td,
+.details-table td {
+  padding: var(--ov-space-3);
+  font-size: var(--ov-text-sm);
+  color: var(--ov-text);
+}
+
+/* ========================================
+   13. PAGINATION
+   ======================================== */
+
+.ov-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--ov-space-4);
+  margin-top: var(--ov-space-6);
+  padding: var(--ov-space-4);
+  background-color: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius);
+}
+
+@media (max-width: 768px) {
+  .ov-pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.ov-pagination__info {
+  font-size: var(--ov-text-sm);
+  color: var(--ov-text-secondary);
+}
+
+.ov-pagination__controls {
+  display: flex;
+  gap: var(--ov-space-2);
+  align-items: center;
+}
+
+.ov-pagination__pages {
+  display: flex;
+  gap: var(--ov-space-1);
+}
+
+.ov-pagination button {
+  padding: var(--ov-space-2) var(--ov-space-3);
+  font-size: var(--ov-text-sm);
+  background-color: var(--ov-surface-raised);
+  color: var(--ov-text-secondary);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius-sm);
+  cursor: pointer;
+  transition: var(--ov-transition-fast);
+  min-width: 36px;
+  height: 36px;
+}
+
+.ov-pagination button:hover:not(:disabled) {
+  background-color: var(--ov-surface-overlay);
+  border-color: var(--ov-border-strong);
+  color: var(--ov-text);
+}
+
+.ov-pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ov-pagination button.is-active {
+  background-color: var(--ov-accent);
+  color: var(--ov-accent-contrast);
+  border-color: var(--ov-accent);
+}
+
+/* ========================================
+   14. ACCESSIBILITY
+   ======================================== */
+
+/* Focus visible styles */
+*:focus-visible {
+  outline: 2px solid var(--ov-accent);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --ov-border: #404754;
+    --ov-border-strong: #5a6270;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========================================
+   15. UTILITIES
+   ======================================== */
+
+.ov-text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov-hidden {
+  display: none !important;
+}
+
+.ov-visible-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ov-visible-mobile {
+    display: block;
+  }
+  
+  .ov-hidden-mobile {
+    display: none;
+  }
+}
+
+/* ========================================
+   16. SCROLLBAR STYLING
+   ======================================== */
+
+/* Webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ov-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ov-border-strong);
+  border-radius: var(--ov-radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ov-accent);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ov-border-strong) var(--ov-surface);
+}

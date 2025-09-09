@@ -27,7 +27,6 @@
             "styles": [
               "node_modules/@aws-amplify/ui-angular/theme.css",
               "src/styles.css",
-              "src/app/shared/styles/resource-components.css",
             ],
             "scripts": []
           },

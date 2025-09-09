@@ -1,5 +1,5 @@
 /* src/app/features/components/internet-gateways/internet-gateways.component.css */
-@import '../../../shared/styles/networking-base.css';
+@import '../../../shared/styles/onevision-base.css';
 
 .internet-gateways-container {
   padding: 2rem;
