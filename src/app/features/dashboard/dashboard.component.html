@@ -1,0 +1,207 @@
+<!-- src/app/features/dashboard/dashboard.component.html -->
+<div class="dashboard-container">
+  <div *ngIf="loading" class="loading">
+    Loading dashboard data...
+  </div>
+  <div *ngIf="!loading" class="dashboard-content">
+  
+    <!-- Resource Summary Cards -->
+    <div class="summary-cards">
+      <div class="card total-card">
+        <div class="card-content">
+          <h2>{{ resourceCounts.total }}</h2>
+          <p>Total Resources</p>
+        </div>
+      </div>
+      
+      <div class="card" [routerLink]="['/resources/ec2']">
+        <div class="card-content">
+          <h2>{{ resourceCounts.ec2 }}</h2>
+          <p>EC2 Instances</p>
+        </div>
+      </div>
+      
+      <div class="card" [routerLink]="['/resources/rds']">
+        <div class="card-content">
+          <h2>{{ resourceCounts.rds }}</h2>
+          <p>RDS Instances</p>
+        </div>
+      </div>
+      
+      <div class="card" [routerLink]="['/resources/s3']">
+        <div class="card-content">
+          <h2>{{ resourceCounts.s3 }}</h2>
+          <p>S3 Buckets</p>
+        </div>
+      </div>
+      
+      <div class="card" [routerLink]="['/resources/ebs']">
+        <div class="card-content">
+          <h2>{{ resourceCounts.ebs }}</h2>
+          <p>EBS Volumes</p>
+        </div>
+      </div>
+      
+      <div class="card" [routerLink]="['/resources/ebs-snapshots']">
+        <div class="card-content">
+          <h2>{{ resourceCounts.ebsSnapshots }}</h2>
+          <p>EBS Snapshots</p>
+        </div>
+      </div>
+      
+      <div class="card" [routerLink]="['/resources/ami-snapshots']">
+        <div class="card-content">
+          <h2>{{ resourceCounts.amiSnapshots }}</h2>
+          <p>AMI Snapshots</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Resource Health Component -->
+    <div class="dashboard-section">
+      <app-resource-health></app-resource-health>
+    </div>
+    
+    <!-- Monitoring Status Cards -->
+    <div class="monitoring-cards">
+      <div class="monitoring-section">
+        <h3>Resource Monitoring (CloudWatch)</h3>
+        <div class="monitoring-widgets">
+          <app-monitoring-widget
+            title="RAM Monitoring"
+            [percentage]="monitoringStatus.monitoredPercentage"
+            label="Active Monitoring on Resources"
+            color="#4fd1c5"
+          ></app-monitoring-widget>
+          
+          <app-monitoring-widget
+            title="Disk Monitoring" 
+            [percentage]="monitoringStatus.monitoredPercentage"
+            label="Active Monitoring on Resources"
+            color="#9f7aea"
+          ></app-monitoring-widget>
+        </div>
+      </div>
+      
+      <div class="monitoring-section">
+        <h3>Instance Status</h3>
+        <app-instance-status-widget
+          [total]="instanceStatus.total"
+          [running]="instanceStatus.running"
+          [stopped]="instanceStatus.stopped"
+        ></app-instance-status-widget>
+      </div>
+      
+      <div class="monitoring-section">
+        <h3>SSM Agent Status</h3>
+        <app-monitoring-widget
+          [percentage]="ssmStatus.connectedPercentage"
+          label="Instances with SSM Agent Installed"
+          color="#68d391"
+        ></app-monitoring-widget>
+      </div>
+    </div>
+    
+    <!-- Dashboard Widgets -->
+    <div class="dashboard-widgets">
+
+      <!-- Account Distribution -->
+      <div class="widget">
+        <div class="widget-header">
+          <h3>Resources by Account</h3>
+        </div>
+        <div class="widget-content">
+          <div class="chart-container">
+            <div *ngFor="let item of accountDistribution" class="chart-bar">
+              <div class="bar-label" [title]="item.account">{{ item.account }}</div>
+              <div class="bar-container">
+                <div class="bar" [style.width.%]="getBarWidth(item.count)">
+                  <span class="bar-value">{{ item.count }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Region Distribution -->
+      <div class="widget">
+        <div class="widget-header">
+          <h3>Resources by Region</h3>
+        </div>
+        <div class="widget-content region-chart">
+          <div class="chart-container">
+            <div *ngFor="let item of regionDistribution" class="chart-bar">
+              <div class="bar-label" [title]="item.region">{{ item.region }}</div>
+              <div class="bar-container">
+                <div class="bar" [style.width.%]="getBarWidth(item.count)">
+                  <span class="bar-value">{{ item.count }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Recent Resources -->
+      <div class="widget">
+        <div class="widget-header">
+          <h3>Recent Resources</h3>
+          <a [routerLink]="['/resources']">View All</a>
+        </div>
+        <div class="widget-content">
+          <!-- Desktop table view -->
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Region</th>
+                <th>Identifier</th>
+                <th>Last Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let resource of recentResources" [routerLink]="['/resources']">
+                <td>{{ resource.resourceType }}</td>
+                <td>{{ resource.region }}</td>
+                <td>{{ getResourceIdentifier(resource) }}</td>
+                <td>{{ resource.lastUpdated | date:'short' }}</td>
+              </tr>
+              <tr *ngIf="recentResources.length === 0">
+                <td colspan="4" class="no-data">No resources found</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Mobile card view -->
+          <div class="mobile-table-cards">
+            <div *ngFor="let resource of recentResources" class="table-card" [routerLink]="['/resources']">
+              <div class="table-card-header">
+                <div>
+                  <div class="table-card-title">{{ resource.resourceType }}</div>
+                  <div class="table-card-subtitle">{{ getResourceIdentifier(resource) }}</div>
+                </div>
+              </div>
+              
+              <div class="table-card-body">
+                <div class="table-card-field">
+                  <span class="table-card-label">Region</span>
+                  <span class="table-card-value">{{ resource.region }}</span>
+                </div>
+                
+                <div class="table-card-field">
+                  <span class="table-card-label">Last Updated</span>
+                  <span class="table-card-value">{{ resource.lastUpdated | date:'short' }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div *ngIf="recentResources.length === 0" class="no-data">
+              No resources found
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+{
+  "id": {
+    "S": "590183843163-eu-north-1-NetworkACL-acl-0304c74b2b17530ce"
+  },
+  "accountId": {
+    "S": "590183843163"
+  },
+  "accountName": {
+    "S": "A4L"
+  },
+  "associatedSubnets": {
+    "S": "[\"subnet-05fb04b0a5b280651\", \"subnet-030cd553ac047181a\", \"subnet-02ccd73372acd8966\"]"
+  },
+  "associationCount": {
+    "N": "3"
+  },
+  "createdAt": {
+    "S": "2025-08-20T04:41:56.604Z"
+  },
+  "customDenyRuleCount": {
+    "N": "0"
+  },
+  "egressRuleCount": {
+    "N": "2"
+  },
+  "ingressRuleCount": {
+    "N": "2"
+  },
+  "isDefault": {
+    "BOOL": true
+  },
+  "lastUpdated": {
+    "S": "2025-08-20T04:41:56.604Z"
+  },
+  "networkAclId": {
+    "S": "acl-0304c74b2b17530ce"
+  },
+  "networkAclName": {
+    "S": "N/A"
+  },
+  "region": {
+    "S": "eu-north-1"
+  },
+  "resourceType": {
+    "S": "NetworkACL"
+  },
+  "resourceTypeRegionId": {
+    "S": "NetworkACL#eu-north-1#acl-0304c74b2b17530ce"
+  },
+  "tags": {
+    "S": "[]"
+  },
+  "updatedAt": {
+    "S": "2025-08-20T04:41:56.604Z"
+  },
+  "vpcId": {
+    "S": "vpc-002d80b7cf9b0f429"
+  }
+}

@@ -1,0 +1,136 @@
+<!-- src/app/features/components/security-groups/security-groups.component.html -->
+<div class="security-groups-container">
+  <div class="page-header">
+    <h1>Security Groups</h1>
+    <p class="page-description">Manage your AWS Security Group configurations and rules</p>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="onSearchChange()"
+        placeholder="Search by name, ID, or description..."
+        class="search-input">
+      <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+      </svg>
+    </div>
+
+    <div class="filter-controls">
+      <select [(ngModel)]="selectedAccount" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Accounts</option>
+        <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedRegion" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Regions</option>
+        <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+      </select>
+
+      <button (click)="clearFilters()" class="clear-filters-btn">
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Results Count -->
+  <div class="results-summary">
+    <span class="results-count">{{ filteredSecurityGroups.length }} of {{ securityGroups.length }} security groups</span>
+    <button (click)="loadSecurityGroups()" class="refresh-btn" [disabled]="loading">
+      <svg class="refresh-icon" [class.spinning]="loading" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+      </svg>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading security groups...</p>
+  </div>
+
+  <!-- Security Groups Table -->
+  <div *ngIf="!loading" class="table-container">
+    <div class="table-wrapper">
+      <table class="security-groups-table">
+        <thead>
+          <tr>
+            <th>Group Name</th>
+            <th>Group ID</th>
+            <th>Description</th>
+            <th>VPC</th>
+            <th>Rules</th>
+            <th>Account</th>
+            <th>Region</th>
+            <th>Last Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sg of filteredSecurityGroups; trackBy: trackByGroupId" 
+              class="table-row">
+            <td class="group-name">
+              <div class="group-info">
+                <span class="name">{{ sg.groupName || 'N/A' }}</span>
+                <span class="id-badge">{{ sg.groupId }}</span>
+              </div>
+            </td>
+            <td class="group-id">
+              <code>{{ sg.groupId }}</code>
+            </td>
+            <td class="description">
+              <span class="description-text" [title]="sg.description">
+                {{ sg.description || 'No description' }}
+              </span>
+            </td>
+            <td class="vpc">
+              <code>{{ getVpcDisplayName(sg.vpcId || '') }}</code>
+            </td>
+            <td class="rules">
+              <div class="rules-summary">
+                <span class="rule-count inbound">
+                  <svg class="rule-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+                  </svg>
+                  In: {{ getRuleCount(sg.inboundRules || []) }}
+                </span>
+                <span class="rule-count outbound">
+                  <svg class="rule-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z" clip-rule="evenodd" />
+                  </svg>
+                  Out: {{ getRuleCount(sg.outboundRules || []) }}
+                </span>
+              </div>
+            </td>
+            <td class="account">
+              <span class="account-name">{{ sg.accountName || sg.accountId }}</span>
+            </td>
+            <td class="region">
+              <span class="region-badge">{{ sg.region }}</span>
+            </td>
+            <td class="last-updated">
+              <span class="date">{{ sg.lastUpdated | date:'short' }}</span>
+            </td>
+          </tr>
+          
+          <!-- Empty State -->
+          <tr *ngIf="filteredSecurityGroups.length === 0" class="empty-row">
+            <td colspan="8" class="empty-state">
+              <div class="empty-content">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="m9 12 2 2 4-4"></path>
+                </svg>
+                <h3>No security groups found</h3>
+                <p>Try adjusting your search criteria or refresh the data.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

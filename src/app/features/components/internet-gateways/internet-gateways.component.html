@@ -1,0 +1,126 @@
+<!-- src/app/features/components/internet-gateways/internet-gateways.component.html -->
+<div class="internet-gateways-container">
+  <div class="page-header">
+    <h1>Internet Gateways</h1>
+    <p class="page-description">Manage your AWS Internet Gateway configurations</p>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="onSearchChange()"
+        placeholder="Search by Internet Gateway ID or tags..."
+        class="search-input">
+      <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+      </svg>
+    </div>
+
+    <div class="filter-controls">
+      <select [(ngModel)]="selectedAccount" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Accounts</option>
+        <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedRegion" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Regions</option>
+        <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+      </select>
+
+      <button (click)="clearFilters()" class="clear-filters-btn">
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Results Count -->
+  <div class="results-summary">
+    <span class="results-count">{{ filteredInternetGateways.length }} of {{ internetGateways.length }} internet gateways</span>
+    <button (click)="loadInternetGateways()" class="refresh-btn" [disabled]="loading">
+      <svg class="refresh-icon" [class.spinning]="loading" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+      </svg>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading internet gateways...</p>
+  </div>
+
+  <!-- Internet Gateways Table -->
+  <div *ngIf="!loading" class="table-container">
+    <div class="table-wrapper">
+      <table class="internet-gateways-table">
+        <thead>
+          <tr>
+            <th>Internet Gateway Name/ID</th>
+            <th>State</th>
+            <th>Attached VPCs</th>
+            <th>Attachment Count</th>
+            <th>Account</th>
+            <th>Region</th>
+            <th>Last Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let igw of filteredInternetGateways; trackBy: trackByInternetGatewayId" 
+              class="table-row">
+            <td class="igw-name">
+              <div class="igw-info">
+                <span class="name">{{ getInternetGatewayName(igw) }}</span>
+                <span class="id-badge">{{ igw.internetGatewayId }}</span>
+              </div>
+            </td>
+            <td class="state">
+              <span class="state-badge" [ngClass]="getStateClass(igw.state || '')">
+                {{ igw.state || 'Unknown' }}
+              </span>
+            </td>
+            <td class="attached-vpcs">
+              <div class="vpcs-list" *ngIf="getAttachedVpcs(igw).length > 0; else noVpcs">
+                <span class="vpc-item" *ngFor="let vpcId of getAttachedVpcs(igw)">
+                  <code>{{ vpcId }}</code>
+                </span>
+              </div>
+              <ng-template #noVpcs>
+                <span class="no-vpcs">No VPCs attached</span>
+              </ng-template>
+            </td>
+            <td class="attachment-count">
+              <span class="count-badge">{{ getAttachmentCount(igw) }}</span>
+            </td>
+            <td class="account">
+              <span class="account-name">{{ igw.accountName || igw.accountId }}</span>
+            </td>
+            <td class="region">
+              <span class="region-badge">{{ igw.region }}</span>
+            </td>
+            <td class="last-updated">
+              <span class="date">{{ igw.lastUpdated | date:'short' }}</span>
+            </td>
+          </tr>
+          
+          <!-- Empty State -->
+          <tr *ngIf="filteredInternetGateways.length === 0" class="empty-row">
+            <td colspan="7" class="empty-state">
+              <div class="empty-content">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="m9 12 2 2 4-4"></path>
+                </svg>
+                <h3>No internet gateways found</h3>
+                <p>Try adjusting your search criteria or refresh the data.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

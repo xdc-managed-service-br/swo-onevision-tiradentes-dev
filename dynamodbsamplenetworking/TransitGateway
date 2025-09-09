@@ -1,0 +1,65 @@
+{
+  "id": {
+    "S": "654654498954-us-east-1-TransitGateway-tgw-0a20534250c42cbbb"
+  },
+  "accountId": {
+    "S": "654654498954"
+  },
+  "accountName": {
+    "S": "Ficou Facil"
+  },
+  "amazonSideAsn": {
+    "N": "64512"
+  },
+  "createdAt": {
+    "S": "2024-04-03T12:51:12.000Z"
+  },
+  "defaultRouteTableAssociation": {
+    "S": "disable"
+  },
+  "defaultRouteTablePropagation": {
+    "S": "disable"
+  },
+  "description": {
+    "S": ""
+  },
+  "dnsSupport": {
+    "S": "enable"
+  },
+  "lastUpdated": {
+    "S": "2025-08-20T04:42:47.408Z"
+  },
+  "multicastSupport": {
+    "S": "disable"
+  },
+  "ownerId": {
+    "S": "905418331872"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "TransitGateway"
+  },
+  "resourceTypeRegionId": {
+    "S": "TransitGateway#us-east-1#tgw-0a20534250c42cbbb"
+  },
+  "state": {
+    "S": "available"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"Name\", \"Value\": \"tgw-network\"}]"
+  },
+  "transitGatewayId": {
+    "S": "tgw-0a20534250c42cbbb"
+  },
+  "transitGatewayName": {
+    "S": "tgw-network"
+  },
+  "updatedAt": {
+    "S": "2025-08-20T04:42:47.408Z"
+  },
+  "vpnEcmpSupport": {
+    "S": "enable"
+  }
+}

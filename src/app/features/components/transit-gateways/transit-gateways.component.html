@@ -1,0 +1,148 @@
+<div class="tgw-container">
+  <div class="page-header">
+    <h1>Transit Gateways</h1>
+    <p class="page-description">Manage your AWS Transit Gateway configurations</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()"
+        placeholder="Search by TGW ID or tags..."
+        class="search-input" />
+      <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd"
+              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+              clip-rule="evenodd"/>
+      </svg>
+    </div>
+
+    <div class="filter-controls">
+      <select [(ngModel)]="selectedAccount" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Accounts</option>
+        <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedRegion" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Regions</option>
+        <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedState" (change)="onFilterChange()" class="filter-select">
+        <option value="">All States</option>
+        <option *ngFor="let st of uniqueStates" [value]="st">{{ st }}</option>
+      </select>
+
+      <button (click)="clearFilters()" class="clear-filters-btn">Clear Filters</button>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="results-summary">
+    <span class="results-count">
+      {{ filteredTransitGateways.length }} of {{ transitGateways.length }} transit gateways
+    </span>
+    <button (click)="loadTransitGateways()" class="refresh-btn" [disabled]="loading">
+      <svg class="refresh-icon" [class.spinning]="loading" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd"
+              d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+              clip-rule="evenodd"/>
+      </svg>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading transit gateways...</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="table-container">
+    <div class="table-wrapper">
+      <table class="tgw-table">
+        <thead>
+          <tr>
+            <th>TGW Name/ID</th>
+            <th>State</th>
+            <th>Amazon ASN</th>
+            <th>Auto-Accept</th>
+            <th>Assoc Default RT</th>
+            <th>Prop Default RT</th>
+            <th>Account</th>
+            <th>Region</th>
+            <th>Last Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tgw of filteredTransitGateways; trackBy: trackByTransitGatewayId" class="table-row">
+            <td class="tgw-name">
+              <div class="tgw-info">
+                <span class="name">{{ getTransitGatewayName(tgw) }}</span>
+                <span class="id-badge" [attr.title]="tgw.transitGatewayArn">{{ tgw.transitGatewayId }}</span>
+              </div>
+            </td>
+
+            <td class="state">
+              <span class="state-badge" [ngClass]="getStateClass(tgw.state)">
+                {{ tgw.state || 'Unknown' }}
+              </span>
+            </td>
+
+            <td class="asn">
+              <code>{{ tgw.amazonSideAsn || '—' }}</code>
+            </td>
+
+            <td class="setting">
+              <span class="setting-badge" [ngClass]="getSettingClass(tgw.autoAcceptSharedAttachments)">
+                {{ tgw.autoAcceptSharedAttachments || 'unknown' }}
+              </span>
+            </td>
+
+            <td class="setting">
+              <span class="setting-badge" [ngClass]="getSettingClass(tgw.defaultRouteTableAssociation)">
+                {{ tgw.defaultRouteTableAssociation || 'unknown' }}
+              </span>
+            </td>
+
+            <td class="setting">
+              <span class="setting-badge" [ngClass]="getSettingClass(tgw.defaultRouteTablePropagation)">
+                {{ tgw.defaultRouteTablePropagation || 'unknown' }}
+              </span>
+            </td>
+
+            <td class="account">
+              <span class="account-name">{{ tgw.accountName || tgw.accountId }}</span>
+            </td>
+
+            <td class="region">
+              <span class="region-badge">{{ tgw.region }}</span>
+            </td>
+
+            <td class="last-updated">
+              <span class="date">{{ tgw.lastUpdated | date:'short' }}</span>
+            </td>
+          </tr>
+
+          <!-- Empty -->
+          <tr *ngIf="filteredTransitGateways.length === 0" class="empty-row">
+            <td colspan="9" class="empty-state">
+              <div class="empty-content">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="m9 12 2 2 4-4"></path>
+                </svg>
+                <h3>No transit gateways found</h3>
+                <p>Try adjusting your search criteria or refresh the data.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,157 @@
+<div class="load-balancers-container">
+  <div class="page-header">
+    <h1>Load Balancers</h1>
+    <p class="page-description">Manage your AWS Elastic Load Balancers (ALB/NLB/GLB)</p>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()"
+        placeholder="Search by name, DNS name or tags..."
+        class="search-input" />
+      <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd"
+          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+          clip-rule="evenodd" />
+      </svg>
+    </div>
+
+    <div class="filter-controls">
+      <select [(ngModel)]="selectedAccount" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Accounts</option>
+        <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedRegion" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Regions</option>
+        <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedState" (change)="onFilterChange()" class="filter-select">
+        <option value="">All States</option>
+        <option *ngFor="let st of uniqueStates" [value]="st">{{ st }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedType" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Types</option>
+        <option *ngFor="let tp of uniqueTypes" [value]="tp">{{ tp }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedScheme" (change)="onFilterChange()" class="filter-select">
+        <option value="">All Schemes</option>
+        <option *ngFor="let sc of uniqueSchemes" [value]="sc">{{ sc }}</option>
+      </select>
+
+      <button (click)="clearFilters()" class="clear-filters-btn">Clear Filters</button>
+    </div>
+  </div>
+
+  <!-- Results Count -->
+  <div class="results-summary">
+    <span class="results-count">
+      {{ filteredLoadBalancers.length }} of {{ loadBalancers.length }} load balancers
+    </span>
+    <button (click)="loadLoadBalancers()" class="refresh-btn" [disabled]="loading">
+      <svg class="refresh-icon" [class.spinning]="loading" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd"
+          d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+          clip-rule="evenodd" />
+      </svg>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading load balancers...</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="table-container">
+    <div class="table-wrapper">
+      <table class="load-balancers-table">
+        <thead>
+          <tr>
+            <th>Name / ARN</th>
+            <th>Type</th>
+            <th>Scheme</th>
+            <th>State</th>
+            <th>DNS Name</th>
+            <th>VPC</th>
+            <th>Account</th>
+            <th>Region</th>
+            <th>Last Updated</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let lb of filteredLoadBalancers; trackBy: trackByLoadBalancerArn" class="table-row">
+            <td class="lb-name">
+              <div class="lb-info">
+                <span class="name">{{ lb.loadBalancerName || lb.tags?.['Name'] || 'Unnamed' }}</span>
+                <span class="arn-badge" title="{{ lb.loadBalancerArn }}">{{ lb.loadBalancerArn }}</span>
+              </div>
+            </td>
+
+            <td class="type">
+              <span class="type-badge" [ngClass]="getTypeClass(lb.loadBalancerType || '')">
+                {{ lb.loadBalancerType || 'Unknown' }}
+              </span>
+            </td>
+
+            <td class="scheme">
+              <span class="scheme-badge" [ngClass]="getSchemeClass(lb.scheme || '')">
+                {{ lb.scheme || 'Unknown' }}
+              </span>
+            </td>
+
+            <td class="state">
+              <span class="state-badge" [ngClass]="getStateClass(lb.state || '')">
+                {{ lb.state || 'Unknown' }}
+              </span>
+            </td>
+
+            <td class="dns">
+              <code [title]="lb.dnsName">{{ truncateDnsName(lb.dnsName) }}</code>
+            </td>
+
+            <td class="vpc">
+              <code>{{ lb.vpcId || 'N/A' }}</code>
+            </td>
+
+            <td class="account">
+              <span class="account-name">{{ lb.accountName || lb.accountId }}</span>
+            </td>
+
+            <td class="region">
+              <span class="region-badge">{{ lb.region }}</span>
+            </td>
+
+            <td class="last-updated">
+              <span class="date">{{ lb.lastUpdated | date:'short' }}</span>
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="filteredLoadBalancers.length === 0" class="empty-row">
+            <td colspan="9" class="empty-state">
+              <div class="empty-content">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="m9 12 2 2 4-4"></path>
+                </svg>
+                <h3>No load balancers found</h3>
+                <p>Try adjusting your filters or refresh the data.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

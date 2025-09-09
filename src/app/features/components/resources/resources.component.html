@@ -1,0 +1,301 @@
+<!-- resources.component.html (complete) -->
+<div class="resources-container">
+  <div class="header-section">
+    <div class="filter-controls">
+      <div class="search-bar">
+        <input
+          type="text"
+          placeholder="Search by ID, Name or Type"
+          (input)="searchResources($event)"
+          id="resourceSearch"
+          #searchInput
+        />
+        <button
+          *ngIf="searchTerm"
+          class="clear-search"
+          (click)="clearSearch(searchInput)"
+        >
+          ✕
+        </button>
+      </div>
+      <div class="filter-group-container">
+        <div class="filter-group">
+          <label for="typeFilter">Resource Type:</label>
+          <select id="typeFilter" (change)="filterByResourceType($event)">
+            <option value="">All Types</option>
+            <option *ngFor="let type of uniqueResourceTypes" [value]="type">
+              {{ getResourceTypeDisplay(type) }}
+            </option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="regionFilter">Region:</label>
+          <select id="regionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="accountFilter">Account:</label>
+          <select id="accountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
+          </select>
+        </div>
+        <button (click)="resetFilters()" class="reset-button">Reset Filters</button>
+      </div>
+    </div>
+  </div>
+  
+  <div *ngIf="loading" class="loading">
+    Loading resources...
+  </div>
+  
+  <div *ngIf="!loading && filteredResources.length === 0" class="no-data">
+    No resources found matching the current filters.
+  </div>
+  
+  <!-- Desktop table view -->
+  <table *ngIf="!loading && filteredResources.length > 0" class="resource-table">
+    <thead>
+      <tr>
+        <th (click)="sortData('resourceType')">
+          Type
+          <span *ngIf="sortColumn === 'resourceType'" class="sort-indicator">
+            {{ sortDirection === 'asc' ? '▲' : '▼' }}
+          </span>
+        </th>
+        <th (click)="sortData('identifier')">
+          Identifier
+          <span *ngIf="sortColumn === 'identifier'" class="sort-indicator">
+            {{ sortDirection === 'asc' ? '▲' : '▼' }}
+          </span>
+        </th>
+        <th (click)="sortData('resourceName')">
+          Name
+          <span *ngIf="sortColumn === 'resourceName'" class="sort-indicator">
+            {{ sortDirection === 'asc' ? '▲' : '▼' }}
+          </span>
+        </th>
+        <th (click)="sortData('region')">
+          Region
+          <span *ngIf="sortColumn === 'region'" class="sort-indicator">
+            {{ sortDirection === 'asc' ? '▲' : '▼' }}
+          </span>
+        </th>
+        <th (click)="sortData('accountId')">
+          Account
+          <span *ngIf="sortColumn === 'accountId'" class="sort-indicator">
+            {{ sortDirection === 'asc' ? '▲' : '▼' }}
+          </span>
+        </th>
+        <th (click)="sortData('createdAt')">
+          Created
+          <span *ngIf="sortColumn === 'createdAt'" class="sort-indicator">
+            {{ sortDirection === 'asc' ? '▲' : '▼' }}
+          </span>
+        </th>
+        <th (click)="sortData('state')">
+          State
+          <span *ngIf="sortColumn === 'state'" class="sort-indicator">
+            {{ sortDirection === 'asc' ? '▲' : '▼' }}
+          </span>
+        </th>
+        <th (click)="sortData('cost')">
+          Monthly Cost
+          <span *ngIf="sortColumn === 'cost'" class="sort-indicator">
+            {{ sortDirection === 'asc' ? '▲' : '▼' }}
+          </span>
+        </th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let resource of paginatedResources">
+        <td>
+          <a [routerLink]="['/resources', getResourceTypeRoute(resource.resourceType)]" 
+             class="resource-type-link">
+            {{ getResourceTypeDisplay(resource.resourceType) }}
+          </a>
+        </td>
+        <td>{{ getResourceIdentifier(resource) }}</td>
+        <td>{{ resource.resourceName || 'N/A' }}</td>
+        <td>{{ resource.region }}</td>
+        <td>{{ resource.accountName || resource.accountId }}</td>
+        <td>{{ formatDate(resource.createdAt) }}</td>
+        <td>
+          <span [ngClass]="'status-' + (resource.state || 'unknown').toLowerCase()">
+            {{ resource.state || 'N/A' }}
+          </span>
+        </td>
+        <td>{{ resource.cost ? '$' + resource.cost.toFixed(2) : 'N/A' }}</td>
+        <td>
+          <button (click)="showDetails(resource)" class="view-button">View Details</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Mobile card view -->
+  <div *ngIf="!loading && filteredResources.length > 0" class="mobile-cards">
+    <div *ngFor="let resource of paginatedResources" class="resource-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">{{ resource.resourceName || getResourceIdentifier(resource) }}</div>
+          <div class="card-id">{{ getResourceIdentifier(resource) }}</div>
+        </div>
+        <span class="resource-type-badge">{{ getResourceTypeDisplay(resource.resourceType) }}</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="card-field">
+          <span class="card-label">Type</span>
+          <span class="card-value">{{ getResourceTypeDisplay(resource.resourceType) }}</span>
+        </div>
+        
+        <div class="card-field">
+          <span class="card-label">Region</span>
+          <span class="card-value">{{ resource.region }}</span>
+        </div>
+        
+        <div class="card-field">
+          <span class="card-label">Account</span>
+          <span class="card-value">{{ resource.accountName || resource.accountId }}</span>
+        </div>
+        
+        <div class="card-field">
+          <span class="card-label">State</span>
+          <span class="card-value">
+            <span [ngClass]="'status-' + (resource.state || 'unknown').toLowerCase()">
+              {{ resource.state || 'N/A' }}
+            </span>
+          </span>
+        </div>
+        
+        <div class="card-field">
+          <span class="card-label">Created</span>
+          <span class="card-value">{{ formatDate(resource.createdAt) }}</span>
+        </div>
+        
+        <div class="card-field">
+          <span class="card-label">Monthly Cost</span>
+          <span class="card-value">{{ resource.cost ? '$' + resource.cost.toFixed(2) : 'N/A' }}</span>
+        </div>
+      </div>
+      
+      <div class="card-actions">
+        <button (click)="showDetails(resource)" class="view-button">
+          View Details
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div *ngIf="!loading && filteredResources.length > 0" class="pagination-controls">
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, filteredResources.length) }} of {{ filteredResources.length }} items
+    </div>
+    <div class="pagination-buttons">
+      <button (click)="goToFirstPage()" [disabled]="currentPage === 1" class="pagination-btn">
+        First
+      </button>
+      <button (click)="goToPreviousPage()" [disabled]="currentPage === 1" class="pagination-btn">
+        Previous
+      </button>
+      
+      <span class="page-numbers">
+        <button *ngFor="let page of getPageNumbers()" 
+                (click)="goToPage(page)" 
+                [class.active]="page === currentPage"
+                class="page-number-btn">
+          {{ page }}
+        </button>
+      </span>
+      
+      <button (click)="goToNextPage()" [disabled]="currentPage === totalPages" class="pagination-btn">
+        Next
+      </button>
+      <button (click)="goToLastPage()" [disabled]="currentPage === totalPages" class="pagination-btn">
+        Last
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && filteredResources.length > 0" class="export-controls">
+    <button (click)="exportToCSV()" class="export-button" [disabled]="isExporting">Export to CSV</button>
+  </div>
+  
+  <!-- Resource Details Modal -->
+  <div *ngIf="selectedResource" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>{{ getResourceTypeDisplay(selectedResource.resourceType) }} Details</h2>
+        <button (click)="closeDetails()" class="close-footer-button">Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section">
+          <h3>Basic Information</h3>
+          <table class="details-table">
+            <tr>
+              <th>Resource ID</th>
+              <td>{{ getResourceIdentifier(selectedResource) }}</td>
+            </tr>
+            <tr>
+              <th>Resource Name</th>
+              <td>{{ selectedResource.resourceName || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Resource Type</th>
+              <td>{{ getResourceTypeDisplay(selectedResource.resourceType) }}</td>
+            </tr>
+            <tr>
+              <th>State</th>
+              <td>{{ selectedResource.state || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Created</th>
+              <td>{{ formatDate(selectedResource.createdAt) }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="detail-section">
+          <h3>Location & Cost</h3>
+          <table class="details-table">
+            <tr>
+              <th>Region</th>
+              <td>{{ selectedResource.region }}</td>
+            </tr>
+            <tr>
+              <th>Account</th>
+              <td>{{ selectedResource.accountName || selectedResource.accountId }}</td>
+            </tr>
+            <tr>
+              <th>Monthly Cost</th>
+              <td>{{ selectedResource.cost ? '$' + selectedResource.cost.toFixed(2) : 'N/A' }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="detail-section" *ngIf="selectedResource.tags && selectedResource.tags.length">
+          <h3>Tags</h3>
+          <table class="details-table">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tag of selectedResource.tags">
+                <td class="tag-key">{{ tag.key }}</td>
+                <td class="tag-value">{{ tag.value }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

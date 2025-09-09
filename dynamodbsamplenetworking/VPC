@@ -1,0 +1,59 @@
+{
+  "id": {
+    "S": "905418331872-ap-south-1-VPC-vpc-0237da6e58373f9dd"
+  },
+  "accountId": {
+    "S": "905418331872"
+  },
+  "accountName": {
+    "S": "Network"
+  },
+  "cidrBlock": {
+    "S": "172.31.0.0/16"
+  },
+  "createdAt": {
+    "S": "2025-08-20T04:43:26.931Z"
+  },
+  "enableDnsHostnames": {
+    "BOOL": false
+  },
+  "enableDnsSupport": {
+    "BOOL": true
+  },
+  "flowLogsEnabled": {
+    "BOOL": false
+  },
+  "instanceTenancy": {
+    "S": "default"
+  },
+  "isDefault": {
+    "BOOL": true
+  },
+  "lastUpdated": {
+    "S": "2025-08-20T04:43:26.931Z"
+  },
+  "region": {
+    "S": "ap-south-1"
+  },
+  "resourceType": {
+    "S": "VPC"
+  },
+  "resourceTypeRegionId": {
+    "S": "VPC#ap-south-1#vpc-0237da6e58373f9dd"
+  },
+  "state": {
+    "S": "available"
+  },
+  "tags": {
+    "S": "[]"
+  },
+  "updatedAt": {
+    "S": "2025-08-20T04:43:26.931Z"
+  },
+  "vpcId": {
+    "S": "vpc-0237da6e58373f9dd"
+  },
+  "vpcName": {
+    "S": "N/A"
+  }
+}

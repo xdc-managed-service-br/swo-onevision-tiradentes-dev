@@ -1,0 +1,71 @@
+{
+  "id": {
+    "S": "905418331872-us-east-1-SecurityGroup-sg-0efdb8a660f059cf9"
+  },
+  "accountId": {
+    "S": "905418331872"
+  },
+  "accountName": {
+    "S": "Network"
+  },
+  "allIngressPortsExposed": {
+    "BOOL": false
+  },
+  "createdAt": {
+    "S": "2025-08-20T04:43:57.869Z"
+  },
+  "description": {
+    "S": "Unit-Grafana - Servidor de producao do Grafana - Infra"
+  },
+  "egressRuleCount": {
+    "N": "1"
+  },
+  "exposedEgressPorts": {
+    "S": "[]"
+  },
+  "exposedIngressPorts": {
+    "S": "[]"
+  },
+  "groupId": {
+    "S": "sg-0efdb8a660f059cf9"
+  },
+  "groupName": {
+    "S": "aws-grafana"
+  },
+  "groupNameTag": {
+    "S": "N/A"
+  },
+  "hasExposedEgressPorts": {
+    "BOOL": false
+  },
+  "hasExposedIngressPorts": {
+    "BOOL": false
+  },
+  "ingressRuleCount": {
+    "N": "0"
+  },
+  "lastUpdated": {
+    "S": "2025-08-20T04:43:57.869Z"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "SecurityGroup"
+  },
+  "resourceTypeRegionId": {
+    "S": "SecurityGroup#us-east-1#sg-0efdb8a660f059cf9"
+  },
+  "riskyIngressRules": {
+    "S": "[]"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
+  },
+  "updatedAt": {
+    "S": "2025-08-20T04:43:57.869Z"
+  },
+  "vpcId": {
+    "S": "vpc-04d9fa441c24373b3"
+  }
+}

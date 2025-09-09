@@ -1,0 +1,31 @@
+<!-- src/app/dashboard/monitoring-widget/monitoring-widget.component.html -->
+<div class="monitoring-widget">
+  <div class="widget-title">{{ title }}</div>
+  <div class="donut-chart">
+    <div class="donut-container">
+      <div class="donut-percentage">{{ percentage }}%</div>
+      <svg width="100%" height="100%" viewBox="0 0 80 80" class="responsive-svg">
+        <circle 
+          cx="40" 
+          cy="40" 
+          r="32" 
+          fill="none" 
+          [attr.stroke]="bgColor" 
+          stroke-width="8"
+        />
+        <circle 
+          cx="40" 
+          cy="40" 
+          r="32" 
+          fill="none" 
+          [attr.stroke]="color" 
+          stroke-width="8"
+          [attr.stroke-dasharray]="(percentage * 2.01) + ' 201'"
+          stroke-dashoffset="0" 
+          transform="rotate(-90 40 40)"
+        />
+      </svg>
+    </div>
+    <div class="status-label">{{ label }}</div>
+  </div>
+</div>

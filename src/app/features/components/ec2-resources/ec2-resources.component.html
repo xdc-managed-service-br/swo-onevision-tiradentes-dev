@@ -1,0 +1,398 @@
+<div class="resource-container">
+  <div class="header-section">
+    <div class="filter-controls">
+      <div class="filter-group-container">
+        <div class="filter-group">
+          <label for="stateFilter">State:</label>
+          <select id="stateFilter" (change)="filterByState($event)">
+            <option value="">All States</option>
+            <option *ngFor="let state of uniqueStates" [value]="state">{{ state }}</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="typeFilter">Instance Type:</label>
+          <select id="typeFilter" (change)="filterByType($event)">
+            <option value="">All Types</option>
+            <option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="regionFilter">Region:</label>
+          <select id="regionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="cwAgentFilter">CloudWatch Monitoring:</label>
+          <select id="cwAgentFilter" (change)="filterByCWAgent($event)">
+            <option value="">All</option>
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="accountFilter">Account:</label>
+          <select id="accountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let acc of uniqueAccounts" [value]="acc">
+              {{ acc }}
+            </option>
+          </select>
+        </div>
+        <button (click)="resetFilters()" class="reset-button">Reset Filters</button>
+        <button (click)="openColumnCustomizer()" class="customize-columns-button">
+          <span class="icon">⚙️</span> Columns
+        </button>
+      </div>
+      <div class="search-bar">
+        <input
+          type="text"
+          placeholder="Search by Instance ID or Name"
+          (input)="searchInstances($event)"
+          id="instanceSearch"
+          #searchInput
+        />
+        <button
+          *ngIf="searchTerm"
+          class="clear-search"
+          (click)="clearSearch(searchInput)"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Loading EC2 instances...
+  </div>
+
+  <div *ngIf="!loading && filteredResources.length === 0" class="no-data">
+    No EC2 instances found matching the current filters.
+  </div>
+
+  <!-- Desktop table view -->
+  <table *ngIf="!loading && filteredResources.length > 0" class="resource-table">
+    <thead>
+      <tr>
+        <th *ngFor="let column of getVisibleColumns()" 
+            (click)="column.sortable !== false ? sortData(column.key) : null"
+            [class.sortable]="column.sortable !== false">
+          {{ column.label }}
+          <span *ngIf="sortColumn === column.key && column.sortable !== false" class="sort-indicator">
+            {{ sortDirection === 'asc' ? '▲' : '▼' }}
+          </span>
+        </th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let resource of filteredResources">
+        <td *ngFor="let column of getVisibleColumns()">
+          <span [ngClass]="getColumnClass(column.key, resource)">
+            {{ getColumnValue(column, resource) }}
+          </span>
+        </td>
+        <td>
+          <button (click)="showDetails(resource)" class="view-button">
+            View Details
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Mobile card view -->
+  <div *ngIf="!loading && filteredResources.length > 0" class="mobile-cards">
+    <div *ngFor="let resource of filteredResources" class="resource-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">{{ resource.instanceName || 'Unnamed Instance' }}</div>
+          <div class="card-id">{{ resource.instanceId }}</div>
+        </div>
+        <span [ngClass]="getStatusClass(resource.instanceState)">
+          {{ resource.instanceState }}
+        </span>
+      </div>
+      
+      <div class="card-body">
+        <div *ngFor="let column of getVisibleColumns()" 
+             class="card-field"
+             [class.full-width]="shouldBeFullWidth(column.key)">
+          <span class="card-label">{{ column.label }}</span>
+          <span class="card-value" [ngClass]="getColumnClass(column.key, resource)">
+            {{ getColumnValue(column, resource) }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="card-actions">
+        <button (click)="showDetails(resource)" class="view-button">
+          View Details
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && filteredResources.length > 0" class="export-controls">
+    <button (click)="exportToCSV()" class="export-button">Export to CSV</button>
+  </div>
+
+  <!-- Column Customizer Modal -->
+  <div *ngIf="showColumnCustomizer" class="modal-overlay" (click)="closeColumnCustomizer()">
+    <div class="modal-content column-customizer" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Customize Columns</h2>
+        <button (click)="closeColumnCustomizer()" class="close-button">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="column-selection">
+          <div class="column-controls">
+            <button (click)="selectAllColumns()" class="select-all-btn">Select All</button>
+            <button (click)="deselectAllColumns()" class="deselect-all-btn">Deselect All</button>
+          </div>
+          <div class="column-list">
+            <div *ngFor="let column of availableColumns" class="column-option">
+              <label>
+                <input type="checkbox" 
+                       [checked]="isColumnSelected(column.key)"
+                       (change)="toggleColumn(column.key)"
+                       [disabled]="isRequiredColumn(column.key)">
+                <span [class.required]="isRequiredColumn(column.key)">
+                  {{ column.label }}
+                  <span *ngIf="isRequiredColumn(column.key)" class="required-badge">Required</span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="applyColumnSelection()" class="apply-button">Apply</button>
+        <button (click)="closeColumnCustomizer()" class="cancel-button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resource Details Modal -->
+  <div *ngIf="selectedResource" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>EC2 Instance Details: {{ selectedResource.instanceId }}</h2>
+        <button (click)="closeDetails()" class="close-footer-button">Close</button>
+      </div>
+      <div class="modal-body">
+        <!-- Basic EC2 Instance Details -->
+        <div class="detail-section">
+          <h3>Instance Information</h3>
+          <table class="details-table">
+            <tr>
+              <th>Instance ID</th>
+              <td>{{ selectedResource.instanceId }}</td>
+            </tr>
+            <tr>
+              <th>Instance Name</th>
+              <td>{{ selectedResource.instanceName || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Instance Type</th>
+              <td>{{ selectedResource.instanceType }}</td>
+            </tr>
+            <tr>
+              <th>State</th>
+              <td>
+                <span [ngClass]="getStatusClass(selectedResource.instanceState)">
+                  {{ selectedResource.instanceState }}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th>Platform Details</th>
+              <td>{{ selectedResource.platformDetails || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>AMI Name</th>
+              <td>{{ selectedResource.amiName || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>IAM Role</th>
+              <td>{{ selectedResource.iamRole || 'None' }}</td>
+            </tr>
+            <tr>
+              <th>Launch Time</th>
+              <td>{{ formatDate(selectedResource.createdAt) }}</td>
+            </tr>
+            <tr>
+              <th>Last Updated</th>
+              <td>{{ formatDate(selectedResource.lastUpdated) }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="detail-section">
+          <h3>Network Interfaces</h3>
+          <table class="details-table">
+            <tr>
+              <th>Private IPs</th>
+              <td>
+                <span *ngIf="selectedResource.privateIpArray?.length > 0; else noPrivateIps">
+                  <div *ngFor="let ip of selectedResource.privateIpArray">{{ ip }}</div>
+                </span>
+                <ng-template #noPrivateIps>
+                  <span>No private IPs found</span>
+                </ng-template>
+              </td>
+            </tr>
+            <tr>
+              <th>Public IPs</th>
+              <td>
+                <span *ngIf="selectedResource.publicIpArray?.length > 0; else noPublicIps">
+                  <div *ngFor="let ip of selectedResource.publicIpArray">{{ ip }}</div>
+                </span>
+                <ng-template #noPublicIps>
+                  <span>No public IPs found</span>
+                </ng-template>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="detail-section">
+          <h3>Health Status</h3>
+          <table class="details-table">
+            <tr>
+              <th>Health Status</th>
+              <td>{{ selectedResource.healthStatus || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Checks Passed</th>
+              <td>{{ selectedResource.healthChecksPassed || '0' }} / {{ selectedResource.healthChecksTotal || '0' }}</td>
+            </tr>
+            <tr>
+              <th>System Status</th>
+              <td>{{ selectedResource.systemStatus || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Instance Status</th>
+              <td>{{ selectedResource.instanceStatus || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>EBS Status</th>
+              <td>{{ selectedResource.ebsStatus || 'N/A' }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="detail-section">
+          <h3>Monitoring Status</h3>
+          <table class="details-table">
+            <tr>
+              <th>SSM Status</th>
+              <td>{{ selectedResource.ssmStatus || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>SSM Ping Status</th>
+              <td>{{ selectedResource.ssmPingStatus || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>SSM Version</th>
+              <td>{{ selectedResource.ssmVersion || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Last Ping Time</th>
+              <td>{{ formatDate(selectedResource.ssmLastPingTime) }}</td>
+            </tr>
+            <tr>
+              <th>CloudWatch Memory Monitoring</th>
+              <td>
+                <span [ngClass]="selectedResource.cwAgentMemoryDetected ? 'status-running' : 'status-stopped'">
+                  {{ selectedResource.cwAgentMemoryDetected ? 'Enabled' : 'Disabled' }}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th>CloudWatch Disk Monitoring</th>
+              <td>
+                <span [ngClass]="selectedResource.cwAgentDiskDetected ? 'status-running' : 'status-stopped'">
+                  {{ selectedResource.cwAgentDiskDetected ? 'Enabled' : 'Disabled' }}
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="detail-section">
+          <h3>SWO Configuration</h3>
+          <table class="details-table">
+            <tr>
+              <th>SWO Monitor</th>
+              <td>{{ selectedResource.swoMonitor || 'Not configured' }}</td>
+            </tr>
+            <tr>
+              <th>SWO Patch</th>
+              <td>{{ selectedResource.swoPatch || 'Not configured' }}</td>
+            </tr>
+            <tr>
+              <th>SWO Backup</th>
+              <td>{{ selectedResource.swoBackup || 'Not configured' }}</td>
+            </tr>
+            <tr>
+              <th>SWO Risk Class</th>
+              <td>{{ selectedResource.swoRiskClass || 'Not configured' }}</td>
+            </tr>
+            <tr>
+              <th>Patch Group</th>
+              <td>{{ selectedResource.patchGroup || 'Not configured' }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="detail-section">
+          <h3>Auto Scheduling</h3>
+          <table class="details-table">
+            <tr>
+              <th>Auto Start</th>
+              <td>{{ selectedResource.autoStart || 'Not configured' }}</td>
+            </tr>
+            <tr>
+              <th>Auto Shutdown</th>
+              <td>{{ selectedResource.autoShutdown || 'Not configured' }}</td>
+            </tr>
+            <tr>
+              <th>Saturday Schedule</th>
+              <td>{{ selectedResource.saturday || 'Not configured' }}</td>
+            </tr>
+            <tr>
+              <th>Sunday Schedule</th>
+              <td>{{ selectedResource.sunday || 'Not configured' }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="detail-section">
+          <h3>Location Information</h3>
+          <table class="details-table">
+            <tr>
+              <th>Region</th>
+              <td>{{ selectedResource.region }}</td>
+            </tr>
+            <tr>
+              <th>Account ID</th>
+              <td>{{ selectedResource.accountId }}</td>
+            </tr>
+            <tr *ngIf="selectedResource.accountName">
+              <th>Account Name</th>
+              <td>{{ selectedResource.accountName }}</td>
+            </tr>
+          </table>
+        </div>
+        <!-- Tags Section -->
+        <div class="detail-section" *ngIf="selectedResource.tags">
+          <h3>Tags</h3>
+          <app-resource-tags [tags]="selectedResource.tags"></app-resource-tags>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

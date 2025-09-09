@@ -1,0 +1,56 @@
+{
+  "id": {
+    "S": "905418331872-us-east-1-TransitGatewayAttachment-tgw-attach-055c7474ace08b767"
+  },
+  "accountId": {
+    "S": "905418331872"
+  },
+  "accountName": {
+    "S": "Network"
+  },
+  "association": {
+    "S": "{\"TransitGatewayRouteTableId\": \"tgw-rtb-0e324bafb7c72d9d7\", \"State\": \"associated\"}"
+  },
+  "attachmentName": {
+    "S": "attachment-a4l"
+  },
+  "createdAt": {
+    "S": "2024-04-03T13:29:15.000Z"
+  },
+  "lastUpdated": {
+    "S": "2025-08-20T04:44:00.619Z"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceId": {
+    "S": "vpc-0bcb253437b9db896"
+  },
+  "resourceOwnerId": {
+    "S": "590183843163"
+  },
+  "resourceType": {
+    "S": "vpc"
+  },
+  "resourceTypeRegionId": {
+    "S": "TransitGatewayAttachment#us-east-1#tgw-attach-055c7474ace08b767"
+  },
+  "state": {
+    "S": "available"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"Name\", \"Value\": \"attachment-a4l\"}]"
+  },
+  "transitGatewayAttachmentId": {
+    "S": "tgw-attach-055c7474ace08b767"
+  },
+  "transitGatewayId": {
+    "S": "tgw-0a20534250c42cbbb"
+  },
+  "transitGatewayOwnerId": {
+    "S": "905418331872"
+  },
+  "updatedAt": {
+    "S": "2025-08-20T04:44:00.619Z"
+  }
+}

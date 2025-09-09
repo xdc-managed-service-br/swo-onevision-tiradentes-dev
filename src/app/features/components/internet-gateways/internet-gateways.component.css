@@ -1,0 +1,378 @@
+/* src/app/features/components/internet-gateways/internet-gateways.component.css */
+@import '../../../shared/styles/networking-base.css';
+
+.internet-gateways-container {
+  padding: 2rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.internet-gateways-container .page-header {
+  margin-bottom: 2rem;
+}
+
+.internet-gateways-container .page-header h1 {
+  color: #1f2937;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.internet-gateways-container .page-header .page-description {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.internet-gateways-container .filters-section {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.internet-gateways-container .filters-section .search-box {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.internet-gateways-container .filters-section .search-box .search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease;
+}
+
+.internet-gateways-container .filters-section .search-box .search-input:focus {
+  outline: none;
+  border-color: #9D5025;
+  box-shadow: 0 0 0 3px rgba(157, 80, 37, 0.1);
+}
+
+.internet-gateways-container .filters-section .search-box .search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  color: #9ca3af;
+}
+
+.internet-gateways-container .filters-section .filter-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.internet-gateways-container .filters-section .filter-controls .filter-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: white;
+  min-width: 150px;
+  transition: border-color 0.2s ease;
+}
+
+.internet-gateways-container .filters-section .filter-controls .filter-select:focus {
+  outline: none;
+  border-color: #9D5025;
+  box-shadow: 0 0 0 3px rgba(157, 80, 37, 0.1);
+}
+
+.internet-gateways-container .filters-section .filter-controls .clear-filters-btn {
+  padding: 0.5rem 1rem;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.internet-gateways-container .filters-section .filter-controls .clear-filters-btn:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.internet-gateways-container .results-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.internet-gateways-container .results-summary .results-count {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.internet-gateways-container .results-summary .refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #9D5025;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.internet-gateways-container .results-summary .refresh-btn:hover:not(:disabled) {
+  background: #7c3d16;
+}
+
+.internet-gateways-container .results-summary .refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.internet-gateways-container .results-summary .refresh-btn .refresh-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.internet-gateways-container .results-summary .refresh-btn .refresh-icon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+.internet-gateways-container .loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: #6b7280;
+}
+
+.internet-gateways-container .loading-container .loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #9D5025;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.internet-gateways-container .table-container {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.internet-gateways-container .table-container .table-wrapper {
+  overflow-x: auto;
+}
+
+.internet-gateways-container .table-container .internet-gateways-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.internet-gateways-container .table-container .internet-gateways-table thead {
+  background: #f9fafb;
+}
+
+.internet-gateways-container .table-container .internet-gateways-table thead th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.internet-gateways-container .table-container .internet-gateways-table tbody .table-row {
+  transition: background-color 0.2s ease;
+}
+
+.internet-gateways-container .table-container .internet-gateways-table tbody .table-row:hover {
+  background: #f9fafb;
+}
+
+.internet-gateways-container .table-container .internet-gateways-table tbody .table-row td {
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: top;
+}
+
+.internet-gateways-container .igw-name .igw-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.internet-gateways-container .igw-name .igw-info .name {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.internet-gateways-container .igw-name .igw-info .id-badge {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-family: monospace;
+}
+
+.internet-gateways-container .state .state-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.internet-gateways-container .state .state-badge.state-available,
+.internet-gateways-container .state .state-badge.state-attached {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.internet-gateways-container .state .state-badge.state-attaching,
+.internet-gateways-container .state .state-badge.state-detaching {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.internet-gateways-container .state .state-badge.state-detached {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.internet-gateways-container .state .state-badge.state-unknown {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.internet-gateways-container .attached-vpcs .vpcs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.internet-gateways-container .attached-vpcs .vpcs-list .vpc-item code {
+  background: #eff6ff;
+  color: #1e40af;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-family: monospace;
+}
+
+.internet-gateways-container .attached-vpcs .no-vpcs {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+.internet-gateways-container .attachment-count .count-badge {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.internet-gateways-container .account .account-name {
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.internet-gateways-container .region .region-badge {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.internet-gateways-container .last-updated .date {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.internet-gateways-container .empty-row .empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.internet-gateways-container .empty-row .empty-state .empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #6b7280;
+}
+
+.internet-gateways-container .empty-row .empty-state .empty-content .empty-icon {
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1rem;
+  color: #d1d5db;
+}
+
+.internet-gateways-container .empty-row .empty-state .empty-content h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.internet-gateways-container .empty-row .empty-state .empty-content p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .internet-gateways-container {
+    padding: 1rem;
+  }
+
+  .internet-gateways-container .filters-section .filter-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .internet-gateways-container .filters-section .filter-controls .filter-select {
+    min-width: unset;
+  }
+
+  .internet-gateways-container .results-summary {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .internet-gateways-container .table-container .internet-gateways-table {
+    font-size: 0.875rem;
+  }
+
+  .internet-gateways-container .table-container .internet-gateways-table th,
+  .internet-gateways-container .table-container .internet-gateways-table td {
+    padding: 0.5rem;
+  }
+}

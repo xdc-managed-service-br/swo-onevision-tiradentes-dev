@@ -1,0 +1,257 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>OneVision</h1>
+      <p>AWS Resource Management Platform</p>
+    </div>
+
+    <!-- Normal Sign In Form -->
+    <div *ngIf="!forgotPasswordMode && !newPasswordChallengeMode" class="login-form">
+      <h2>Sign In</h2>
+      
+      <form (ngSubmit)="handleSignIn()">
+        <div class="form-group">
+          <label for="username">Email</label>
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            [(ngModel)]="username" 
+            placeholder="Enter your email"
+            [disabled]="isLoading"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            [(ngModel)]="password" 
+            placeholder="Enter your password"
+            [disabled]="isLoading"
+          >
+        </div>
+        
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+        
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            [disabled]="isLoading" 
+            class="primary-button"
+          >
+            {{ isLoading ? 'Signing in...' : 'Sign In' }}
+          </button>
+          
+          <div class="secondary-actions">
+            <a routerLink="/reset-password">Forgot Password?</a>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- New Password Challenge Form -->
+    <div *ngIf="newPasswordChallengeMode" class="login-form">
+      <h2>Set New Password</h2>
+      
+      <p>Your account requires a password change. Please set a new password.</p>
+      
+      <form (ngSubmit)="handleNewPasswordChallenge()">
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input 
+            type="password" 
+            id="newPassword" 
+            name="newPassword" 
+            [(ngModel)]="newPassword" 
+            placeholder="Enter your new password"
+            [disabled]="isLoading"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="confirmNewPassword">Confirm New Password</label>
+          <input 
+            type="password" 
+            id="confirmNewPassword" 
+            name="confirmNewPassword" 
+            [(ngModel)]="confirmNewPassword" 
+            placeholder="Confirm your new password"
+            [disabled]="isLoading"
+          >
+        </div>
+        
+        <div class="password-requirements">
+          <p>Password requirements:</p>
+          <ul>
+            <li>Minimum 8 characters</li>
+            <li>At least one uppercase letter</li>
+            <li>At least one lowercase letter</li>
+            <li>At least one number</li>
+            <li>At least one special character</li>
+          </ul>
+        </div>
+        
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+        
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            [disabled]="isLoading" 
+            class="primary-button"
+          >
+            {{ isLoading ? 'Submitting...' : 'Set New Password' }}
+          </button>
+          
+          <button 
+            type="button" 
+            (click)="cancelNewPasswordChallenge()" 
+            class="secondary-button"
+            [disabled]="isLoading"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Forgot Password Form -->
+    <div *ngIf="forgotPasswordMode && !resetConfirmMode" class="reset-form">
+      <h2>Reset Password</h2>
+      
+      <div *ngIf="!resetSuccess">
+        <p>Enter your email address and we'll send you a code to reset your password.</p>
+        
+        <div class="form-group">
+          <label for="resetEmail">Email</label>
+          <input 
+            type="email" 
+            id="resetEmail" 
+            name="resetEmail" 
+            [(ngModel)]="resetEmail" 
+            placeholder="Enter your email"
+            [disabled]="isLoading"
+          >
+        </div>
+        
+        <div *ngIf="resetErrorMessage" class="error-message">
+          {{ resetErrorMessage }}
+        </div>
+        
+        <div class="form-actions">
+          <button 
+            type="button" 
+            [disabled]="isLoading" 
+            class="primary-button"
+            (click)="handleForgotPassword()"
+          >
+            {{ isLoading ? 'Sending...' : 'Send Reset Code' }}
+          </button>
+          
+          <button 
+            type="button" 
+            (click)="toggleForgotPassword()" 
+            class="secondary-button"
+            [disabled]="isLoading"
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+      
+      <div *ngIf="resetSuccess" class="success-message">
+        <p>A verification code has been sent to your email. Please check your inbox and use the code to complete the password reset.</p>
+        <button 
+          type="button" 
+          class="primary-button"
+          (click)="showResetConfirmMode()"
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+
+    <!-- Reset Password Confirmation (Enter Code + New Password) -->
+    <div *ngIf="forgotPasswordMode && resetConfirmMode" class="reset-form">
+      <h2>Set New Password</h2>
+      
+      <form (ngSubmit)="handleResetConfirm()">
+        <div class="form-group">
+          <label for="resetCode">Verification Code</label>
+          <input 
+            type="text" 
+            id="resetCode" 
+            name="resetCode" 
+            [(ngModel)]="resetCode" 
+            placeholder="Enter verification code"
+            [disabled]="isLoading"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input 
+            type="password" 
+            id="newPassword" 
+            name="newPassword" 
+            [(ngModel)]="newPassword" 
+            placeholder="Enter your new password"
+            [disabled]="isLoading"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="confirmNewPassword">Confirm New Password</label>
+          <input 
+            type="password" 
+            id="confirmNewPassword" 
+            name="confirmNewPassword" 
+            [(ngModel)]="confirmNewPassword" 
+            placeholder="Confirm your new password"
+            [disabled]="isLoading"
+          >
+        </div>
+        
+        <div class="password-requirements">
+          <p>Password requirements:</p>
+          <ul>
+            <li>Minimum 8 characters</li>
+            <li>At least one uppercase letter</li>
+            <li>At least one lowercase letter</li>
+            <li>At least one number</li>
+            <li>At least one special character</li>
+          </ul>
+        </div>
+        
+        <div *ngIf="resetErrorMessage" class="error-message">
+          {{ resetErrorMessage }}
+        </div>
+        
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            [disabled]="isLoading" 
+            class="primary-button"
+          >
+            {{ isLoading ? 'Submitting...' : 'Reset Password' }}
+          </button>
+          
+          <button 
+            type="button" 
+            (click)="toggleForgotPassword()" 
+            class="secondary-button"
+            [disabled]="isLoading"
+          >
+            Back to Login
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

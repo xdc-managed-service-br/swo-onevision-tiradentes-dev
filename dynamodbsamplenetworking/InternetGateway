@@ -1,0 +1,44 @@
+{
+  "id": {
+    "S": "654654547936-eu-west-1-InternetGateway-igw-0a1c1f9fdadfbc67e"
+  },
+  "accountId": {
+    "S": "654654547936"
+  },
+  "accountName": {
+    "S": "ITP"
+  },
+  "attachedVpcs": {
+    "S": "[\"vpc-01a5b3825ebdeb13e\"]"
+  },
+  "attachmentCount": {
+    "N": "1"
+  },
+  "createdAt": {
+    "S": "2025-08-20T04:42:44.261Z"
+  },
+  "internetGatewayId": {
+    "S": "igw-0a1c1f9fdadfbc67e"
+  },
+  "internetGatewayName": {
+    "S": "N/A"
+  },
+  "lastUpdated": {
+    "S": "2025-08-20T04:42:44.261Z"
+  },
+  "region": {
+    "S": "eu-west-1"
+  },
+  "resourceType": {
+    "S": "InternetGateway"
+  },
+  "resourceTypeRegionId": {
+    "S": "InternetGateway#eu-west-1#igw-0a1c1f9fdadfbc67e"
+  },
+  "tags": {
+    "S": "[]"
+  },
+  "updatedAt": {
+    "S": "2025-08-20T04:42:44.261Z"
+  }
+}

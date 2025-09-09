@@ -1,0 +1,303 @@
+<div class="resource-container">
+  <div class="header-section">
+    <div class="filter-controls">
+      <div class="search-bar">
+        <input
+          type="text"
+          placeholder="Search by Volume ID or Type"
+          (input)="searchVolumes($event)"
+          id="volumeSearch"
+          #searchInput
+        />
+        <button
+          *ngIf="searchTerm"
+          class="clear-search"
+          (click)="clearSearch(searchInput)"
+        >
+          ✕
+        </button>
+      </div>
+      <div class="filter-group-container">
+        <div class="filter-group">
+          <label for="typeFilter">Volume Type:</label>
+          <select id="typeFilter" (change)="filterByType($event)">
+            <option value="">All Types</option>
+            <option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="encryptedFilter">Encryption:</label>
+          <select id="encryptedFilter" (change)="filterByEncryption($event)">
+            <option value="all">All</option>
+            <option value="yes">Encrypted</option>
+            <option value="no">Unencrypted</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="regionFilter">Region:</label>
+          <select id="regionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="accountFilter">Account:</label>
+          <select id="accountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="stateFilter">State:</label>
+          <select id="stateFilter" (change)="filterByState($event)">
+            <option value="">All States</option>
+            <option *ngFor="let st of uniqueStates" [value]="st">{{ st }}</option>
+          </select>
+        </div>
+        <button (click)="resetFilters()" class="reset-button">Reset Filters</button>
+      </div>
+    </div>
+  </div>
+  
+  <div *ngIf="loading" class="loading">
+    Loading EBS volumes...
+  </div>
+  
+  <div *ngIf="!loading && filteredResources.length === 0" class="no-data">
+    No EBS volumes found matching the current filters.
+  </div>
+  
+<!-- Desktop table view - CORRIGIDO -->
+<table *ngIf="!loading && filteredResources.length > 0" class="resource-table">
+  <thead>
+    <tr>
+      <th (click)="sortData('volumeId')">
+        Volume ID
+        <span *ngIf="sortColumn === 'volumeId'" class="sort-indicator">
+          {{ sortDirection === 'asc' ? '▲' : '▼' }}
+        </span>
+      </th>
+      <th (click)="sortData('size')">
+        Size
+        <span *ngIf="sortColumn === 'size'" class="sort-indicator">
+          {{ sortDirection === 'asc' ? '▲' : '▼' }}
+        </span>
+      </th>
+      <th (click)="sortData('volumeType')">
+        Type
+        <span *ngIf="sortColumn === 'volumeType'" class="sort-indicator">
+          {{ sortDirection === 'asc' ? '▲' : '▼' }}
+        </span>
+      </th>
+      <th (click)="sortData('encrypted')">
+        Encrypted
+        <span *ngIf="sortColumn === 'encrypted'" class="sort-indicator">
+          {{ sortDirection === 'asc' ? '▲' : '▼' }}
+        </span>
+      </th>
+      <th (click)="sortData('state')">
+        State
+        <span *ngIf="sortColumn === 'state'" class="sort-indicator">
+          {{ sortDirection === 'asc' ? '▲' : '▼' }}
+        </span>
+      </th>
+      <th (click)="sortData('region')">
+        Region
+        <span *ngIf="sortColumn === 'region'" class="sort-indicator">
+          {{ sortDirection === 'asc' ? '▲' : '▼' }}
+        </span>
+      </th>
+      <th (click)="sortData('accountId')">
+        Account
+        <span *ngIf="sortColumn === 'accountId'" class="sort-indicator">
+          {{ sortDirection === 'asc' ? '▲' : '▼' }}
+        </span>
+      </th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let resource of filteredResources">
+      <td>{{ resource.volumeId }}</td>
+      <td>{{ formatSize(resource.size) }}</td>
+      <td>{{ resource.volumeType }}</td>
+      <td>
+        <span [ngClass]="getEncryptionClass(resource.encrypted)">
+          {{ formatBoolean(resource.encrypted) }}
+        </span>
+      </td>
+      <td>
+        <span [ngClass]="getStateClass(resource.state || '')">
+          {{ resource.state }}
+        </span>
+      </td>
+      <td>{{ resource.region }}</td>
+      <td>{{ resource.accountName || resource.accountId }}</td>
+      <td>
+        <button (click)="showDetails(resource)" class="view-button">View Details</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+  <!-- Mobile card view -->
+  <div *ngIf="!loading && filteredResources.length > 0" class="mobile-cards">
+    <div *ngFor="let resource of filteredResources" class="resource-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">{{ resource.volumeId }}</div>
+          <div class="card-id">{{ resource.volumeType }} - {{ formatSize(resource.size) }}</div>
+        </div>
+        <span [ngClass]="getEncryptionClass(resource.encrypted)">
+          {{ resource.encrypted ? 'Encrypted' : 'Unencrypted' }}
+        </span>
+      </div>
+      
+      <div class="card-body">
+        <div class="card-field">
+          <span class="card-label">Size</span>
+          <span class="card-value">{{ formatSize(resource.size) }}</span>
+        </div>
+        
+        <div class="card-field">
+          <span class="card-label">Type</span>
+          <span class="card-value">{{ resource.volumeType }}</span>
+        </div>
+        
+        <div class="card-field">
+          <span class="card-label">Region</span>
+          <span class="card-value">{{ resource.region }}</span>
+        </div>
+        
+        <div class="card-field">
+          <span class="card-label">Account</span>
+          <span class="card-value">{{ resource.accountName || resource.accountId }}</span>
+        </div>
+        
+        <div class="card-field">
+          <span class="card-label">Encryption</span>
+          <span class="card-value" [ngClass]="getEncryptionClass(resource.encrypted)">
+            {{ formatBoolean(resource.encrypted) }}
+          </span>
+        </div>
+
+        <div class="card-field">
+          <span class="card-label">State</span>
+          <span class="card-value" [ngClass]="getStateClass(resource.state || '')">
+            {{ resource.state }}
+          </span>
+        </div>
+        
+        <div class="card-field">
+          <span class="card-label">Attached Instances</span>
+          <span class="card-value">{{ getAttachedInstances(resource).length || 'None' }}</span>
+        </div>
+      </div>
+      
+      <div class="card-actions">
+        <button (click)="showDetails(resource)" class="view-button">
+          View Details
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && filteredResources.length > 0" class="export-controls">
+    <button (click)="exportToCSV()" class="export-button">Export to CSV</button>
+    <!-- Ao lado do botão CSV existente -->
+    <button (click)="exportToXLSX()" class="export-btn">
+       Export Excel
+      </button>
+  </div>
+  
+  <!-- Resource Details Modal -->
+  <div *ngIf="selectedResource" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>EBS Volume Details: {{ selectedResource.volumeId }}</h2>
+        <button (click)="closeDetails()" class="close-footer-button">Close</button>
+      </div>
+      <div class="modal-body">
+        <!-- Volume Information Section -->
+        <div class="detail-section">
+          <h3>Volume Information</h3>
+          <table class="details-table">
+            <tr>
+              <th>Volume ID</th>
+              <td>{{ selectedResource.volumeId }}</td>
+            </tr>
+            <tr>
+              <th>Size</th>
+              <td>{{ formatSize(selectedResource.size) }}</td>
+            </tr>
+            <tr>
+              <th>Volume Type</th>
+              <td>{{ selectedResource.volumeType }}</td>
+            </tr>
+            <tr>
+              <th>Encrypted</th>
+              <td>
+                <span [ngClass]="getEncryptionClass(selectedResource.encrypted)">
+                  {{ formatBoolean(selectedResource.encrypted) }}
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Replace the Attached Instances Section in ebs-resources.component.html with this -->
+        <!-- Attached Instances Section -->
+        <div class="detail-section">
+         <h3>Attached Instances</h3>
+        <table class="instances-table" *ngIf="getAttachedInstances(selectedResource).length > 0">
+          <thead>
+            <tr>
+              <th>Instance ID</th>
+              <th>State</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let instance of getAttachedInstances(selectedResource)">
+              <td>{{ instance.instanceId }}</td>
+              <td>
+                <span [ngClass]="getAttachmentStateClass(instance.state)">
+                  {{ instance.state || 'unknown' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="no-instances" *ngIf="getAttachedInstances(selectedResource).length === 0">
+          No instances are currently attached to this volume.
+        </div>
+      </div>
+
+        <!-- Tags Section -->
+                <!-- Tags Section - Using ResourceTagsComponent -->
+        <div class="detail-section" *ngIf="selectedResource.tags">
+          <h3>Tags</h3>
+          <app-resource-tags [tags]="selectedResource.tags"></app-resource-tags>
+        </div>
+
+        <!-- Location Information Section -->
+        <div class="detail-section">
+          <h3>Location Information</h3>
+          <table class="details-table">
+            <tr>
+              <th>Region</th>
+              <td>{{ selectedResource.region }}</td>
+            </tr>
+            <tr>
+              <th>Account ID</th>
+              <td>{{ selectedResource.accountId }}</td>
+            </tr>
+            <tr *ngIf="selectedResource.accountName">
+              <th>Account Name</th>
+              <td>{{ selectedResource.accountName }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
