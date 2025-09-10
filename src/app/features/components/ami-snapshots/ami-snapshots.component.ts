@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ResourceService } from '../../../core/services/resource.service';
@@ -23,16 +24,17 @@ interface ColumnDefinition {
 @Component({
   selector: 'app-ami-snapshots',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, FormsModule, ResourceTagsComponent],
   templateUrl: './ami-snapshots.component.html',
-  styleUrls: ['./ami-snapshots.component.css',
-    '../../../shared/styles/onevision-base.css' 
+  styleUrls: [
+    './ami-snapshots.component.css',
+    '../../../shared/styles/onevision-base.css'
   ]
 })
 export class AMISnapshotsComponent implements OnInit, OnDestroy {
   resources: any[] = [];
   filteredResources: any[] = [];
-  loading = false;
+  loading = true;
   selectedResource: any = null;
   showColumnCustomizer = false;
 
@@ -40,13 +42,15 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
   regionFilter = '';
   accountFilter = '';
   searchTerm = '';
+  
   // === Pagination state ===
-  pageSize = 50;                 // ajuste livre: 10, 25, 50…
+  pageSize = 50;                 
   currentPage = 1;
   totalPages = 1;
-  paginatedResources: any[] = []; // fonte para *ngFor no template
-  pageStartIndex = 0;            // "Showing X"
-  pageEndIndex = 0;              // "Showing Y"  
+  paginatedResources: any[] = []; 
+  pageStartIndex = 0;            
+  pageEndIndex = 0;              
+  
   // Filtro opcional específico do AMI
   platformFilter = '';
 
@@ -60,26 +64,98 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
   sortDirection: 'asc' | 'desc' = 'desc';
 
   // ======= AMI FIELDS =======
-  // imageId, imageName, imageState, description, platform, amiName
   availableColumns: ColumnDefinition[] = [
-    { key: 'imageId',    label: 'Image ID', required: true },
-    { key: 'nameTag',    label: 'Name Tag' },
-    { key: 'amiName',    label: 'AMI Name' },
-    { key: 'imageName',  label: 'Image Name' },
+    { key: 'imageId', label: 'Image ID', required: true },
+    { key: 'nameTag', label: 'Name Tag' },
+    { key: 'amiName', label: 'AMI Name' },
+    { key: 'imageName', label: 'Image Name' },
     { key: 'imageState', label: 'State' },
-    { key: 'platform',   label: 'Platform' },
-    { key: 'description',label: 'Description', sortable: false },
-    { key: 'region',     label: 'Region' },
-    { key: 'accountId',  label: 'Account ID' },
-    { key: 'accountName',label: 'Account Name' },
+    { key: 'platform', label: 'Platform' },
+    { key: 'description', label: 'Description', sortable: false },
+    { key: 'region', label: 'Region' },
+    { key: 'accountId', label: 'Account ID' },
+    { key: 'accountName', label: 'Account Name' },
     { key: 'creationTime', label: 'Creation Time',
       transform: (r) => this.formatDate(r.creationTime) }
   ];
+  
   // Default columns to show
-  defaultColumns = ['amiName', 'imageName', 'platform', 'description'];
+  defaultColumns = ['imageId', 'nameTag', 'amiName', 'platform', 'region', 'creationTime', 'accountName'];
   private readonly LS_KEY = 'amiSelectedColumns';
   selectedColumns = new Set<string>();
+  
+  // Required columns that cannot be deselected
+  requiredColumns = ['imageId'];
+  
   private destroy$ = new Subject<void>();
+
+  constructor(
+    private resourceService: ResourceService,
+    private exportService: ExportService
+  ) {
+    // Initialize selected columns with defaults
+    this.selectedColumns = new Set(this.defaultColumns);
+    
+    // Load saved column preferences from localStorage
+    this.loadColumnPreferences();
+  }
+
+  ngOnInit(): void {
+    this.loadResources();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadResources(): void {
+    this.loading = true;
+
+    this.resourceService.getResourcesByType('AMI')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.resources = data.map(resource => {
+            const parsedTagsObj = TagFormatter.parseTags(resource.tags);
+            const parsedTagsArray: AMITag[] = Object.entries(parsedTagsObj).map(([key, value]) => ({
+              Key: key,
+              Value: value
+            }));
+            
+            return {
+              imageId: resource.imageId || resource.id || resource.resourceId,
+              amiName: resource.amiName || resource.name || resource.imageName,
+              imageName: resource.imageName || resource.amiName || resource.name,
+              nameTag: parsedTagsObj['Name'] || '',
+              imageState: resource.imageState || resource.state || resource.status,
+              description: resource.description || '',
+              platform: resource.platform || resource.platformDetails || 'Unknown',
+              region: resource.region,
+              accountId: resource.accountId,
+              accountName: resource.accountName,
+              parsedTags: parsedTagsArray,
+              tagObject: parsedTagsObj,
+              tags: resource.tags, // Keep original tags for ResourceTagsComponent
+              creationTime: resource.creationTime || resource.createdAt || resource.lastUpdated
+            };
+          });
+
+          // opções de filtro (derivadas dos dados carregados)
+          this.uniqueRegions = Array.from(new Set(this.resources.map(r => r.region))).filter(Boolean).sort();
+          this.uniqueAccounts = Array.from(new Set(this.resources.map(r => r.accountName || r.accountId))).filter(Boolean).sort();
+          this.uniquePlatforms = Array.from(new Set(this.resources.map(r => r.platform))).filter(Boolean).sort();
+
+          this.applyFilters();
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Failed to load AMI snapshots:', err);
+          this.loading = false;
+        }
+      });
+  }
+
   // Recalcula cortes/páginas sempre que a lista ou a página mudarem
   private recomputePagination(): void {
     const total = this.filteredResources?.length ?? 0;
@@ -102,75 +178,14 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
   updatePaginationAfterChange(): void {
     this.currentPage = 1;
     this.recomputePagination();
-  }  
-  constructor(
-    private resourceService: ResourceService,
-    private exportService: ExportService  
-  ) {
-    // Initialize selected columns with defaults
-    this.selectedColumns = new Set(this.defaultColumns);
-    
-    // Load saved column preferences from localStorage
-    this.loadColumnPreferences();
-  }
-     
-  ngOnInit(): void { 
-    this.loadResources(); 
   }
 
-
-  loadResources(): void {
-    this.loading = true;
-
-    this.resourceService.getResourcesByType('AMI')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.resources = data.map(resource => {
-            const parsedTagsObj = TagFormatter.parseTags(resource.tags);
-            const parsedTagsArray: AMITag[] = Object.entries(parsedTagsObj).map(([key, value]) => ({
-              Key: key,
-              Value: value
-            }));
-            return {
-              imageId: resource.imageId || resource.id || resource.resourceId,
-              amiName: resource.amiName || resource.name || resource.imageName,
-              imageName: resource.imageName || resource.amiName || resource.name,
-              imageState: resource.imageState || resource.state || resource.status,
-              description: resource.description || '',
-              platform: resource.platform || resource.platformDetails || 'Unknown',
-
-              region: resource.region,
-              accountId: resource.accountId,
-              accountName: resource.accountName,
-
-              parsedTags: parsedTagsArray,
-              tagObject: parsedTagsObj,
-
-              creationTime: resource.creationTime || resource.createdAt || resource.lastUpdated
-            };
-          });
-
-          // opções de filtro (derivadas dos dados carregados)
-          this.uniqueRegions   = Array.from(new Set(this.resources.map(r => r.region))).filter(Boolean).sort();
-          this.uniqueAccounts  = Array.from(new Set(this.resources.map(r => r.accountName || r.accountId))).filter(Boolean).sort();
-          this.uniquePlatforms = Array.from(new Set(this.resources.map(r => r.platform))).filter(Boolean).sort();
-
-          this.applyFilters();
-          this.loading = false;
-        },
-        error: (err) => {
-          console.error('Failed to load AMI snapshots:', err);
-          this.loading = false;
-        }
-      });
-  }
-  
   clearSearch(inputElement: HTMLInputElement): void {
     inputElement.value = '';
     this.searchTerm = '';
     this.applyFilters();
   }
+
   // Filter by region
   filterByRegion(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
@@ -178,12 +193,13 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  // Filter by region
+  // Filter by platform
   filterByPlatform(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.platformFilter = value;
     this.applyFilters();
   }
+
   // Filter by account ID
   filterByAccount(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
@@ -196,8 +212,8 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
     const term = (this.searchTerm || '').toLowerCase();
 
     this.filteredResources = this.resources
-      .filter(r => !this.regionFilter   || r.region === this.regionFilter)
-      .filter(r => !this.accountFilter  || r.accountName === this.accountFilter || r.accountId === this.accountFilter)
+      .filter(r => !this.regionFilter || r.region === this.regionFilter)
+      .filter(r => !this.accountFilter || r.accountName === this.accountFilter || r.accountId === this.accountFilter)
       .filter(r => !this.platformFilter || r.platform === this.platformFilter)
       .filter(r => {
         if (!term) return true;
@@ -209,6 +225,7 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
       });
 
     this.sortData(this.sortColumn, false);
+    this.updatePaginationAfterChange(); // Add pagination update
   }
 
   resetFilters(): void {
@@ -217,17 +234,18 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
     this.accountFilter = '';
     this.searchTerm = '';
 
-      // Reset select elements
+    // Reset select elements
     const selects = document.querySelectorAll('select');
     selects.forEach(select => select.value = '');
     
     // Reset search input
-    const searchInput = document.getElementById('') as HTMLInputElement;
+    const searchInput = document.getElementById('amiSearch') as HTMLInputElement;
     if (searchInput) {
       searchInput.value = '';
     }
     
-    this.filteredResources = [...this.resources];  
+    this.filteredResources = [...this.resources];
+    this.updatePaginationAfterChange(); // Add pagination update
   }
 
   // ------- ordenação -------
@@ -248,35 +266,36 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
       const va = (a[column] ?? '').toString().toLowerCase();
       const vb = (b[column] ?? '').toString().toLowerCase();
       if (va < vb) return -1 * dir;
-      if (va > vb) return  1 * dir;
+      if (va > vb) return 1 * dir;
       return 0;
     });
+    
+    this.recomputePagination(); // Add pagination update
   }
 
-  showDetails(r: any) {
+  showDetails(r: any): void {
     this.selectedResource = r;
   }
-  refresh(): void {
-  this.resourceService.clearCache();
-  this.loadResources();
-}
 
+  refresh(): void {
+    this.resourceService.clearCache();
+    this.loadResources();
+  }
 
   // Close details modal
   closeDetails(): void {
     this.selectedResource = null;
-  }  
+  }
 
   // ------- columns modal -------
-  requiredColumns = ['snapshotId'];
   openColumnCustomizer(): void {
     this.showColumnCustomizer = true;
   }
-  
+
   closeColumnCustomizer(): void {
     this.showColumnCustomizer = false;
   }
-  
+
   toggleColumn(key: string): void {
     if (this.isRequiredColumn(key)) return;
     
@@ -286,21 +305,21 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
       this.selectedColumns.add(key);
     }
   }
-  
+
   isColumnSelected(key: string): boolean {
     return this.selectedColumns.has(key);
   }
-  
+
   isRequiredColumn(key: string): boolean {
     return this.requiredColumns.includes(key);
   }
-  
+
   selectAllColumns(): void {
     this.availableColumns.forEach(col => {
       this.selectedColumns.add(col.key);
     });
   }
-  
+
   deselectAllColumns(): void {
     this.selectedColumns.clear();
     // Keep required columns selected
@@ -308,25 +327,25 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
       this.selectedColumns.add(key);
     });
   }
-    
+
   shouldBeFullWidth(key: string): boolean {
     // Determine which fields should take full width in mobile cards
     return ['instanceName', 'platformDetails', 'amiName', 'privateIps', 'publicIps'].includes(key);
   }
-  
+
   // Save and load column preferences
   saveColumnPreferences(): void {
     try {
       const preferences = Array.from(this.selectedColumns);
-      localStorage.setItem('ec2-columns', JSON.stringify(preferences));
+      localStorage.setItem(this.LS_KEY, JSON.stringify(preferences));
     } catch (e) {
       console.warn('Could not save column preferences:', e);
     }
   }
-  
+
   loadColumnPreferences(): void {
     try {
-      const saved = localStorage.getItem('ec2-columns');
+      const saved = localStorage.getItem(this.LS_KEY);
       if (saved) {
         const preferences = JSON.parse(saved);
         this.selectedColumns = new Set(preferences);
@@ -339,17 +358,17 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
       this.selectedColumns = new Set(this.defaultColumns);
     }
   }
-  
+
   applyColumnSelection(): void {
     // Save preferences to localStorage
     this.saveColumnPreferences();
     this.closeColumnCustomizer();
   }
-  
+
   getVisibleColumns(): ColumnDefinition[] {
     return this.availableColumns.filter(col => this.selectedColumns.has(col.key));
   }
-  
+
   getColumnValue(column: ColumnDefinition, resource: any): string {
     if (column.transform) {
       return column.transform(resource);
@@ -387,44 +406,55 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  ngOnDestroy(): void { 
-    this.destroy$.next(); 
-    this.destroy$.complete(); 
+  // Updated Export to CSV method using only visible columns
+  exportToCSV(): void {
+    if (!this.filteredResources.length) return;
+    
+    const filename = 'ami-snapshots.csv';
+    
+    // Get only the visible columns for export
+    const visibleColumns = this.getVisibleColumns();
+    const exportColumns: ExportColumn[] = visibleColumns.map(col => ({
+      key: col.key,
+      label: col.label,
+      transform: col.transform || ((resource) => resource[col.key])
+    }));
+    
+    this.exportService.exportDataToCSV(
+      this.filteredResources,
+      exportColumns,
+      filename
+    );
   }
-    // Updated Export to CSV method using only visible columns
-    exportToCSV(): void {
-      if (!this.filteredResources.length) return;
-      
-      const filename = 'ami-snapshots.csv';
-      
-      // Get only the visible columns for export
-      const visibleColumns = this.getVisibleColumns();
-      const exportColumns: ExportColumn[] = visibleColumns.map(col => ({
-        key: col.key,
-        label: col.label,
-        transform: col.transform || ((resource) => {
-          // Special handling for IP arrays
-          if (col.key === 'privateIps' && resource.privateIpArray) {
-            return resource.privateIpArray.join('; ');
-          }
-          if (col.key === 'publicIps' && resource.publicIpArray) {
-            return resource.publicIpArray.join('; ');
-          }
-          return resource[col.key];
-        })
-      }));
-      
-      this.exportService.exportDataToCSV(
-        this.filteredResources, 
-        exportColumns,
-        filename
-      );
-    }
 
   // Helpers de navegação
   getPageNumbers(): number[] {
-    // Para até 100 itens com pageSize=10, dá no máx. 10 páginas => dá pra listar todas
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    const pages: number[] = [];
+    const maxVisible = 7; // Maximum number of page buttons to show
+    const halfVisible = Math.floor(maxVisible / 2);
+    
+    // If total pages is less than maxVisible, show all
+    if (this.totalPages <= maxVisible) {
+      return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    }
+    
+    // Calculate start and end of visible page numbers
+    let start = Math.max(1, this.currentPage - halfVisible);
+    let end = Math.min(this.totalPages, this.currentPage + halfVisible);
+    
+    // Adjust if we're near the beginning or end
+    if (this.currentPage <= halfVisible) {
+      end = Math.min(this.totalPages, maxVisible);
+    } else if (this.currentPage >= this.totalPages - halfVisible) {
+      start = Math.max(1, this.totalPages - maxVisible + 1);
+    }
+    
+    // Generate the page numbers
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
   }
 
   goToPage(page: number): void {
@@ -461,5 +491,5 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
       this.currentPage++;
       this.recomputePagination();
     }
-  }    
+  }
 }
