@@ -26,7 +26,10 @@ interface ColumnDefinition {
   standalone: true,
   imports: [CommonModule, ResourceTagsComponent],
   templateUrl: './ec2-resources.component.html',
-  styleUrls: ['./ec2-resources.component.css']
+  styleUrls: [
+    './ec2-resources.component.css',
+    '../../../shared/styles/onevision-base.css' 
+  ]
 })
 export class Ec2ResourcesComponent implements OnInit, OnDestroy {
   resources: any[] = [];
