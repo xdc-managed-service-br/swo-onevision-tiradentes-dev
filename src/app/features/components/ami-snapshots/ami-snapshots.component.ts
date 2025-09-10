@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ResourceService } from '../../../core/services/resource.service';
+import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
+import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { TagFormatter } from '../../../shared/utils/tag-formatter';
 
 interface AMITag {
@@ -22,9 +23,11 @@ interface ColumnDefinition {
 @Component({
   selector: 'app-ami-snapshots',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ResourceTagsComponent],
   templateUrl: './ami-snapshots.component.html',
-  styleUrls: ['./ami-snapshots.component.css'] // pode ficar vazio; DS cobre quase tudo
+  styleUrls: ['./ami-snapshots.component.css',
+    '../../../shared/styles/onevision-base.css' 
+  ]
 })
 export class AMISnapshotsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -38,7 +41,13 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
   regionFilter = '';
   accountFilter = '';
   searchTerm = '';
-
+  // === Pagination state ===
+  pageSize = 50;                 // ajuste livre: 10, 25, 50…
+  currentPage = 1;
+  totalPages = 1;
+  paginatedResources: any[] = []; // fonte para *ngFor no template
+  pageStartIndex = 0;            // "Showing X"
+  pageEndIndex = 0;              // "Showing Y"  
   // Filtro opcional específico do AMI
   platformFilter = '';
 
@@ -72,7 +81,9 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
   private readonly LS_KEY = 'amiSelectedColumns';
   selectedColumns = new Set<string>();
 
-  constructor(private resourceService: ResourceService) {
+  constructor(
+    private resourceService: ResourceService,
+    private exportService: ExportService) {
     // carrega preferências salvas das colunas
     const fromLS = localStorage.getItem(this.LS_KEY);
     if (fromLS) {
@@ -85,7 +96,29 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
         .forEach(k => this.selectedColumns.add(k));
     }
   }
+  // Recalcula cortes/páginas sempre que a lista ou a página mudarem
+    private recomputePagination(): void {
+      const total = this.filteredResources?.length ?? 0;
 
+      // garante pelo menos 1 página mesmo com lista vazia
+      this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
+
+      // clamp da página atual
+      this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);
+
+      const start = total === 0 ? 0 : (this.currentPage - 1) * this.pageSize;
+      const end = total === 0 ? 0 : Math.min(start + this.pageSize, total);
+
+      this.paginatedResources = (this.filteredResources ?? []).slice(start, end);
+      this.pageStartIndex = total === 0 ? 0 : start + 1;
+      this.pageEndIndex = end;
+    }
+
+  // Use quando filtros/busca/sort mudarem a lista
+  updatePaginationAfterChange(): void {
+    this.currentPage = 1;
+    this.recomputePagination();
+  }      
   ngOnInit(): void { this.loadResources(); }
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 
@@ -148,6 +181,12 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  // Filter by region
+  filterByPlatform(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.platformFilter = value;
+    this.applyFilters();
+  }
   // Filter by account ID
   filterByAccount(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
@@ -176,11 +215,22 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
   }
 
   resetFilters(): void {
+    this.platformFilter = '';
     this.regionFilter = '';
     this.accountFilter = '';
-    this.platformFilter = '';
     this.searchTerm = '';
-    this.applyFilters();
+
+      // Reset select elements
+    const selects = document.querySelectorAll('select');
+    selects.forEach(select => select.value = '');
+    
+    // Reset search input
+    const searchInput = document.getElementById('') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.value = '';
+    }
+    
+    this.filteredResources = [...this.resources];  
   }
 
   // ------- ordenação -------
@@ -328,21 +378,6 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
     return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString();
   }
 
-detailsTags: Array<{ Key: string; Value: string }> = [];
-
-// util – accepts array or JSON string (like in DynamoDB sample)
-private safeParseTags(tags: any): Array<{ Key: string; Value: string }> {
-  if (!tags) return [];
-  if (Array.isArray(tags)) return tags as Array<{ Key: string; Value: string }>;
-  if (typeof tags === 'string') {
-    try {
-      const arr = JSON.parse(tags);
-      return Array.isArray(arr) ? arr : [];
-    } catch { return []; }
-  }
-  return [];
-}
-
   getPlatformClass(platform: string): string {
     if (!platform) return '';
     return `ov-badge ov-badge--${platform.toLowerCase()}`;
@@ -354,4 +389,75 @@ private safeParseTags(tags: any): Array<{ Key: string; Value: string }> {
     }
     return '';
   }
+    // Updated Export to CSV method using only visible columns
+    exportToCSV(): void {
+      if (!this.filteredResources.length) return;
+      
+      const filename = 'ami-snapshots.csv';
+      
+      // Get only the visible columns for export
+      const visibleColumns = this.getVisibleColumns();
+      const exportColumns: ExportColumn[] = visibleColumns.map(col => ({
+        key: col.key,
+        label: col.label,
+        transform: col.transform || ((resource) => {
+          // Special handling for IP arrays
+          if (col.key === 'privateIps' && resource.privateIpArray) {
+            return resource.privateIpArray.join('; ');
+          }
+          if (col.key === 'publicIps' && resource.publicIpArray) {
+            return resource.publicIpArray.join('; ');
+          }
+          return resource[col.key];
+        })
+      }));
+      
+      this.exportService.exportDataToCSV(
+        this.filteredResources, 
+        exportColumns,
+        filename
+      );
+    }
+
+  // Helpers de navegação
+  getPageNumbers(): number[] {
+    // Para até 100 itens com pageSize=10, dá no máx. 10 páginas => dá pra listar todas
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(page: number): void {
+    const clamped = Math.min(Math.max(page, 1), this.totalPages);
+    if (clamped !== this.currentPage) {
+      this.currentPage = clamped;
+      this.recomputePagination();
+    }
+  }
+
+  goToFirstPage(): void {
+    if (this.currentPage !== 1) {
+      this.currentPage = 1;
+      this.recomputePagination();
+    }
+  }
+
+  goToLastPage(): void {
+    if (this.currentPage !== this.totalPages) {
+      this.currentPage = this.totalPages;
+      this.recomputePagination();
+    }
+  }
+
+  goToPreviousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.recomputePagination();
+    }
+  }
+
+  goToNextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.recomputePagination();
+    }
+  }    
 }

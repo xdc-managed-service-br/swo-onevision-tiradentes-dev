@@ -8,7 +8,7 @@
     <div class="resource-header__filters">
       <div class="resource-filter">
         <label for="platformFilter">Platform</label>
-        <select id="platformFilter" [(ngModel)]="platformFilter" (change)="applyFilters()">
+        <select id="platformFilter" (change)="filterByPlatform($event)">
           <option value="">All Platforms</option>
           <option *ngFor="let p of uniquePlatforms" [value]="p">{{ p }}</option>
         </select>
@@ -38,7 +38,6 @@
           id="amiSearch"
           type="search"
           placeholder="Search by Image ID, Name Tag, or AMI Name"
-          [(ngModel)]="searchTerm"
           (input)="applyFilters()"
           name="amiSearchBox" 
           #searchInput/>
@@ -49,6 +48,7 @@
           (click)="clearSearch(searchInput)"
           aria-label="Clear search"></button>
       </div>
+      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToCSV()">Export to CSV</button>
       <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
       <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
       <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
@@ -60,7 +60,7 @@
     No AMI snapshots found matching your filters.
   </div>
 
-  <!-- Tabela (desktop) -->
+  <!-- Desktop Table View -->
   <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
     <table class="ov-table" aria-label="AMI snapshots table">
       <thead>
@@ -77,7 +77,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let resource of filteredResources">
+        <!-- antes: *ngFor="let resource of filteredResources" -->
+        <tr *ngFor="let resource of paginatedResources">
           <td *ngFor="let column of getVisibleColumns()">
             <span [ngClass]="getColumnClass(column.key, resource)">
               {{ getColumnValue(column, resource) }}
@@ -96,9 +97,9 @@
     </table>
   </section>
 
-  <!-- Cards (mobile) -->
+  <!-- Mobile Cards View -->
   <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
-    <article class="ov-card" *ngFor="let resource of filteredResources">
+    <article class="ov-card" *ngFor="let resource of paginatedResources">
       <header class="ov-card__head">
         <div>
           <div class="ov-card__title">{{ resource.imageId }}</div>
@@ -118,49 +119,88 @@
       </div>
     </article>
   </div>
-<!-- Modal: AMI Details -->
-<div class="ov-modal" *ngIf="showDetailsModal" (click)="closeDetails()">
-  <div class="ov-modal__dialog" role="dialog" aria-modal="true"
-       aria-labelledby="ami-details-title" (click)="$event.stopPropagation()">
 
-    <div class="ov-modal__head">
-      <h2 id="ami-details-title" class="ov-modal__title">
-        AMI Details — {{ selectedResource?.imageId }}
-      </h2>
-      <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
-    </div>
-
-    <div class="ov-modal__body">
-      <div class="ov-card__grid">
-        <div><div class="ov-k">Image ID</div><div class="ov-v">{{ selectedResource?.imageId }}</div></div>
-        <div><div class="ov-k">AMI Name</div><div class="ov-v">{{ selectedResource?.amiName || selectedResource?.imageName }}</div></div>
-        <div><div class="ov-k">Image Name</div><div class="ov-v">{{ selectedResource?.imageName || '—' }}</div></div>
-        <div><div class="ov-k">State</div><div class="ov-v">{{ selectedResource?.imageState }}</div></div>
-        <div><div class="ov-k">Platform</div><div class="ov-v">{{ selectedResource?.platform }}</div></div>
-        <div><div class="ov-k">Region</div><div class="ov-v">{{ selectedResource?.region }}</div></div>
-        <div><div class="ov-k">Account</div><div class="ov-v">{{ selectedResource?.accountName || selectedResource?.accountId }}</div></div>
-        <div><div class="ov-k">Created</div><div class="ov-v">{{ formatDate(selectedResource?.createdAt || selectedResource?.creationTime) }}</div></div>
-        <div><div class="ov-k">Updated</div><div class="ov-v">{{ formatDate(selectedResource?.updatedAt || selectedResource?.lastUpdated) }}</div></div>
+  <!-- Resource Details Modal -->
+  <div class="ov-modal" *ngIf="selectedResource" (click)="closeDetails()">
+    <div class="ov-modal__dialog" 
+         role="dialog" 
+         aria-modal="true"
+         aria-labelledby="ami-details-title" 
+         (click)="$event.stopPropagation()"
+         style="max-width: 800px;">
+      <!-- Modal Header -->
+      <div class="ov-modal__head">
+        <h2 id="ami-details-title" class="ov-modal__title">
+          AMI Details — {{ selectedResource.imageId }}
+        </h2>
+        <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
       </div>
 
-      <div style="margin-top:12px;">
-        <div class="ov-k">Description</div>
-        <div class="ov-v">{{ selectedResource?.description || '—' }}</div>
+      <!-- Modal Body -->
+      <div class="ov-modal__body">
+        <!-- Snapshot Information -->
+        <section aria-labelledby="snapshot-info">
+          <h3 id="instance-info">Snapshot Information</h3>
+          <table class="details-table">
+            <tr>
+              <th>Image ID</th>
+              <td>{{ selectedResource.imageId }}</td>
+            </tr>
+            <tr>
+              <th>AMI Name</th>
+              <td>{{ selectedResource.amiName || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Description</th>
+              <td>{{ selectedResource.description || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Image ID</th>
+              <td>{{ selectedResource.imageId }}</td>
+            </tr>
+            <tr>
+              <th>State</th>
+              <td>{{ selectedResource.imageState || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Platform</th>
+              <td>{{ selectedResource.platform }}</td>
+            </tr>                      
+          </table>
+        </section>
+
+        <!-- Location Information -->
+        <section aria-labelledby="location-info">
+          <h3 id="location-info">Location Information</h3>
+          <table class="details-table">
+            <tr>
+              <th>Region</th>
+              <td>{{ selectedResource.region }}</td>
+            </tr>
+            <tr>
+              <th>Account ID</th>
+              <td>{{ selectedResource.accountId }}</td>
+            </tr>
+            <tr *ngIf="selectedResource.accountName">
+              <th>Account Name</th>
+              <td>{{ selectedResource.accountName }}</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Tags Section -->
+        <section *ngIf="selectedResource.tags" aria-labelledby="tags-info">
+          <h3 id="tags-info">Tags</h3>
+          <app-resource-tags [tags]="selectedResource.tags"></app-resource-tags>
+        </section>
       </div>
 
-      <div style="margin-top:12px;">
-        <div class="ov-k">Tags</div>
-        <div class="ov-tags">
-          <span class="ov-tag" *ngFor="let t of detailsTags">{{ t.Key }}: {{ t.Value }}</span>
-        </div>
+      <div class="ov-modal__foot">
+        <button class="ov-btn ov-btn--primary" (click)="closeDetails()">Close</button>
       </div>
-    </div>
-
-    <div class="ov-modal__foot">
-      <button class="ov-btn ov-btn--primary" (click)="closeDetails()">Close</button>
     </div>
   </div>
-</div>
+
   <!-- Modal: Customize Columns -->
   <div class="ov-modal" *ngIf="showColumnCustomizer" (click)="closeColumnCustomizer()">
     <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="ami-col-title" (click)="$event.stopPropagation()">
@@ -192,4 +232,29 @@
       </div>
     </div>
   </div>
+
+  <!-- Pagination Controls -->
+  <div class="ov-pagination" *ngIf="!loading && filteredResources.length > 0">
+    <div class="ov-pagination__info">
+      Showing {{ pageStartIndex }} - {{ pageEndIndex }} of {{ filteredResources.length }} items
+    </div>
+
+    <div class="ov-pagination__controls">
+      <button class="ov-btn ov-btn--subtle" (click)="goToFirstPage()" [disabled]="currentPage === 1">First</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToPreviousPage()" [disabled]="currentPage === 1">Previous</button>
+
+      <span class="ov-pagination__pages">
+        <button
+          class="ov-btn"
+          *ngFor="let page of getPageNumbers()"
+          (click)="goToPage(page)"
+          [class.active]="page === currentPage">
+          {{ page }}
+        </button>
+      </span>
+
+      <button class="ov-btn ov-btn--subtle" (click)="goToNextPage()" [disabled]="currentPage === totalPages">Next</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
+    </div>
+  </div>  
 </article>

@@ -39,8 +39,8 @@ export interface EC2Instance extends BaseResource {
   systemStatus?: string;
   instanceStatus?: string;
   ebsStatus?: string;
-  privateIps?: string[]; // Array of private IPs
-  publicIps?: string[];  // Array of public IPs
+  instancePrivateIps?: string[];
+  instancePublicIps?: string[];
 }
 
 export interface S3Bucket extends BaseResource {

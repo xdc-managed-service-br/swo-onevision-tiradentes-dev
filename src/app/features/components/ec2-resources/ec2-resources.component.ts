@@ -36,7 +36,13 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
   loading = true;
   selectedResource: any = null;
   uniqueAccounts: string[] = [];
-  
+  // === Pagination state ===
+  pageSize = 50;                 // ajuste livre: 10, 25, 50…
+  currentPage = 1;
+  totalPages = 1;
+  paginatedResources: any[] = []; // fonte para *ngFor no template
+  pageStartIndex = 0;            // "Showing X"
+  pageEndIndex = 0;              // "Showing Y"  
   // Search functionality
   searchTerm: string = '';
   
@@ -70,9 +76,9 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
       transform: (resource) => this.getHealthStatusText(resource) },
     { key: 'cwAgentMemoryDetected', label: 'CW Monitoring', sortable: true,
       transform: (resource) => resource.cwAgentMemoryDetected ? 'Enabled' : 'Disabled' },
-    { key: 'privateIps', label: 'Private IPs', sortable: false,
+    { key: 'instancePrivateIps', label: 'Private IPs', sortable: false,
       transform: (resource) => resource.privateIpArray?.join(', ') || 'N/A' },
-    { key: 'publicIps', label: 'Public IPs', sortable: false,
+    { key: 'instancePublicIps', label: 'Public IPs', sortable: false,
       transform: (resource) => resource.publicIpArray?.join(', ') || 'N/A' },
     { key: 'region', label: 'Region', sortable: true },
     { key: 'accountId', label: 'Account ID', sortable: true },
@@ -102,13 +108,35 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
   
   // Default columns to show
   defaultColumns = ['instanceId', 'instanceName', 'instanceType', 'state', 'healthStatus', 
-                    'cwAgentMemoryDetected', 'privateIps', 'region', 'accountId', 'accountName', 'createdAt'];
+                    'cwAgentMemoryDetected', 'instancePrivateIps', 'region', 'accountId', 'accountName', 'createdAt'];
   
   // Required columns that cannot be deselected
   requiredColumns = ['instanceId'];
   
   private destroy$ = new Subject<void>();
-  
+  // Recalcula cortes/páginas sempre que a lista ou a página mudarem
+  private recomputePagination(): void {
+    const total = this.filteredResources?.length ?? 0;
+
+    // garante pelo menos 1 página mesmo com lista vazia
+    this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
+
+    // clamp da página atual
+    this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);
+
+    const start = total === 0 ? 0 : (this.currentPage - 1) * this.pageSize;
+    const end = total === 0 ? 0 : Math.min(start + this.pageSize, total);
+
+    this.paginatedResources = (this.filteredResources ?? []).slice(start, end);
+    this.pageStartIndex = total === 0 ? 0 : start + 1;
+    this.pageEndIndex = end;
+  }
+
+  // Use quando filtros/busca/sort mudarem a lista
+  updatePaginationAfterChange(): void {
+    this.currentPage = 1;
+    this.recomputePagination();
+  }  
   constructor(
     private resourceService: ResourceService,
     private exportService: ExportService
@@ -169,7 +197,7 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
           });
           
           this.filteredResources = [...this.resources];
-          
+          this.recomputePagination();
           // Extract unique values for filters
           this.uniqueStates = [...new Set(data.map(r => r.instanceState).filter(Boolean))].sort();
           this.uniqueTypes = [...new Set(data.map(r => r.instanceType).filter(Boolean))].sort();
@@ -266,7 +294,7 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
       return resource.cwAgentMemoryDetected ? 'status-running' : 'status-stopped';
     }
     
-    if (key === 'privateIps' || key === 'publicIps') {
+    if (key === 'instancePrivateIps' || key === 'instancePublicIps') {
       return 'ip-address-column';
     }
     
@@ -275,7 +303,7 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
   
   shouldBeFullWidth(key: string): boolean {
     // Determine which fields should take full width in mobile cards
-    return ['instanceName', 'platformDetails', 'amiName', 'privateIps', 'publicIps'].includes(key);
+    return ['instanceName', 'platformDetails', 'amiName', 'instancePrivateIps', 'instancePublicIps'].includes(key);
   }
   
   // Save and load column preferences
@@ -587,6 +615,8 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  
+
   // Updated Export to CSV method using only visible columns
   exportToCSV(): void {
     if (!this.filteredResources.length) return;
@@ -600,10 +630,10 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
       label: col.label,
       transform: col.transform || ((resource) => {
         // Special handling for IP arrays
-        if (col.key === 'privateIps' && resource.privateIpArray) {
+        if (col.key === 'instancePrivateIps' && resource.privateIpArray) {
           return resource.privateIpArray.join('; ');
         }
-        if (col.key === 'publicIps' && resource.publicIpArray) {
+        if (col.key === 'instancePublicIps' && resource.publicIpArray) {
           return resource.publicIpArray.join('; ');
         }
         return resource[col.key];
@@ -616,4 +646,46 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
       filename
     );
   }
+  // Helpers de navegação
+  getPageNumbers(): number[] {
+    // Para até 100 itens com pageSize=10, dá no máx. 10 páginas => dá pra listar todas
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(page: number): void {
+    const clamped = Math.min(Math.max(page, 1), this.totalPages);
+    if (clamped !== this.currentPage) {
+      this.currentPage = clamped;
+      this.recomputePagination();
+    }
+  }
+
+  goToFirstPage(): void {
+    if (this.currentPage !== 1) {
+      this.currentPage = 1;
+      this.recomputePagination();
+    }
+  }
+
+  goToLastPage(): void {
+    if (this.currentPage !== this.totalPages) {
+      this.currentPage = this.totalPages;
+      this.recomputePagination();
+    }
+  }
+
+  goToPreviousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.recomputePagination();
+    }
+  }
+
+  goToNextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.recomputePagination();
+    }
+  }
+
 }
