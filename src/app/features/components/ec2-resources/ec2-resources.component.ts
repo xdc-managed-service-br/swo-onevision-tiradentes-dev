@@ -553,7 +553,6 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
   this.loadResources();
 }
 
-
   // Close details modal
   closeDetails(): void {
     this.selectedResource = null;

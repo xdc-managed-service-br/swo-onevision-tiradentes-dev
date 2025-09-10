@@ -207,10 +207,6 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
   }
 
   showDetails(r: any) {
-    console.log('IP fields on detail:', {
-      raw:    r.privateIps,
-      parsed: r.privateIpArray,
-    });
     this.selectedResource = r;
   }
   refresh(): void {
@@ -332,8 +328,6 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
     return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString();
   }
 
-  // state for details modal
-showDetailsModal = false;
 detailsTags: Array<{ Key: string; Value: string }> = [];
 
 // util – accepts array or JSON string (like in DynamoDB sample)
