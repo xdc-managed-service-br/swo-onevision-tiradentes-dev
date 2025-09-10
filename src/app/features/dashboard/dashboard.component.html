@@ -58,14 +58,14 @@
           <div class="db-monitoring__grid">
             <app-monitoring-widget
               title="RAM Monitoring"
-              [percentage]="monitoringStatus.monitoredPercentage"
+              [percentage]="monitoringStatus.ramMonitoredPercentage"
               label="Active Monitoring on Resources"
               color="#4fd1c5">
             </app-monitoring-widget>
 
             <app-monitoring-widget
               title="Disk Monitoring"
-              [percentage]="monitoringStatus.monitoredPercentage"
+              [percentage]="monitoringStatus.diskMonitoredPercentage"
               label="Active Monitoring on Resources"
               color="#9f7aea">
             </app-monitoring-widget>
@@ -77,15 +77,18 @@
           <app-instance-status-widget
             [total]="instanceStatus.total"
             [running]="instanceStatus.running"
-            [stopped]="instanceStatus.stopped">
+            [stopped]="instanceStatus.stopped"
+            [pending]="instanceStatus.pending"
+            [terminated]="instanceStatus.terminated">
           </app-instance-status-widget>
         </div>
 
         <div class="db-monitoring__block">
           <h3 class="db-h3">SSM Agent Status</h3>
           <app-monitoring-widget
+            title="SSM Agent"
             [percentage]="ssmStatus.connectedPercentage"
-            label="Instances with SSM Agent Installed"
+            label="Instances with SSM Agent Connected"
             color="#68d391">
           </app-monitoring-widget>
         </div>
@@ -101,16 +104,19 @@
           <h3 class="db-h3">Resources by Account</h3>
         </div>
         <div class="db-widget__body">
-          <div class="db-bars">
+          <div *ngIf="accountDistribution.length > 0; else noAccountData" class="db-bars">
             <div *ngFor="let item of accountDistribution" class="db-bar" [attr.aria-label]="item.account + ': ' + item.count">
               <div class="db-bar__label" [title]="item.account">{{ item.account }}</div>
               <div class="db-bar__track">
-                <div class="db-bar__fill" [style.width.%]="getBarWidth(item.count)">
+                <div class="db-bar__fill" [style.width.%]="getBarWidth(item.count, accountMaxCount)">
                   <span class="db-bar__value">{{ item.count }}</span>
                 </div>
               </div>
             </div>
           </div>
+          <ng-template #noAccountData>
+            <div class="ov-empty">No account distribution data available</div>
+          </ng-template>
         </div>
       </div>
 
@@ -120,16 +126,19 @@
           <h3 class="db-h3">Resources by Region</h3>
         </div>
         <div class="db-widget__body">
-          <div class="db-bars">
+          <div *ngIf="regionDistribution.length > 0; else noRegionData" class="db-bars">
             <div *ngFor="let item of regionDistribution" class="db-bar" [attr.aria-label]="item.region + ': ' + item.count">
               <div class="db-bar__label" [title]="item.region">{{ item.region }}</div>
               <div class="db-bar__track">
-                <div class="db-bar__fill" [style.width.%]="getBarWidth(item.count)">
+                <div class="db-bar__fill" [style.width.%]="getBarWidth(item.count, regionMaxCount)">
                   <span class="db-bar__value">{{ item.count }}</span>
                 </div>
               </div>
             </div>
           </div>
+          <ng-template #noRegionData>
+            <div class="ov-empty">No region distribution data available</div>
+          </ng-template>
         </div>
       </div>
 
@@ -140,51 +149,80 @@
           <a class="ov-btn ov-btn--subtle" [routerLink]="['/resources']">View All</a>
         </div>
         <div class="db-widget__body">
-          <!-- Desktop: tabela -->
-          <section class="ov-tablewrap db-hide-mobile" *ngIf="recentResources?.length">
-            <table class="ov-table" role="table" aria-label="Recent resources">
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Region</th>
-                  <th>Identifier</th>
-                  <th>Last Updated</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let resource of recentResources" [routerLink]="['/resources']" class="db-rowlink">
-                  <td>{{ resource.resourceType }}</td>
-                  <td>{{ resource.region }}</td>
-                  <td>{{ getResourceIdentifier(resource) }}</td>
-                  <td>{{ resource.lastUpdated | date: 'short' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
+          <div *ngIf="recentResources.length > 0; else noRecentData">
+            <!-- Desktop: tabela -->
+            <section class="ov-tablewrap db-hide-mobile">
+              <table class="ov-table" role="table" aria-label="Recent resources">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Region</th>
+                    <th>Identifier</th>
+                    <th>Last Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let resource of recentResources; trackBy: trackByResourceId" 
+                      [routerLink]="['/resources']" 
+                      class="db-rowlink"
+                      [attr.aria-label]="'View ' + resource.resourceType + ' details'">
+                    <td>
+                      <span class="resource-type-badge">{{ resource.resourceType }}</span>
+                    </td>
+                    <td>{{ resource.region || 'Unknown' }}</td>
+                    <td>
+                      <span class="resource-identifier" [title]="getResourceIdentifier(resource)">
+                        {{ getResourceIdentifier(resource) }}
+                      </span>
+                    </td>
+                    <td>
+                      <time [dateTime]="resource.lastUpdated">
+                        {{ resource.lastUpdated | date: 'short' }}
+                      </time>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
 
-          <!-- Mobile: cards -->
-          <div class="ov-cards db-show-mobile">
-            <article class="ov-card" *ngFor="let resource of recentResources" [routerLink]="['/resources']" class="db-rowlink">
-              <header class="ov-card__head">
-                <div>
-                  <div class="ov-card__title">{{ resource.resourceType }}</div>
-                  <div class="ov-card__sub">{{ getResourceIdentifier(resource) }}</div>
+            <!-- Mobile: cards -->
+            <div class="ov-cards db-show-mobile">
+              <article class="ov-card" 
+                       *ngFor="let resource of recentResources; trackBy: trackByResourceId" 
+                       [routerLink]="['/resources']" 
+                       class="db-rowlink"
+                       [attr.aria-label]="'View ' + resource.resourceType + ' details'">
+                <header class="ov-card__head">
+                  <div>
+                    <div class="ov-card__title">{{ resource.resourceType }}</div>
+                    <div class="ov-card__sub">{{ getResourceIdentifier(resource) }}</div>
+                  </div>
+                </header>
+                <div class="ov-card__grid">
+                  <div>
+                    <div class="ov-k">Region</div>
+                    <div class="ov-v">{{ resource.region || 'Unknown' }}</div>
+                  </div>
+                  <div>
+                    <div class="ov-k">Last Updated</div>
+                    <div class="ov-v">
+                      <time [dateTime]="resource.lastUpdated">
+                        {{ resource.lastUpdated | date: 'short' }}
+                      </time>
+                    </div>
+                  </div>
                 </div>
-              </header>
-              <div class="ov-card__grid">
-                <div>
-                  <div class="ov-k">Region</div>
-                  <div class="ov-v">{{ resource.region }}</div>
-                </div>
-                <div>
-                  <div class="ov-k">Last Updated</div>
-                  <div class="ov-v">{{ resource.lastUpdated | date: 'short' }}</div>
-                </div>
-              </div>
-            </article>
+              </article>
+            </div>
           </div>
 
-          <div *ngIf="!recentResources?.length" class="ov-empty">No resources found</div>
+          <ng-template #noRecentData>
+            <div class="ov-empty">
+              <div class="ov-empty__icon">📄</div>
+              <p class="ov-empty__text">No recent resources found</p>
+              <p class="ov-empty__sub">Resources will appear here as they are created or updated</p>
+            </div>
+          </ng-template>
         </div>
       </div>
 

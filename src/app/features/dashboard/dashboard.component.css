@@ -168,6 +168,9 @@
   padding-right: var(--ov-space-3);
   font-weight: 600;
   transition: width .3s ease;
+  min-width: 40px; /* mantém uma pílula mínima visível */
+  justify-content: center; /* centraliza o número em barras curtas */
+  padding-right: 0; /* evita empurrar o número para a direita em barras pequenas */
 }
 
 .db-bar__value {

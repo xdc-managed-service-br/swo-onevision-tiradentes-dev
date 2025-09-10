@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="aws-rds" viewBox="0 0 40 40">
+    <!-- cole só o conteúdo do <svg> aqui (paths/defs) -->
+    <defs>...</defs>
+    <g fill="none" fill-rule="evenodd">...</g>
+  </symbol>
+
+  <symbol id="aws-ec2" viewBox="0 0 40 40">...</symbol>
+  <!-- outros ícones -->
+</svg>
