@@ -30,7 +30,6 @@ interface ColumnDefinition {
   ]
 })
 export class AMISnapshotsComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
   resources: any[] = [];
   filteredResources: any[] = [];
   loading = false;
@@ -80,47 +79,45 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
   defaultColumns = ['amiName', 'imageName', 'platform', 'description'];
   private readonly LS_KEY = 'amiSelectedColumns';
   selectedColumns = new Set<string>();
-
-  constructor(
-    private resourceService: ResourceService,
-    private exportService: ExportService) {
-    // carrega preferências salvas das colunas
-    const fromLS = localStorage.getItem(this.LS_KEY);
-    if (fromLS) {
-      try { JSON.parse(fromLS).forEach((k: string) => this.selectedColumns.add(k)); } catch {}
-    }
-    // garante colunas obrigatórias
-    this.availableColumns.filter(c => c.required).forEach(c => this.selectedColumns.add(c.key));
-    if (this.selectedColumns.size === 0) {
-      ['imageId','amiName','platform','region','creationTime','accountName']
-        .forEach(k => this.selectedColumns.add(k));
-    }
-  }
+  private destroy$ = new Subject<void>();
   // Recalcula cortes/páginas sempre que a lista ou a página mudarem
-    private recomputePagination(): void {
-      const total = this.filteredResources?.length ?? 0;
+  private recomputePagination(): void {
+    const total = this.filteredResources?.length ?? 0;
 
-      // garante pelo menos 1 página mesmo com lista vazia
-      this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
+    // garante pelo menos 1 página mesmo com lista vazia
+    this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
 
-      // clamp da página atual
-      this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);
+    // clamp da página atual
+    this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);
 
-      const start = total === 0 ? 0 : (this.currentPage - 1) * this.pageSize;
-      const end = total === 0 ? 0 : Math.min(start + this.pageSize, total);
+    const start = total === 0 ? 0 : (this.currentPage - 1) * this.pageSize;
+    const end = total === 0 ? 0 : Math.min(start + this.pageSize, total);
 
-      this.paginatedResources = (this.filteredResources ?? []).slice(start, end);
-      this.pageStartIndex = total === 0 ? 0 : start + 1;
-      this.pageEndIndex = end;
-    }
+    this.paginatedResources = (this.filteredResources ?? []).slice(start, end);
+    this.pageStartIndex = total === 0 ? 0 : start + 1;
+    this.pageEndIndex = end;
+  }
 
   // Use quando filtros/busca/sort mudarem a lista
   updatePaginationAfterChange(): void {
     this.currentPage = 1;
     this.recomputePagination();
-  }      
-  ngOnInit(): void { this.loadResources(); }
-  ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
+  }  
+  constructor(
+    private resourceService: ResourceService,
+    private exportService: ExportService  
+  ) {
+    // Initialize selected columns with defaults
+    this.selectedColumns = new Set(this.defaultColumns);
+    
+    // Load saved column preferences from localStorage
+    this.loadColumnPreferences();
+  }
+     
+  ngOnInit(): void { 
+    this.loadResources(); 
+  }
+
 
   loadResources(): void {
     this.loading = true;
@@ -388,6 +385,11 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
       return this.getPlatformClass(resource.platform);
     }
     return '';
+  }
+
+  ngOnDestroy(): void { 
+    this.destroy$.next(); 
+    this.destroy$.complete(); 
   }
     // Updated Export to CSV method using only visible columns
     exportToCSV(): void {
