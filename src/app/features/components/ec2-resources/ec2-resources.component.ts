@@ -7,7 +7,6 @@ import { ResourceTagsComponent } from '../../../shared/components/resource-tags/
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { TagFormatter } from '../../../shared/utils/tag-formatter';
 
-// Define an interface for EC2 tag structure
 interface EC2Tag {
   Key: string;
   Value: string;
@@ -31,7 +30,7 @@ interface ColumnDefinition {
     '../../../shared/styles/onevision-base.css' 
   ]
 })
-export class Ec2ResourcesComponent implements OnInit, OnDestroy {
+export class EC2ResourcesComponent implements OnInit, OnDestroy {
   resources: any[] = [];
   filteredResources: any[] = [];
   loading = true;
@@ -131,35 +130,16 @@ export class Ec2ResourcesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          // Debug the first few resources to see their structure
-          console.log('First few resources from API:', data.slice(0, 3));
-          
-          // Process resources and extract tag values
           this.resources = data.map(resource => {
-            // Parse tags using TagFormatter utility
             const parsedTagsObj = TagFormatter.parseTags(resource.tags);
-            
-            // Convert to array format for ResourceTagsComponent if needed
             const parsedTagsArray: EC2Tag[] = Object.entries(parsedTagsObj).map(([key, value]) => ({
               Key: key,
               Value: value
             }));
 
-            // Add extensive logging to see what's happening
-            console.log('Raw resource IPs:', {
-              privateIps: resource.privateIps,
-              publicIps: resource.publicIps
-            });
-            
-            // Parse IPs using our updated method
             const privateIpArray = TagFormatter.parseIpList(resource.privateIps);
             const publicIpArray = TagFormatter.parseIpList(resource.publicIps);
-            
-            console.log('Parsed IP arrays:', {
-              privateIpArray,
-              publicIpArray
-            });
-            // Return processed resource with extracted values
+
             return {
               ...resource,           
               // Convert string 'true'/'false' to actual booleans if needed
@@ -205,7 +185,6 @@ export class Ec2ResourcesComponent implements OnInit, OnDestroy {
       });
   }
   
-  // Column customization methods
   openColumnCustomizer(): void {
     this.showColumnCustomizer = true;
   }
@@ -321,8 +300,6 @@ export class Ec2ResourcesComponent implements OnInit, OnDestroy {
         });
       }
     } catch (e) {
-      console.warn('Could not load column preferences:', e);
-      // Use default columns if loading fails
       this.selectedColumns = new Set(this.defaultColumns);
     }
   }
@@ -569,12 +546,12 @@ export class Ec2ResourcesComponent implements OnInit, OnDestroy {
   }
   
   showDetails(r: any) {
-    console.log('IP fields on detail:', {
-      raw:    r.privateIps,
-      parsed: r.privateIpArray,
-    });
     this.selectedResource = r;
   }
+  refresh(): void {
+  this.resourceService.clearCache();
+  this.loadResources();
+}
 
 
   // Close details modal

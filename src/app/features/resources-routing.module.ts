@@ -7,7 +7,7 @@ const routes: Routes = [
   { path: '', loadComponent: () => import('./components/resources/resources.component').then(m => m.ResourcesComponent) },
 
   // Compute
-  { path: 'ec2',            loadComponent: () => import('./components/ec2-resources/ec2-resources.component').then(m => m.Ec2ResourcesComponent) },
+  { path: 'ec2',            loadComponent: () => import('./components/ec2-resources/ec2-resources.component').then(m => m.EC2ResourcesComponent) },
   { path: 'ami-snapshots',  loadComponent: () => import('./components/ami-snapshots/ami-snapshots.component').then(m => m.AMISnapshotsComponent) },
 
   // Storage

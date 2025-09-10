@@ -1,241 +1,195 @@
-<!-- Exemplo de uso em AMI Snapshots Component -->
-<!-- src/app/features/resources/ami-snapshots/ami-snapshots.component.html -->
-
-<div class="resource-page">
-  <!-- Fixed Header -->
+<!-- src/app/features/components/ami-snapshots/ami-snapshots.component.html -->
+<article class="ov-container" aria-labelledby="ami-title">
+  
   <div class="resource-header">
     <h1 class="resource-header__title">AMI Snapshots</h1>
     
-    <!-- Filters Row -->
+    <!-- Filtros (grid) -->
     <div class="resource-header__filters">
-      <!-- Platform Filter -->
       <div class="resource-filter">
-        <label for="platform-filter">Platform</label>
-        <select 
-          id="platform-filter" 
-          [(ngModel)]="filters.platform"
-          (change)="applyFilters()">
+        <label for="platformFilter">Platform</label>
+        <select id="platformFilter" [(ngModel)]="platformFilter" (change)="applyFilters()">
           <option value="">All Platforms</option>
-          <option value="linux">Linux/Unix</option>
-          <option value="windows">Windows</option>
-          <option value="other">Other</option>
+          <option *ngFor="let p of uniquePlatforms" [value]="p">{{ p }}</option>
         </select>
       </div>
-      
-      <!-- Region Filter -->
+
       <div class="resource-filter">
-        <label for="region-filter">Region</label>
-        <select 
-          id="region-filter"
-          [(ngModel)]="filters.region"
-          (change)="applyFilters()">
+        <label for="regionFilter">Region</label>
+        <select id="regionFilter" (change)="filterByRegion($event)">
           <option value="">All Regions</option>
-          <option value="us-east-1">US East (N. Virginia)</option>
-          <option value="us-west-2">US West (Oregon)</option>
-          <option value="eu-west-1">EU (Ireland)</option>
-          <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+          <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
         </select>
       </div>
-      
-      <!-- Account Filter -->
+
       <div class="resource-filter">
-        <label for="account-filter">Account</label>
-        <select 
-          id="account-filter"
-          [(ngModel)]="filters.account"
-          (change)="applyFilters()">
+        <label for="accountFilter">Account</label>
+        <select id="accountFilter" (change)="filterByAccount($event)">
           <option value="">All Accounts</option>
-          <option *ngFor="let account of availableAccounts" [value]="account.id">
-            {{ account.name }}
-          </option>
+          <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
         </select>
       </div>
     </div>
-    
-    <!-- Actions Row -->
+
+    <!-- Ações + Busca (na mesma linha) -->
     <div class="resource-header__actions">
-      <!-- Search Box -->
       <div class="resource-search">
-        <input 
-          type="text"
-          [(ngModel)]="searchTerm"
-          (input)="onSearch()"
+        <input
+          id="amiSearch"
+          type="search"
           placeholder="Search by Image ID, Name Tag, or AMI Name"
-          aria-label="Search resources">
-        <svg class="resource-search__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+          name="amiSearchBox" 
+          #searchInput/>
+        <button 
+          type="button" 
+          class="ov-clear-btn" 
+          *ngIf="searchTerm"
+          (click)="clearSearch(searchInput)"
+          aria-label="Clear search"></button>
       </div>
-      
-      <!-- Reset Filters Button -->
-      <button 
-        class="resource-reset-btn"
-        (click)="resetFilters()"
-        [disabled]="!hasActiveFilters()">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-        </svg>
-        Reset Filters
-      </button>
-      
-      <!-- Export Button (Optional) -->
-      <button 
-        class="resource-export-btn"
-        (click)="exportData()"
-        *ngIf="filteredResources.length > 0">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-        </svg>
-        Export
-      </button>
-    </div>
+      <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+      <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
+      <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
+    </div>        
   </div>
-  
-  <!-- Scrollable Content Area -->
-  <div class="resource-content">
-    <!-- Loading State -->
-    <div *ngIf="loading" class="ov-loading">
-      Loading AMI Snapshots...
-    </div>
-    
-    <!-- Empty State -->
-    <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
-      No AMI Snapshots found matching your filters.
-    </div>
-    
-    <!-- Table (Desktop) -->
-    <div class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
-      <table class="ov-table">
-        <thead>
-          <tr>
-            <th (click)="sortData('imageId')" class="sortable">
-              Image ID
-              <span *ngIf="sortColumn === 'imageId'">
-                {{ sortDirection === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th (click)="sortData('nameTag')" class="sortable">
-              Name Tag
-              <span *ngIf="sortColumn === 'nameTag'">
-                {{ sortDirection === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th (click)="sortData('amiName')" class="sortable">
-              AMI Name
-              <span *ngIf="sortColumn === 'amiName'">
-                {{ sortDirection === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th (click)="sortData('platform')" class="sortable">
-              Platform
-              <span *ngIf="sortColumn === 'platform'">
-                {{ sortDirection === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th (click)="sortData('region')" class="sortable">
-              Region
-              <span *ngIf="sortColumn === 'region'">
-                {{ sortDirection === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th (click)="sortData('creationTime')" class="sortable">
-              Creation Time
-              <span *ngIf="sortColumn === 'creationTime'">
-                {{ sortDirection === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let resource of paginatedResources">
-            <td>{{ resource.imageId }}</td>
-            <td>{{ resource.nameTag || 'N/A' }}</td>
-            <td>{{ resource.amiName }}</td>
-            <td>
-              <span [class]="getPlatformClass(resource.platform)">
-                {{ resource.platform }}
-              </span>
-            </td>
-            <td>{{ resource.region }}</td>
-            <td>{{ formatDate(resource.creationTime) }}</td>
-            <td>
-              <button 
-                class="ov-btn ov-btn--primary"
-                (click)="viewDetails(resource)">
+  <!-- Loading/Empty -->
+  <div *ngIf="loading" class="ov-loading">Loading AMI snapshots…</div>
+  <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
+    No AMI snapshots found matching your filters.
+  </div>
+
+  <!-- Tabela (desktop) -->
+  <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
+    <table class="ov-table" aria-label="AMI snapshots table">
+      <thead>
+        <tr>
+          <th *ngFor="let column of getVisibleColumns()"
+              (click)="column.sortable !== false ? sortData(column.key) : null"
+              [class.sortable]="column.sortable !== false">
+            {{ column.label }}
+            <span *ngIf="sortColumn === column.key && column.sortable !== false" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="ov-cell--right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let resource of filteredResources">
+          <td *ngFor="let column of getVisibleColumns()">
+            <span [ngClass]="getColumnClass(column.key, resource)">
+              {{ getColumnValue(column, resource) }}
+            </span>
+            <ng-template #plain>{{ getColumnValue(column, resource) }}</ng-template>
+          </td>
+          <td>
+            <div class="ov-actions">
+              <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">
                 View Details
               </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Cards (mobile) -->
+  <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
+    <article class="ov-card" *ngFor="let resource of filteredResources">
+      <header class="ov-card__head">
+        <div>
+          <div class="ov-card__title">{{ resource.imageId }}</div>
+          <div class="ov-card__sub">{{ resource.amiName }}</div>
+        </div>
+        <span [ngClass]="getPlatformClass(resource.platform)">{{ resource.platform }}</span>
+      </header>
+      <div class="ov-card__grid">
+        <div><div class="ov-k">Region</div><div class="ov-v">{{ resource.region }}</div></div>
+        <div><div class="ov-k">Account</div><div class="ov-v">{{ resource.accountName || resource.accountId }}</div></div>
+        <div><div class="ov-k">Created</div><div class="ov-v">{{ formatDate(resource.creationTime) }}</div></div>
+      </div>
+      <div style="margin-top:12px;">
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
+        </div>
+      </div>
+    </article>
+  </div>
+<!-- Modal: AMI Details -->
+<div class="ov-modal" *ngIf="showDetailsModal" (click)="closeDetails()">
+  <div class="ov-modal__dialog" role="dialog" aria-modal="true"
+       aria-labelledby="ami-details-title" (click)="$event.stopPropagation()">
+
+    <div class="ov-modal__head">
+      <h2 id="ami-details-title" class="ov-modal__title">
+        AMI Details — {{ selectedResource?.imageId }}
+      </h2>
+      <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
     </div>
-    
-    <!-- Mobile Cards -->
-    <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
-      <div class="ov-card" *ngFor="let resource of paginatedResources">
-        <div class="ov-card__head">
-          <div>
-            <div class="ov-card__title">{{ resource.imageId }}</div>
-            <div class="ov-card__sub">{{ resource.amiName }}</div>
-          </div>
-          <span [class]="getPlatformClass(resource.platform)">
-            {{ resource.platform }}
-          </span>
-        </div>
-        <div class="ov-card__grid">
-          <div>
-            <div class="ov-k">Name Tag</div>
-            <div class="ov-v">{{ resource.nameTag || 'N/A' }}</div>
-          </div>
-          <div>
-            <div class="ov-k">Region</div>
-            <div class="ov-v">{{ resource.region }}</div>
-          </div>
-          <div>
-            <div class="ov-k">Created</div>
-            <div class="ov-v">{{ formatDate(resource.creationTime) }}</div>
-          </div>
-          <div class="full-width">
-            <button 
-              class="ov-btn ov-btn--primary"
-              (click)="viewDetails(resource)"
-              style="width: 100%">
-              View Details
-            </button>
-          </div>
+
+    <div class="ov-modal__body">
+      <div class="ov-card__grid">
+        <div><div class="ov-k">Image ID</div><div class="ov-v">{{ selectedResource?.imageId }}</div></div>
+        <div><div class="ov-k">AMI Name</div><div class="ov-v">{{ selectedResource?.amiName || selectedResource?.imageName }}</div></div>
+        <div><div class="ov-k">Image Name</div><div class="ov-v">{{ selectedResource?.imageName || '—' }}</div></div>
+        <div><div class="ov-k">State</div><div class="ov-v">{{ selectedResource?.imageState }}</div></div>
+        <div><div class="ov-k">Platform</div><div class="ov-v">{{ selectedResource?.platform }}</div></div>
+        <div><div class="ov-k">Region</div><div class="ov-v">{{ selectedResource?.region }}</div></div>
+        <div><div class="ov-k">Account</div><div class="ov-v">{{ selectedResource?.accountName || selectedResource?.accountId }}</div></div>
+        <div><div class="ov-k">Created</div><div class="ov-v">{{ formatDate(selectedResource?.createdAt || selectedResource?.creationTime) }}</div></div>
+        <div><div class="ov-k">Updated</div><div class="ov-v">{{ formatDate(selectedResource?.updatedAt || selectedResource?.lastUpdated) }}</div></div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="ov-k">Description</div>
+        <div class="ov-v">{{ selectedResource?.description || '—' }}</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="ov-k">Tags</div>
+        <div class="ov-tags">
+          <span class="ov-tag" *ngFor="let t of detailsTags">{{ t.Key }}: {{ t.Value }}</span>
         </div>
       </div>
     </div>
-    
-    <!-- Pagination -->
-    <div class="ov-pagination" *ngIf="!loading && totalPages > 1">
-      <div class="ov-pagination__info">
-        Showing {{ startIndex + 1 }}-{{ endIndex }} of {{ filteredResources.length }} items
-      </div>
-      <div class="ov-pagination__controls">
-        <button 
-          (click)="previousPage()"
-          [disabled]="currentPage === 1">
-          Previous
-        </button>
-        <div class="ov-pagination__pages">
-          <button 
-            *ngFor="let page of getPageNumbers()"
-            (click)="goToPage(page)"
-            [class.is-active]="page === currentPage">
-            {{ page }}
-          </button>
-        </div>
-        <button 
-          (click)="nextPage()"
-          [disabled]="currentPage === totalPages">
-          Next
-        </button>
-      </div>
+
+    <div class="ov-modal__foot">
+      <button class="ov-btn ov-btn--primary" (click)="closeDetails()">Close</button>
     </div>
   </div>
 </div>
+  <!-- Modal: Customize Columns -->
+  <div class="ov-modal" *ngIf="showColumnCustomizer" (click)="closeColumnCustomizer()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="ami-col-title" (click)="$event.stopPropagation()">
+      <div class="ov-modal__head">
+        <h2 id="ami-col-title" class="ov-modal__title">Customize Columns</h2>
+        <button class="ov-btn" (click)="closeColumnCustomizer()" aria-label="Close dialog">×</button>
+      </div>
+      <div class="ov-modal__body">
+        <div class="ov-actions" style="justify-content:flex-start; margin-bottom: var(--ov-space-4);">
+          <button class="ov-btn" (click)="selectAllColumns()">Select All</button>
+          <button class="ov-btn" (click)="deselectAllColumns()">Deselect All</button>
+        </div>
+        <div class="column-list">
+          <label *ngFor="let column of availableColumns">
+            <input type="checkbox"
+                   [checked]="isColumnSelected(column.key)"
+                   (change)="toggleColumn(column.key)"
+                   [disabled]="isRequiredColumn(column.key)" />
+            <span [class.required]="isRequiredColumn(column.key)">
+              {{ column.label }}
+              <span *ngIf="isRequiredColumn(column.key)" class="required-badge">Required</span>
+            </span>
+          </label>
+        </div>
+      </div>
+      <div class="ov-modal__foot">
+        <button class="ov-btn" (click)="applyColumnSelection()">Apply</button>
+        <button class="ov-btn ov-btn--primary" (click)="closeColumnCustomizer()">Done</button>
+      </div>
+    </div>
+  </div>
+</article>
