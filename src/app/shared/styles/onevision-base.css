@@ -1253,3 +1253,28 @@
   font-weight: 600;
   margin-left: var(--ov-space-2);
 }
+
+/* ========================================
+   TAGS
+   ======================================== */
+
+.ov-tag {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--ov-surface-raised);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius-full);
+  padding: var(--ov-space-1) var(--ov-space-3);
+  font-size: var(--ov-text-xs);
+  color: var(--ov-text-secondary);
+}
+
+.ov-tag-key {
+  font-weight: 600;
+  margin-right: var(--ov-space-2);
+  color: var(--ov-text);
+}
+
+.ov-tag-value {
+  color: var(--ov-muted);
+}

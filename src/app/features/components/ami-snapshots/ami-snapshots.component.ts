@@ -8,11 +8,10 @@ import { ResourceTagsComponent } from '../../../shared/components/resource-tags/
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { TagFormatter } from '../../../shared/utils/tag-formatter';
 
-interface AMITag {
+interface Tag {
   Key: string;
   Value: string;
 }
-
 interface ColumnDefinition {
   key: string;
   label: string;
@@ -27,7 +26,6 @@ interface ColumnDefinition {
   imports: [CommonModule, FormsModule, ResourceTagsComponent],
   templateUrl: './ami-snapshots.component.html',
   styleUrls: [
-    './ami-snapshots.component.css',
     '../../../shared/styles/onevision-base.css'
   ]
 })
@@ -118,7 +116,7 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.resources = data.map(resource => {
             const parsedTagsObj = TagFormatter.parseTags(resource.tags);
-            const parsedTagsArray: AMITag[] = Object.entries(parsedTagsObj).map(([key, value]) => ({
+            const parsedTagsArray: Tag[] = Object.entries(parsedTagsObj).map(([key, value]) => ({
               Key: key,
               Value: value
             }));

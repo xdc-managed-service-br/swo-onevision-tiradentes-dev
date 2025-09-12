@@ -6,7 +6,6 @@ import { takeUntil } from 'rxjs/operators';
 import { ResourceService } from '../../../core/services/resource.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
-import { TagFormatter } from '../../../shared/utils/tag-formatter';
 
 // Interface for type safety
 interface EBSVolume {

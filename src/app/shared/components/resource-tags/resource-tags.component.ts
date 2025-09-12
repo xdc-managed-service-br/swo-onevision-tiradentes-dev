@@ -7,86 +7,8 @@ import { TagFormatter } from '../../utils/tag-formatter';
   selector: 'app-resource-tags',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="tags-container">
-      <ng-container *ngIf="!isEmptyTags(); else noTagsMessage">
-        <div class="tag" *ngFor="let tag of parsedTagsArray">
-          <span class="tag-key">{{ tag.key }}</span>
-          <span class="tag-value">{{ tag.value }}</span>
-        </div>
-      </ng-container>
-      <ng-template #noTagsMessage>
-        <div class="no-tags-message">No tags available for this resource</div>
-      </ng-template>
-    </div>
-  `,
-  styles: [`
-    .tags-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-      max-width: 100%;
-      overflow-x: auto;
-    }
-
-    .tag {
-      display: flex;
-      background-color: #f0f0f0;
-      border-radius: 4px;
-      overflow: hidden;
-      font-size: 0.85rem;
-      border: 1px solid #ddd;
-      max-width: 100%;
-    }
-
-    .tag-key {
-      background-color: #e0e0e0;
-      padding: 6px 10px;
-      font-weight: bold;
-      color: #555;
-      border-right: 1px solid #ddd;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 180px;
-    }
-
-    .tag-value {
-      padding: 6px 10px;
-      color: #666;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 220px;
-    }
-
-    .no-tags-message {
-      color: #888;
-      font-style: italic;
-      padding: 5px;
-      background-color: #f8f8f8;
-      border-radius: 4px;
-      border: 1px dashed #ddd;
-      width: 100%;
-      text-align: center;
-    }
-
-    /* For mobile */
-    @media (max-width: 768px) {
-      .tags-container {
-        flex-direction: column;
-      }
-      
-      .tag {
-        width: 100%;
-      }
-      
-      .tag-key, .tag-value {
-        max-width: none;
-      }
-    }
-  `]
+  templateUrl: './resource-tags.component.html',
+  styleUrls: ['../../../shared/styles/onevision-base.css' ]
 })
 export class ResourceTagsComponent implements OnChanges {
   @Input() tags: any;

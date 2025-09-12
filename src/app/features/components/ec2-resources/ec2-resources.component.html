@@ -264,8 +264,8 @@
             <tr>
               <th>Private IPs</th>
               <td>
-                <span *ngIf="selectedResource.privateIpArray.length > 0; else noPrivateIps">
-                  <div *ngFor="let ip of selectedResource.privateIpArray">{{ ip }}</div>
+                <span *ngIf="selectedResource.instancePrivateIps.length > 0; else noPrivateIps">
+                  <div *ngFor="let ip of selectedResource.instancePrivateIps">{{ ip }}</div>
                 </span>
                 <ng-template #noPrivateIps>
                   <span>No private IPs found</span>
@@ -275,8 +275,8 @@
             <tr>
               <th>Public IPs</th>
               <td>
-                <span *ngIf="selectedResource.publicIpArray.length > 0; else noPublicIps">
-                  <div *ngFor="let ip of selectedResource.publicIpArray">{{ ip }}</div>
+                <span *ngIf="selectedResource.instancePublicIps.length > 0; else noPublicIps">
+                  <div *ngFor="let ip of selectedResource.instancePublicIps">{{ ip }}</div>
                 </span>
                 <ng-template #noPublicIps>
                   <span>No public IPs found</span>
@@ -444,7 +444,7 @@
           class="ov-btn"
           *ngFor="let page of getPageNumbers()"
           (click)="goToPage(page)"
-          [class.active]="page === currentPage">
+          [class.is-active]="page === currentPage">
           {{ page }}
         </button>
       </span>

@@ -9,36 +9,27 @@ export class FormatUtils {
     if (!dateString) return '';
     
     try {
-      // First try: Fix malformed dates with both timezone offset and Z
       let cleaned = dateString;
-      
-      // Fix dates with +00:00Z format by removing the Z
       if (cleaned.match(/\+\d{2}:\d{2}Z$/)) {
         cleaned = cleaned.replace('Z', '');
       }
       
       const date = new Date(cleaned);
-      
-      // Check if date is valid
       if (!isNaN(date.getTime())) {
         return date.toLocaleString();
       }
-      
-      // Second try: Manual parsing for date strings with T format
       if (dateString.includes('T')) {
         const [datePart, timePart] = dateString.split('T');
         
         if (datePart && datePart.includes('-')) {
           const [year, month, day] = datePart.split('-').map(Number);
-          
-          // Try to extract hours, minutes, seconds
           if (timePart) {
             const timeMatch = timePart.match(/(\d{2}):(\d{2}):(\d{2})/);
             if (timeMatch) {
               const [_, hours, minutes, seconds] = timeMatch;
               const manualDate = new Date(
                 year, 
-                month - 1, // months are 0-indexed
+                month - 1,
                 day, 
                 parseInt(hours), 
                 parseInt(minutes), 
@@ -47,13 +38,9 @@ export class FormatUtils {
               return manualDate.toLocaleString();
             }
           }
-          
-          // If we only have the date part
           return new Date(year, month - 1, day).toLocaleDateString();
         }
       }
-      
-      // If all fails, return the original string
       return dateString;
       
     } catch (e) {

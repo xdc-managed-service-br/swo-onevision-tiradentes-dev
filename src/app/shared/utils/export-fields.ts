@@ -1,8 +1,5 @@
 // src/app/shared/utils/export-fields.ts
 
-/**
- * Field definitions for CSV exports by resource type
- */
 export const ExportFields: Record<string, string[]> = {
   // EC2 Instance fields
   'EC2Instance': [

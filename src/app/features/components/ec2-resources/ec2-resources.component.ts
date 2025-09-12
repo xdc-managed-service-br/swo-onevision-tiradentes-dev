@@ -5,19 +5,15 @@ import { takeUntil } from 'rxjs/operators';
 import { ResourceService } from '../../../core/services/resource.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
-import { TagFormatter } from '../../../shared/utils/tag-formatter';
+import { EC2Instance } from '../../../models/resource.model';
 
-interface EC2Tag {
-  Key: string;
-  Value: string;
-}
+type ColumnKey = keyof EC2Instance;
 
-// Interface for column definition
 interface ColumnDefinition {
-  key: string;
+  key: ColumnKey;
   label: string;
   sortable?: boolean;
-  transform?: (resource: any) => string;
+  transform?: (resource: EC2Instance) => string;
 }
 
 @Component({
@@ -26,73 +22,93 @@ interface ColumnDefinition {
   imports: [CommonModule, ResourceTagsComponent],
   templateUrl: './ec2-resources.component.html',
   styleUrls: [
-    './ec2-resources.component.css',
-    '../../../shared/styles/onevision-base.css' 
+    '../../../shared/styles/onevision-base.css'
   ]
 })
 export class EC2ResourcesComponent implements OnInit, OnDestroy {
-  resources: any[] = [];
-  filteredResources: any[] = [];
+  constructor(
+    private resourceService: ResourceService,
+    private exportService: ExportService
+  ) {}
+  // ==== State ====
+  resources: EC2Instance[] = [];
+  filteredResources: EC2Instance[] = [];
+  paginatedResources: EC2Instance[] = [];
   loading = true;
-  selectedResource: any = null;
-  uniqueAccounts: string[] = [];
-  // === Pagination state ===
-  pageSize = 50;                 // ajuste livre: 10, 25, 50…
+  selectedResource: EC2Instance | null = null;
+
+  // Pagination
+  pageSize = 50;
   currentPage = 1;
   totalPages = 1;
-  paginatedResources: any[] = []; // fonte para *ngFor no template
-  pageStartIndex = 0;            // "Showing X"
-  pageEndIndex = 0;              // "Showing Y"  
-  // Search functionality
-  searchTerm: string = '';
-  
-  // Unique values for filters
+  pageStartIndex = 0;
+  pageEndIndex = 0;
+
+  // Search & filters
+  searchTerm = '';
   uniqueStates: string[] = [];
   uniqueTypes: string[] = [];
   uniqueRegions: string[] = [];
-  
+  uniqueAccounts: string[] = [];
+  stateFilter = '';
+  typeFilter = '';
+  regionFilter = '';
+  cwAgentFilter = '';
+  accountFilter = '';
+
   // Sorting
-  sortColumn: string = '';
+  sortColumn: ColumnKey | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
-  
-  // Current filter values
-  stateFilter: string = '';
-  typeFilter: string = '';
-  regionFilter: string = '';
-  cwAgentFilter: string = '';
-  accountFilter: string = '';
-  
-  // Column customization
+  private static readonly DATE_COLUMNS: ColumnKey[] = ['lastUpdated', 'ssmLastPingTime'];
+
+  // Columns customization
   showColumnCustomizer = false;
-  selectedColumns: Set<string> = new Set();
-  
-  // Define all available columns
+  selectedColumns: Set<ColumnKey> = new Set();
+
   availableColumns: ColumnDefinition[] = [
     { key: 'instanceId', label: 'Instance ID', sortable: true },
     { key: 'instanceName', label: 'Name', sortable: true },
     { key: 'instanceType', label: 'Type', sortable: true },
     { key: 'instanceState', label: 'State', sortable: true },
-    { key: 'healthStatus', label: 'Health Status', sortable: true, 
-      transform: (resource) => this.getHealthStatusText(resource) },
-    { key: 'cwAgentMemoryDetected', label: 'CW Monitoring', sortable: true,
-      transform: (resource) => resource.cwAgentMemoryDetected ? 'Enabled' : 'Disabled' },
-    { key: 'instancePrivateIps', label: 'Private IPs', sortable: false,
-      transform: (resource) => resource.privateIpArray?.join(', ') || 'N/A' },
-    { key: 'instancePublicIps', label: 'Public IPs', sortable: false,
-      transform: (resource) => resource.publicIpArray?.join(', ') || 'N/A' },
+    {
+      key: 'healthStatus',
+      label: 'Health Status',
+      sortable: true,
+      transform: (r) => this.getHealthStatusText(r)
+    },
+    {
+      key: 'cwAgentMemoryDetected',
+      label: 'CW Monitoring',
+      sortable: true,
+      transform: (r) => (r.cwAgentMemoryDetected ? 'Enabled' : 'Disabled')
+    },
+    {
+      key: 'instancePrivateIps',
+      label: 'Private IPs',
+      sortable: false,
+      transform: (r) => this.formatIpList(r.instancePrivateIps),
+    },
+    {
+      key: 'instancePublicIps',
+      label: 'Public IPs',
+      sortable: false,
+      transform: (r) => this.formatIpList(r.instancePublicIps),
+    },
     { key: 'region', label: 'Region', sortable: true },
     { key: 'accountId', label: 'Account ID', sortable: true },
     { key: 'accountName', label: 'Account Name', sortable: true },
-    { key: 'createdAt', label: 'Launch Time', sortable: true,
-      transform: (resource) => this.formatDate(resource.createdAt) },
     { key: 'platformDetails', label: 'Platform', sortable: true },
     { key: 'amiName', label: 'AMI Name', sortable: true },
     { key: 'iamRole', label: 'IAM Role', sortable: true },
     { key: 'ssmStatus', label: 'SSM Status', sortable: true },
     { key: 'ssmPingStatus', label: 'SSM Ping Status', sortable: true },
     { key: 'ssmVersion', label: 'SSM Version', sortable: true },
-    { key: 'ssmLastPingTime', label: 'Last Ping Time', sortable: true,
-      transform: (resource) => this.formatDate(resource.ssmLastPingTime) },
+    {
+      key: 'ssmLastPingTime',
+      label: 'Last Ping Time',
+      sortable: true,
+      transform: (r) => this.formatDate(r.ssmLastPingTime)
+    },
     { key: 'swoMonitor', label: 'SWO Monitor', sortable: true },
     { key: 'swoPatch', label: 'SWO Patch', sortable: true },
     { key: 'swoBackup', label: 'SWO Backup', sortable: true },
@@ -102,26 +118,313 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
     { key: 'autoShutdown', label: 'Auto Shutdown', sortable: true },
     { key: 'saturday', label: 'Saturday Schedule', sortable: true },
     { key: 'sunday', label: 'Sunday Schedule', sortable: true },
-    { key: 'lastUpdated', label: 'Last Updated', sortable: true,
-      transform: (resource) => this.formatDate(resource.lastUpdated) }
+    {
+      key: 'lastUpdated',
+      label: 'Last Updated',
+      sortable: true,
+      transform: (r) => this.formatDate(r.lastUpdated)
+    }
   ];
-  
-  // Default columns to show
-  defaultColumns = ['instanceId', 'instanceName', 'instanceType', 'state', 'healthStatus', 
-                    'cwAgentMemoryDetected', 'instancePrivateIps', 'region', 'accountId', 'accountName', 'createdAt'];
-  
-  // Required columns that cannot be deselected
-  requiredColumns = ['instanceId'];
-  
+
+  defaultColumns: ColumnKey[] = [
+    'instanceId',
+    'instanceName',
+    'instanceType',
+    'instanceState',
+    'healthStatus',
+    'cwAgentMemoryDetected',
+    'instancePrivateIps',
+    'instancePublicIps',
+    'region',
+    'accountId',
+    'accountName',
+    'lastUpdated'
+  ];
+  requiredColumns: ColumnKey[] = ['instanceId'];
+
   private destroy$ = new Subject<void>();
-  // Recalcula cortes/páginas sempre que a lista ou a página mudarem
+
+  // ==== Lifecycle ====
+  ngOnInit(): void {
+    this.selectedColumns = new Set(this.defaultColumns);
+    this.loadColumnPreferences();
+    this.loadResources();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ==== Data loading ====
+  loadResources(): void {
+    this.loading = true;
+
+    this.resourceService
+      .getResourcesByType('EC2Instance')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data: EC2Instance[]) => {
+          console.log('[EC2] recebidas do serviço:', data.length);
+
+          this.resources = data.map((resource: EC2Instance) => {
+            const instancePrivateIps = this.parseIpList(
+              (resource as any).instancePrivateIps ?? (resource as any).privateIps
+            );
+            const instancePublicIps = this.parseIpList(
+              (resource as any).instancePublicIps ?? (resource as any).publicIps
+            );
+            // Normaliza booleans que podem vir como "true"/"false"
+            const toBool = (v: unknown) =>
+              typeof v === 'string' ? v.toLowerCase() === 'true' : Boolean(v);
+
+            const normalized: EC2Instance = {
+              ...resource,
+              // garante os arrays tipados
+              instancePrivateIps,
+              instancePublicIps,
+              // booleans consistentes
+              cwAgentMemoryDetected: toBool(resource.cwAgentMemoryDetected),
+              cwAgentDiskDetected: toBool(resource.cwAgentDiskDetected),
+              lastUpdated: resource.lastUpdated,
+              ssmLastPingTime: resource.ssmLastPingTime,
+            };
+
+            return normalized;
+          });
+          this.filteredResources = [...this.resources];
+          this.uniqueStates = Array.from(
+            new Set(this.resources.map(r => r.instanceState).filter((s): s is string => !!s))
+          ).sort();
+          this.uniqueTypes = Array.from(
+            new Set(this.resources.map(r => r.instanceType).filter((s): s is string => !!s))
+          ).sort();
+          this.uniqueRegions = Array.from(
+            new Set(this.resources.map(r => r.region).filter((s): s is string => !!s))
+          ).sort();
+          this.uniqueAccounts = Array.from(
+            new Set(
+              this.resources
+                .map(r => r.accountName || r.accountId)
+                .filter((s): s is string => !!s)
+            )
+          ).sort();
+          this.recomputePagination();
+          this.loading = false;
+        },
+        error: (error: unknown) => {
+          console.error('Error loading EC2 instances:', error);
+          this.loading = false;
+        },
+      });
+  }
+
+  refresh(): void {
+    this.resourceService.clearCache();
+    this.loadResources();
+  }
+
+  openColumnCustomizer(): void {
+    this.showColumnCustomizer = true;
+  }
+
+  closeColumnCustomizer(): void {
+    this.showColumnCustomizer = false;
+  }
+
+  toggleColumn(key: ColumnKey): void {
+    if (this.isRequiredColumn(key)) return;
+
+    if (this.selectedColumns.has(key)) {
+      this.selectedColumns.delete(key);
+    } else {
+      this.selectedColumns.add(key);
+    }
+  }
+
+  isColumnSelected(key: ColumnKey): boolean {
+    return this.selectedColumns.has(key);
+  }
+
+  isRequiredColumn(key: ColumnKey): boolean {
+    return this.requiredColumns.includes(key);
+  }
+
+  selectAllColumns(): void {
+    this.availableColumns.forEach((col) => this.selectedColumns.add(col.key));
+  }
+
+  deselectAllColumns(): void {
+    this.selectedColumns.clear();
+    this.requiredColumns.forEach((k) => this.selectedColumns.add(k));
+  }
+
+  applyColumnSelection(): void {
+    this.saveColumnPreferences();
+    this.closeColumnCustomizer();
+  }
+
+  getVisibleColumns(): ColumnDefinition[] {
+    return this.availableColumns.filter((col) => this.selectedColumns.has(col.key));
+  }
+
+  private saveColumnPreferences(): void {
+    try {
+      const preferences = Array.from(this.selectedColumns);
+      localStorage.setItem('ec2-columns', JSON.stringify(preferences));
+    } catch (e) {
+      console.warn('Could not save column preferences:', e);
+    }
+  }
+
+  private loadColumnPreferences(): void {
+    try {
+      const saved = localStorage.getItem('ec2-columns');
+      if (saved) {
+        const parsed = JSON.parse(saved) as string[];
+        // Only keep keys that still exist
+        const validKeys = new Set(this.availableColumns.map((c) => c.key));
+        this.selectedColumns = new Set(parsed.filter((k): k is ColumnKey => validKeys.has(k as ColumnKey)) as ColumnKey[]);
+        // Ensure required columns are present
+        this.requiredColumns.forEach((k) => this.selectedColumns.add(k));
+      }
+    } catch {
+      this.selectedColumns = new Set(this.defaultColumns);
+    }
+  }
+
+  searchInstances(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchTerm = value.trim().toLowerCase();
+    this.applyFilters();
+  }
+
+  clearSearch(inputElement: HTMLInputElement): void {
+    inputElement.value = '';
+    this.searchTerm = '';
+    this.applyFilters();
+  }
+
+  filterByState(event: Event): void {
+    this.stateFilter = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
+
+  filterByType(event: Event): void {
+    this.typeFilter = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
+
+  filterByRegion(event: Event): void {
+    this.regionFilter = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
+
+  filterByCWAgent(event: Event): void {
+    this.cwAgentFilter = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
+
+  filterByAccount(event: Event): void {
+    this.accountFilter = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
+
+  applyFilters(): void {
+    this.filteredResources = this.resources.filter((r) => {
+
+      if (this.searchTerm) {
+        const id = r.instanceId?.toLowerCase() ?? '';
+        const name = r.instanceName?.toLowerCase() ?? '';
+        if (!id.includes(this.searchTerm) && !name.includes(this.searchTerm)) return false;
+      }
+
+      if (this.stateFilter && r.instanceState !== this.stateFilter) return false;
+      if (this.typeFilter && r.instanceType !== this.typeFilter) return false;
+      if (this.regionFilter && r.region !== this.regionFilter) return false;
+
+      if (this.cwAgentFilter) {
+        const isEnabled = this.cwAgentFilter === 'true';
+        if (r.cwAgentMemoryDetected !== isEnabled) return false;
+      }
+
+      if (this.accountFilter && (r.accountName || r.accountId) !== this.accountFilter) return false;
+
+      return true;
+    });
+
+    if (this.sortColumn) {
+      this.sortData(this.sortColumn);
+    } else {
+      this.updatePaginationAfterChange();
+    }
+  }
+
+resetFilters(): void {
+  this.stateFilter = '';
+  this.typeFilter = '';
+  this.regionFilter = '';
+  this.cwAgentFilter = '';
+  this.accountFilter = '';
+  this.searchTerm = '';
+
+  const searchInput = document.getElementById('instanceSearch') as HTMLInputElement | null;
+  if (searchInput) {
+    searchInput.value = '';
+  }
+
+  this.filteredResources = [...this.resources];
+
+  if (this.sortColumn) {
+    this.sortData(this.sortColumn);
+  } else {
+    this.updatePaginationAfterChange();
+  }
+}  
+
+  // ==== Sorting ====
+  sortData(column: ColumnKey): void {
+    this.sortColumn = column; // keep selected column
+    this.filteredResources = [...this.filteredResources].sort((a, b) => {
+      const valueA = a[column];
+      const valueB = b[column];
+
+      // Dates (ISO strings)
+      if (EC2ResourcesComponent.DATE_COLUMNS.includes(column)) {
+        const dateA = valueA ? new Date(valueA as string).getTime() : 0;
+        const dateB = valueB ? new Date(valueB as string).getTime() : 0;
+        return this.sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+
+      // Numbers
+      if (typeof valueA === 'number' && typeof valueB === 'number') {
+        return this.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
+      }
+
+      // Booleans
+      if (typeof valueA === 'boolean' && typeof valueB === 'boolean') {
+        const aNum = valueA ? 1 : 0;
+        const bNum = valueB ? 1 : 0;
+        return this.sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+      }
+
+      // Strings
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        return this.sortDirection === 'asc'
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      }
+
+      return 0;
+    });
+
+    this.updatePaginationAfterChange();
+  }
+
+  // ==== Pagination ====
   private recomputePagination(): void {
     const total = this.filteredResources?.length ?? 0;
-
-    // garante pelo menos 1 página mesmo com lista vazia
     this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
-
-    // clamp da página atual
     this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);
 
     const start = total === 0 ? 0 : (this.currentPage - 1) * this.pageSize;
@@ -132,523 +435,243 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
     this.pageEndIndex = end;
   }
 
-  // Use quando filtros/busca/sort mudarem a lista
   updatePaginationAfterChange(): void {
     this.currentPage = 1;
     this.recomputePagination();
-  }  
-  constructor(
-    private resourceService: ResourceService,
-    private exportService: ExportService
-  ) {
-    // Initialize selected columns with defaults
-    this.selectedColumns = new Set(this.defaultColumns);
-    
-    // Load saved column preferences from localStorage
-    this.loadColumnPreferences();
   }
-  
-  ngOnInit(): void {
-    this.loadResources();
+
+  // ==== Details / helpers ====
+  // 1) Helpers
+  private readonly IPV4 =
+    /^(25[0-5]|2[0-4]\d|1?\d{1,2})(\.(25[0-5]|2[0-4]\d|1?\d{1,2})){3}$/;
+  private readonly IPV6 =
+    /^(([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}|(::)|([0-9a-f]{1,4}:){1,7}:|:([0-9a-f]{1,4}:){1,7}|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|[0-9a-f]{1,4}(:[0-9a-f]{1,4}){1,6})$/i;
+
+  private isIp(x: string): boolean {
+    const v = (x || '').trim();
+    // remove máscara se vier "10.0.0.1/24"
+    const ip = v.includes('/') ? v.split('/')[0] : v;
+    return this.IPV4.test(ip) || this.IPV6.test(ip);
   }
-  
-  loadResources(): void {
-    this.loading = true;
-    this.resourceService.getResourcesByType('EC2Instance')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.resources = data.map(resource => {
-            const parsedTagsObj = TagFormatter.parseTags(resource.tags);
-            const parsedTagsArray: EC2Tag[] = Object.entries(parsedTagsObj).map(([key, value]) => ({
-              Key: key,
-              Value: value
-            }));
 
-            const privateIpArray = TagFormatter.parseIpList(resource.privateIps);
-            const publicIpArray = TagFormatter.parseIpList(resource.publicIps);
+  // Extrai possíveis IPs de qualquer forma de objeto que venha de ENI/EC2
+  private extractIpsFromObject(o: any): string[] {
+    if (!o || typeof o !== 'object') return [];
 
-            return {
-              ...resource,           
-              // Convert string 'true'/'false' to actual booleans if needed
-              privateIpArray,
-              publicIpArray,
-              cwAgentMemoryDetected: typeof resource.cwAgentMemoryDetected === 'string' 
-                ? resource.cwAgentMemoryDetected === 'true' 
-                : Boolean(resource.cwAgentMemoryDetected),
-              cwAgentDiskDetected: typeof resource.cwAgentDiskDetected === 'string' 
-                ? resource.cwAgentDiskDetected === 'true' 
-                : Boolean(resource.cwAgentDiskDetected),
-              // Extract values from parsed tags
-              swoMonitor: parsedTagsObj['swoMonitor'] || resource.swoMonitor,
-              swoPatch: parsedTagsObj['swoPatch'] || resource.swoPatch,
-              swoBackup: parsedTagsObj['swoBackup'] || resource.swoBackup,
-              swoRiskClass: parsedTagsObj['swoRiskClass'] || resource.swoRiskClass,
-              patchGroup: parsedTagsObj['PatchGroup'] || resource.patchGroup,
-              // Auto scheduling tags
-              autoStart: parsedTagsObj['Start'] || resource.autoStart,
-              autoShutdown: parsedTagsObj['Shutdown'] || resource.autoShutdown,
-              saturday: parsedTagsObj['Saturday'] || resource.saturday,
-              sunday: parsedTagsObj['Sunday'] || resource.sunday,
-              // Store both formats for reference
-              parsedTags: parsedTagsArray,
-              tagObject: parsedTagsObj,
-            };
-          });
-          
-          this.filteredResources = [...this.resources];
-          this.recomputePagination();
-          // Extract unique values for filters
-          this.uniqueStates = [...new Set(data.map(r => r.instanceState).filter(Boolean))].sort();
-          this.uniqueTypes = [...new Set(data.map(r => r.instanceType).filter(Boolean))].sort();
-          this.uniqueRegions = [...new Set(data.map(r => r.region).filter(Boolean))].sort();
-          this.uniqueAccounts = [...new Set(data.map(r => r.accountName || r.accountId).filter(Boolean))].sort();
-          
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Error loading EC2 instances:', error);
-          this.loading = false;
-        }
+    const candidates: unknown[] = [];
+
+    // Campos comuns
+    const directKeys = [
+      'ip', 'IP', 'Ip', 'address', 'Address',
+      'privateIp', 'PrivateIp', 'privateIpAddress', 'PrivateIpAddress',
+      'publicIp', 'PublicIp', 'publicIpAddress', 'PublicIpAddress'
+    ];
+    directKeys.forEach(k => { if (o?.[k] != null) candidates.push(o[k]); });
+
+    // Estruturas do SDK EC2
+    if (Array.isArray(o?.PrivateIpAddresses)) {
+      o.PrivateIpAddresses.forEach((p: any) => {
+        if (p?.PrivateIpAddress) candidates.push(p.PrivateIpAddress);
+        if (p?.Association?.PublicIp) candidates.push(p.Association.PublicIp);
       });
-  }
-  
-  openColumnCustomizer(): void {
-    this.showColumnCustomizer = true;
-  }
-  
-  closeColumnCustomizer(): void {
-    this.showColumnCustomizer = false;
-  }
-  
-  toggleColumn(key: string): void {
-    if (this.isRequiredColumn(key)) return;
-    
-    if (this.selectedColumns.has(key)) {
-      this.selectedColumns.delete(key);
-    } else {
-      this.selectedColumns.add(key);
     }
-  }
-  
-  isColumnSelected(key: string): boolean {
-    return this.selectedColumns.has(key);
-  }
-  
-  isRequiredColumn(key: string): boolean {
-    return this.requiredColumns.includes(key);
-  }
-  
-  selectAllColumns(): void {
-    this.availableColumns.forEach(col => {
-      this.selectedColumns.add(col.key);
+    if (o?.Association?.PublicIp) candidates.push(o.Association.PublicIp);
+
+    // Arrays aninhados genéricos
+    if (Array.isArray(o?.ips)) candidates.push(...o.ips);
+    if (Array.isArray(o?.privateIps)) candidates.push(...o.privateIps);
+    if (Array.isArray(o?.publicIps)) candidates.push(...o.publicIps);
+
+    // Recursividade leve: se tiver sub-objetos óbvios
+    ['eni', 'networkInterface', 'interface', 'addressInfo'].forEach(k => {
+      if (o?.[k]) candidates.push(o[k]);
     });
-  }
-  
-  deselectAllColumns(): void {
-    this.selectedColumns.clear();
-    // Keep required columns selected
-    this.requiredColumns.forEach(key => {
-      this.selectedColumns.add(key);
-    });
-  }
-  
-  applyColumnSelection(): void {
-    // Save preferences to localStorage
-    this.saveColumnPreferences();
-    this.closeColumnCustomizer();
-  }
-  
-  getVisibleColumns(): ColumnDefinition[] {
-    return this.availableColumns.filter(col => this.selectedColumns.has(col.key));
-  }
-  
-  getColumnValue(column: ColumnDefinition, resource: any): string {
-    if (column.transform) {
-      return column.transform(resource);
-    }
-    
-    const value = resource[column.key];
-    
-    if (value === null || value === undefined) {
-      return 'N/A';
-    }
-    
-    if (typeof value === 'boolean') {
-      return value ? 'Yes' : 'No';
-    }
-    
-    return String(value);
-  }
-  
-  getColumnClass(key: string, resource: any): string {
-    if (key === 'state') {
-      return this.getStatusClass(resource.instanceState);
-    }
-    
-    if (key === 'healthStatus') {
-      return this.getHealthStatusClass(resource);
-    }
-    
-    if (key === 'cwAgentMemoryDetected') {
-      return resource.cwAgentMemoryDetected ? 'status-running' : 'status-stopped';
-    }
-    
-    if (key === 'instancePrivateIps' || key === 'instancePublicIps') {
-      return 'ip-address-column';
-    }
-    
-    return '';
-  }
-  
-  shouldBeFullWidth(key: string): boolean {
-    // Determine which fields should take full width in mobile cards
-    return ['instanceName', 'platformDetails', 'amiName', 'instancePrivateIps', 'instancePublicIps'].includes(key);
-  }
-  
-  // Save and load column preferences
-  saveColumnPreferences(): void {
-    try {
-      const preferences = Array.from(this.selectedColumns);
-      localStorage.setItem('ec2-columns', JSON.stringify(preferences));
-    } catch (e) {
-      console.warn('Could not save column preferences:', e);
-    }
-  }
-  
-  loadColumnPreferences(): void {
-    try {
-      const saved = localStorage.getItem('ec2-columns');
-      if (saved) {
-        const preferences = JSON.parse(saved);
-        this.selectedColumns = new Set(preferences);
-        // Ensure required columns are always included
-        this.requiredColumns.forEach(key => {
-          this.selectedColumns.add(key);
-        });
-      }
-    } catch (e) {
-      this.selectedColumns = new Set(this.defaultColumns);
-    }
-  }
-  
-  // Search functionality
-  searchInstances(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.searchTerm = value.trim().toLowerCase();
-    this.applyFilters();
-  }
-  
-  clearSearch(inputElement: HTMLInputElement): void {
-    inputElement.value = '';
-    this.searchTerm = '';
-    this.applyFilters();
-  }
-  
-  // Filter by state
-  filterByState(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.stateFilter = value;
-    this.applyFilters();
-  }
-  
-  // Filter by instance type
-  filterByType(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.typeFilter = value;
-    this.applyFilters();
-  }
-  
-  // Filter by region
-  filterByRegion(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.regionFilter = value;
-    this.applyFilters();
-  }
-  
-  // Filter by CloudWatch Agent
-  filterByCWAgent(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.cwAgentFilter = value;
-    this.applyFilters();
+
+    return this.flattenToIps(candidates);
   }
 
-  // Filter by account ID
-  filterByAccount(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.accountFilter = value;
-    this.applyFilters();
-  }
-  
-  // Apply all filters
-  applyFilters(): void {
-    this.filteredResources = this.resources.filter(resource => {
-      // Apply search filter
-      if (this.searchTerm) {
-        const instanceId = resource.instanceId ? resource.instanceId.toLowerCase() : '';
-        const instanceName = resource.instanceName ? resource.instanceName.toLowerCase() : '';
-        
-        if (!instanceId.includes(this.searchTerm) && !instanceName.includes(this.searchTerm)) {
-          return false;
+  private flattenToIps(values: unknown[]): string[] {
+    const out: string[] = [];
+    for (const v of values) {
+      if (v == null) continue;
+      if (Array.isArray(v)) {
+        out.push(...this.flattenToIps(v));
+        continue;
+      }
+      if (typeof v === 'object') {
+        out.push(...this.extractIpsFromObject(v));
+        continue;
+      }
+      if (typeof v === 'string') {
+        const s = v.trim();
+        // String com JSON?
+        if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+          try {
+            const parsed = JSON.parse(s);
+            out.push(...this.flattenToIps([parsed]));
+            continue;
+          } catch { /* segue fluxo */ }
         }
+        // "a, b; c | d"
+        const parts = s.split(/[,\s;|]+/).map(p => p.trim()).filter(Boolean);
+        for (const p of parts) if (this.isIp(p)) out.push(p);
       }
-      
-      // Apply state filter
-      if (this.stateFilter && resource.instanceState  !== this.stateFilter) {
-        return false;
-      }
-      
-      // Apply type filter
-      if (this.typeFilter && resource.instanceType !== this.typeFilter) {
-        return false;
-      }
-      
-      // Apply region filter
-      if (this.regionFilter && resource.region !== this.regionFilter) {
-        return false;
-      }
-      
-      // Apply CloudWatch Agent filter
-      if (this.cwAgentFilter) {
-        const isEnabled = this.cwAgentFilter === 'true';
-        if (resource.cwAgentMemoryDetected !== isEnabled) {
-          return false;
+    }
+    return out;
+  }
+
+  // 2) Substitui TUA parseIpList por esta versão blindada
+  private parseIpList(raw: unknown): string[] {
+    if (raw == null) return [];
+
+    // Array -> flatten + extrair
+    if (Array.isArray(raw)) return this.flattenToIps(raw);
+
+    // DynamoDB shapes
+    if (typeof raw === 'object') {
+      const o: any = raw;
+      if (typeof o?.S === 'string') return this.parseIpList(o.S);
+      if (Array.isArray(o?.L)) return this.flattenToIps(o.L);
+      return this.extractIpsFromObject(o); // pega campos comuns
+    }
+
+    // String (JSON, CSV, etc.)
+    if (typeof raw === 'string') {
+      const s = raw.trim();
+      try {
+        if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+          const parsed = JSON.parse(s);
+          return this.parseIpList(parsed);
         }
-      }
-      
-      // Apply account filter
-      if (this.accountFilter && (resource.accountName || resource.accountId) !== this.accountFilter) {
-        return false;
-      }
-      
-      return true;
-    });
-    
-    // Reapply sorting if active
-    if (this.sortColumn) {
-      this.sortData(this.sortColumn);
-    }
-  }
-
-  getHealthStatusText(resource: any): string {
-    // Skip health checks for stopped instances
-    if (resource.instanceState !== 'running') {
-      return 'N/A';
+      } catch { /* ignora e tenta split */ }
+      return this.flattenToIps([s]);
     }
 
-    // Check if we have health check information
-    if (typeof resource.healthChecksPassed === 'number' && 
-        typeof resource.healthChecksTotal === 'number') {
-      return `${resource.healthChecksPassed} / ${resource.healthChecksTotal}`;
-    }
-    
-    // If we have no health check info but instance is running, build status from individual checks
-    let passedChecks = 0;
-    let totalChecks = 0;
-    
-    // System Status Check
-    if (resource.systemStatus) {
-      totalChecks++;
-      if (resource.systemStatus === 'Ok') passedChecks++;
-    }
-    
-    // Instance Status Check
-    if (resource.instanceStatus) {
-      totalChecks++;
-      if (resource.instanceStatus === 'Ok') passedChecks++;
-    }
-    
-    // EBS Status Check
-    if (resource.ebsStatus) {
-      totalChecks++;
-      if (resource.ebsStatus === 'Ok') passedChecks++;
-    }
-    
-    if (totalChecks > 0) {
-      return `${passedChecks} / ${totalChecks}`;
-    }
-    
-    // If no health information is available
-    return 'No Health Data';
+    return [];
   }
-  
-  /**
-   * Get CSS class for health status display
-   */
-  getHealthStatusClass(resource: any): string {
-    // Skip health status for non-running instances
-    if (resource.instanceState  !== 'running') {
-      return 'status-unknown';
-    }
-    
-    // Check if all checks are passing
-    const isFullyHealthy = 
-      (resource.healthChecksPassed === resource.healthChecksTotal && resource.healthChecksTotal > 0) ||
-      (resource.systemStatus === 'Ok' && resource.instanceStatus === 'Ok' && resource.ebsStatus === 'Ok');
-      
-    if (isFullyHealthy) {
-      return 'status-running';
-    }
-    
-    // Check if we have at least one failing check
-    const hasFailingCheck = 
-      (resource.healthChecksPassed < resource.healthChecksTotal) ||
-      (resource.systemStatus === 'failed' || resource.instanceStatus === 'failed' || resource.ebsStatus === 'failed');
-    
-    if (hasFailingCheck) {
-      return 'status-warning';
-    }
-    
-    // If we can't determine health or some checks are impaired
-    return 'status-warning';
+
+  // 3) Formatação amigável (mantém "N/A" quando vazio)
+  private formatIpList(value: unknown): string {
+    const arr = Array.from(new Set(this.parseIpList(value))).filter(Boolean);
+    return arr.length ? arr.join(', ') : 'N/A';
   }
-  
-  // Reset all filters
-  resetFilters(): void {
-    this.stateFilter = '';
-    this.typeFilter = '';
-    this.regionFilter = '';
-    this.cwAgentFilter = '';
-    this.accountFilter = '';
-    this.searchTerm = '';
-    
-    // Reset select elements
-    const selects = document.querySelectorAll('select');
-    selects.forEach(select => select.value = '');
-    
-    // Reset search input
-    const searchInput = document.getElementById('instanceSearch') as HTMLInputElement;
-    if (searchInput) {
-      searchInput.value = '';
-    }
-    
-    this.filteredResources = [...this.resources];
-  }
-  
-  // Sort table by column
-  sortData(column: string): void {
-    if (this.sortColumn === column) {
-      // Toggle direction if already sorting by this column
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-    
-    this.filteredResources.sort((a, b) => {
-      const valueA = a[column];
-      const valueB = b[column];
-      
-      // Handle null/undefined values
-      if (valueA === undefined || valueA === null) return this.sortDirection === 'asc' ? -1 : 1;
-      if (valueB === undefined || valueB === null) return this.sortDirection === 'asc' ? 1 : -1;
-      
-      // Special handling for dates
-      if (column === 'launchTime' || column === 'createdAt' || column === 'updatedAt') {
-        const dateA = valueA ? new Date(valueA) : new Date(0);
-        const dateB = valueB ? new Date(valueB) : new Date(0);
-        return this.sortDirection === 'asc' 
-          ? dateA.getTime() - dateB.getTime() 
-          : dateB.getTime() - dateA.getTime();
-      }
-      
-      // Handle booleans
-      if (typeof valueA === 'boolean') {
-        return this.sortDirection === 'asc' 
-          ? (valueA === valueB ? 0 : valueA ? 1 : -1)
-          : (valueA === valueB ? 0 : valueA ? -1 : 1);
-      }
-      
-      // Default string comparison
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        return this.sortDirection === 'asc'
-          ? valueA.localeCompare(valueB)
-          : valueB.localeCompare(valueA);
-      }
-      
-      // Default numeric comparison
-      return this.sortDirection === 'asc'
-        ? valueA - valueB
-        : valueB - valueA;
-    });
-  }
-  
-  showDetails(r: any) {
+
+
+
+
+  showDetails(r: EC2Instance): void {
     this.selectedResource = r;
   }
-  refresh(): void {
-  this.resourceService.clearCache();
-  this.loadResources();
-}
 
-  // Close details modal
   closeDetails(): void {
     this.selectedResource = null;
   }
-  
-  // Helper: Format date
-  formatDate(dateString: string): string {
+
+  formatDate(dateString?: string): string {
     if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString();
-    } catch (e) {
-      return dateString;
-    }
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    return date.toLocaleString();
   }
-  
-  // Helper: Get CSS class for status
+
   getStatusClass(status: string): string {
     if (!status) return '';
-    
-    status = status.toLowerCase();
-    if (status === 'running') return 'status-running';
-    if (status === 'stopped') return 'status-stopped';
-    if (status === 'pending') return 'status-pending';
-    if (status === 'terminated') return 'status-terminated';
-    
+    const s = status.toLowerCase();
+    if (s === 'running') return 'status-running';
+    if (s === 'stopped') return 'status-stopped';
+    if (s === 'pending') return 'status-pending';
+    if (s === 'terminated') return 'status-terminated';
     return 'status-unknown';
   }
-  
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+
+  getHealthStatusText(r: EC2Instance): string {
+    if (r.instanceState !== 'running') return 'N/A';
+
+    if (typeof r.healthChecksPassed === 'number' && typeof r.healthChecksTotal === 'number') {
+      return `${r.healthChecksPassed} / ${r.healthChecksTotal}`;
+    }
+
+    let passed = 0;
+    let total = 0;
+    if (r.systemStatus) { total++; if (r.systemStatus === 'Ok') passed++; }
+    if (r.instanceStatus) { total++; if (r.instanceStatus === 'Ok') passed++; }
+    if (r.ebsStatus) { total++; if (r.ebsStatus === 'Ok') passed++; }
+
+    if (total > 0) return `${passed} / ${total}`;
+    return 'No Health Data';
   }
 
-  
+  getHealthStatusClass(r: EC2Instance): string {
+    if (r.instanceState !== 'running') return 'status-unknown';
 
-  // Updated Export to CSV method using only visible columns
-  exportToCSV(): void {
-    if (!this.filteredResources.length) return;
-    
-    const filename = 'ec2-instances.csv';
-    
-    // Get only the visible columns for export
-    const visibleColumns = this.getVisibleColumns();
-    const exportColumns: ExportColumn[] = visibleColumns.map(col => ({
-      key: col.key,
-      label: col.label,
-      transform: col.transform || ((resource) => {
-        // Special handling for IP arrays
-        if (col.key === 'instancePrivateIps' && resource.privateIpArray) {
-          return resource.privateIpArray.join('; ');
-        }
-        if (col.key === 'instancePublicIps' && resource.publicIpArray) {
-          return resource.publicIpArray.join('; ');
-        }
-        return resource[col.key];
-      })
-    }));
-    
-    this.exportService.exportDataToCSV(
-      this.filteredResources, 
-      exportColumns,
-      filename
+    const fullyHealthy =
+      (r.healthChecksPassed === r.healthChecksTotal && (r.healthChecksTotal ?? 0) > 0) ||
+      (r.systemStatus === 'Ok' && r.instanceStatus === 'Ok' && r.ebsStatus === 'Ok');
+
+    if (fullyHealthy) return 'status-running';
+
+    const failing =
+      (typeof r.healthChecksPassed === 'number' &&
+        typeof r.healthChecksTotal === 'number' &&
+        r.healthChecksPassed < r.healthChecksTotal) ||
+      r.systemStatus === 'failed' ||
+      r.instanceStatus === 'failed' ||
+      r.ebsStatus === 'failed';
+
+    return failing ? 'status-warning' : 'status-warning';
+  }
+
+  shouldBeFullWidth(key: ColumnKey): boolean {
+    return ['instanceName', 'platformDetails', 'amiName', 'instancePrivateIps', 'instancePublicIps'].includes(
+      key as string
     );
   }
-  // Helpers de navegação
+
+  getColumnValue(column: ColumnDefinition, resource: EC2Instance): string {
+    if (column.transform) return column.transform(resource);
+
+    const value = resource[column.key];
+    if (value === null || value === undefined) return 'N/A';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (Array.isArray(value)) {
+      return value.map(String).join(', ');
+    }
+    return String(value);
+  }
+
+  getColumnClass(key: ColumnKey, resource: EC2Instance): string {
+    if (key === 'instanceState') return this.getStatusClass(resource.instanceState);
+    if (key === 'healthStatus') return this.getHealthStatusClass(resource);
+    if (key === 'cwAgentMemoryDetected') return resource.cwAgentMemoryDetected ? 'status-running' : 'status-stopped';
+    if (key === 'instancePrivateIps' || key === 'instancePublicIps') return 'ip-address-column';
+    return '';
+  }
+
+  // ==== Export ====
+  exportToCSV(): void {
+    if (!this.filteredResources.length) return;
+
+    const filename = 'ec2-instances.csv';
+    const visibleColumns = this.getVisibleColumns();
+
+    const exportColumns: ExportColumn[] = visibleColumns.map((col) => ({
+      key: col.key as string,
+      label: col.label,
+      transform: col.transform
+        ? (r) => col.transform!(r as EC2Instance)
+        : (r) => {
+            const resource = r as EC2Instance;
+            if (col.key === 'instancePrivateIps') return resource.instancePrivateIps?.join('; ') ?? '';
+            if (col.key === 'instancePublicIps') return resource.instancePublicIps?.join('; ') ?? '';
+            return (resource as any)[col.key] ?? '';
+          }
+    }));
+
+    this.exportService.exportDataToCSV(this.filteredResources, exportColumns, filename);
+  }
+
+  // ==== Pagination helpers for template ====
   getPageNumbers(): number[] {
-    // Para até 100 itens com pageSize=10, dá no máx. 10 páginas => dá pra listar todas
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
@@ -687,5 +710,4 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
       this.recomputePagination();
     }
   }
-
 }
