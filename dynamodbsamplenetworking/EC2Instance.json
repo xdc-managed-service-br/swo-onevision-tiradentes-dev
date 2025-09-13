@@ -1,24 +1,24 @@
 {
   "id": {
-    "S": "767397734112-us-east-1-EC2Instance-i-0e46406d5f846f858"
+    "S": "381492155025-us-east-1-EC2Instance-i-04b29a638eec35190"
   },
   "accountId": {
-    "S": "767397734112"
+    "S": "381492155025"
   },
   "accountName": {
-    "S": "Arquiteturas e Sistemas"
+    "S": "MagisterApps Prod"
   },
   "amiName": {
-    "S": "Migrated_Windows_Instance_"
+    "S": "N/A"
   },
   "createdAt": {
-    "S": "2025-09-01T11:27:46.000Z"
+    "S": "2025-08-20T05:15:36.000Z"
   },
   "cwAgentDiskDetected": {
-    "BOOL": true
+    "BOOL": false
   },
   "cwAgentMemoryDetected": {
-    "BOOL": true
+    "BOOL": false
   },
   "ebsStatus": {
     "S": "ok"
@@ -36,13 +36,13 @@
     "S": "SWOSystemsManagerRole"
   },
   "instanceId": {
-    "S": "i-0e46406d5f846f858"
+    "S": "i-04b29a638eec35190"
   },
   "instanceName": {
-    "S": "aws-srv-dev-01 (Thiago)"
+    "S": "AWSSRVUNITWWWS (WWWS UNIT)"
   },
   "instancePrivateIps": {
-    "S": "[\"172.24.73.13\"]"
+    "S": "[\"172.24.57.38\", \"172.24.57.39\", \"172.24.57.40\", \"172.24.57.41\", \"172.24.57.42\", \"172.24.57.43\", \"172.24.57.44\", \"172.24.57.45\", \"172.24.57.46\", \"172.24.57.47\", \"172.24.57.48\", \"172.24.57.49\", \"172.24.57.15\", \"172.24.57.30\", \"172.24.57.31\", \"172.24.57.32\", \"172.24.57.33\", \"172.24.57.34\"]"
   },
   "instancePublicIps": {
     "S": "[]"
@@ -54,16 +54,16 @@
     "S": "ok"
   },
   "instanceType": {
-    "S": "t3a.large"
+    "S": "t3a.xlarge"
   },
   "isWindows": {
     "BOOL": true
   },
   "lastUpdated": {
-    "S": "2025-09-09T12:00:48.890Z"
+    "S": "2025-09-12T12:02:08.917Z"
   },
   "patchGroup": {
-    "S": "1"
+    "S": "3"
   },
   "platformDetails": {
     "S": "Windows"
@@ -75,10 +75,10 @@
     "S": "EC2Instance"
   },
   "resourceTypeRegionId": {
-    "S": "EC2Instance#us-east-1#i-0e46406d5f846f858"
+    "S": "EC2Instance#us-east-1#i-04b29a638eec35190"
   },
   "ssmLastPingTime": {
-    "S": "2025-09-09T11:59:45.107Z"
+    "S": "2025-09-12T11:57:24.754Z"
   },
   "ssmPingStatus": {
     "S": "Online"
@@ -96,7 +96,7 @@
     "S": "1"
   },
   "swoPatch": {
-    "S": "1"
+    "S": "3"
   },
   "swoRiskClass": {
     "S": "1"
@@ -105,9 +105,9 @@
     "S": "ok"
   },
   "tags": {
-    "S": "[{\"Key\": \"Billing-ASIS\", \"Value\": \"0\"}, {\"Key\": \"swoBackup\", \"Value\": \"2\"}, {\"Key\": \"Name\", \"Value\": \"aws-srv-dev-01 (Thiago)\"}, {\"Key\": \"aws:ec2launchtemplate:id\", \"Value\": \"lt-0e05ba3b885fa98ad\"}, {\"Key\": \"mgn.amazonaws.com-source-server\", \"Value\": \"s-30957504f3a3cb611\"}, {\"Key\": \"swoPatch\", \"Value\": \"1\"}, {\"Key\": \"PatchGroup\", \"Value\": \"1\"}, {\"Key\": \"AWSApplicationMigrationServiceManaged\", \"Value\": \"mgn.amazonaws.com\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"mgn.amazonaws.com-job\", \"Value\": \"mgnjob-3262ec90f6a9923e8\"}, {\"Key\": \"swoResize\", \"Value\": \"0\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"AWSApplicationMigrationServiceSourceServerID\", \"Value\": \"s-30957504f3a3cb611\"}, {\"Key\": \"aws:ec2launchtemplate:version\", \"Value\": \"4\"}]"
+    "S": "[{\"Key\": \"Name\", \"Value\": \"AWSSRVUNITWWWS (WWWS UNIT)\"}, {\"Key\": \"swoPatch\", \"Value\": \"3\"}, {\"Key\": \"PatchGroup\", \"Value\": \"3\"}, {\"Key\": \"Billing-MagProd\", \"Value\": \"0\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}, {\"Key\": \"swoBackup\", \"Value\": \"2\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"swoResize\", \"Value\": \"0\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-09T12:00:48.890Z"
+    "S": "2025-09-12T12:02:08.917Z"
   }
 }

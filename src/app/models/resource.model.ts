@@ -1,6 +1,5 @@
 // src/app/models/resource.model.ts
 
-// Campos comuns a todos os recursos
 export interface BaseResource {
   id: string;                        // Ex: "accountId-region-ResourceType-resourceId"
   resourceType: string;              // AMI | EBSSnapshot | EBSVolume | EC2Instance | RDSInstance | S3Bucket

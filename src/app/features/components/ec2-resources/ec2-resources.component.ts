@@ -169,10 +169,16 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
 
           this.resources = data.map((resource: EC2Instance) => {
             const instancePrivateIps = this.parseIpList(
-              (resource as any).instancePrivateIps ?? (resource as any).privateIps
+              (resource as any).instancePrivateIps?.S ??
+              (resource as any).privateIps?.S ??
+              (resource as any).instancePrivateIps ??
+              (resource as any).privateIps
             );
             const instancePublicIps = this.parseIpList(
-              (resource as any).instancePublicIps ?? (resource as any).publicIps
+              (resource as any).instancePublicIps?.S ??
+              (resource as any).publicIps?.S ??
+              (resource as any).instancePublicIps ??
+              (resource as any).publicIps
             );
             // Normaliza booleans que podem vir como "true"/"false"
             const toBool = (v: unknown) =>
@@ -384,31 +390,35 @@ resetFilters(): void {
 
   // ==== Sorting ====
   sortData(column: ColumnKey): void {
-    this.sortColumn = column; // keep selected column
+    if (this.sortColumn === column) {
+      // Alterna direção
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Nova coluna → começa em asc
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
     this.filteredResources = [...this.filteredResources].sort((a, b) => {
       const valueA = a[column];
       const valueB = b[column];
 
-      // Dates (ISO strings)
       if (EC2ResourcesComponent.DATE_COLUMNS.includes(column)) {
         const dateA = valueA ? new Date(valueA as string).getTime() : 0;
         const dateB = valueB ? new Date(valueB as string).getTime() : 0;
         return this.sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
       }
 
-      // Numbers
       if (typeof valueA === 'number' && typeof valueB === 'number') {
         return this.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
       }
 
-      // Booleans
       if (typeof valueA === 'boolean' && typeof valueB === 'boolean') {
         const aNum = valueA ? 1 : 0;
         const bNum = valueB ? 1 : 0;
         return this.sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
       }
 
-      // Strings
       if (typeof valueA === 'string' && typeof valueB === 'string') {
         return this.sortDirection === 'asc'
           ? valueA.localeCompare(valueB)
@@ -420,7 +430,6 @@ resetFilters(): void {
 
     this.updatePaginationAfterChange();
   }
-
   // ==== Pagination ====
   private recomputePagination(): void {
     const total = this.filteredResources?.length ?? 0;
@@ -520,31 +529,38 @@ resetFilters(): void {
     return out;
   }
 
-  // 2) Substitui TUA parseIpList por esta versão blindada
+  // 2) Versão robusta para parseIpList: trata AttributeValue DynamoDB, arrays, listas aninhadas, JSON, CSV, etc.
   private parseIpList(raw: unknown): string[] {
     if (raw == null) return [];
 
-    // Array -> flatten + extrair
-    if (Array.isArray(raw)) return this.flattenToIps(raw);
-
-    // DynamoDB shapes
-    if (typeof raw === 'object') {
-      const o: any = raw;
-      if (typeof o?.S === 'string') return this.parseIpList(o.S);
-      if (Array.isArray(o?.L)) return this.flattenToIps(o.L);
-      return this.extractIpsFromObject(o); // pega campos comuns
+    // Caso DynamoDB AttributeValue { S: "..." }
+    if (typeof raw === 'object' && (raw as any).S !== undefined) {
+      return this.parseIpList((raw as any).S);
+    }
+    if (typeof raw === 'object' && Array.isArray((raw as any).L)) {
+      return this.flattenToIps((raw as any).L);
     }
 
-    // String (JSON, CSV, etc.)
+    // Array normal
+    if (Array.isArray(raw)) return this.flattenToIps(raw);
+
+    // String: pode ser JSON, CSV ou lista simples
     if (typeof raw === 'string') {
       const s = raw.trim();
+      // Tenta JSON.parse
       try {
         if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
           const parsed = JSON.parse(s);
           return this.parseIpList(parsed);
         }
-      } catch { /* ignora e tenta split */ }
-      return this.flattenToIps([s]);
+      } catch {
+        // não era JSON válido
+      }
+      // Trata como lista separada por vírgula, espaço, ponto e vírgula ou pipe
+      return s
+        .split(/[,\s;|]+/)
+        .map(x => x.trim())
+        .filter(x => this.isIp(x));
     }
 
     return [];
