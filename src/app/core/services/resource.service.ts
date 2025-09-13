@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { Observable, from, of, BehaviorSubject } from 'rxjs';
 import { map, catchError, tap, shareReplay } from 'rxjs/operators';
 import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '.../../../amplify/data/resource';
+import type { Schema } from '../../../../amplify/data/resource';
 
 const client = generateClient<Schema>();
 
@@ -22,6 +22,7 @@ export class ResourceService {
   
   /**
    * Get all resources from the database with proper pagination
+   * IMPORTANT: Now filters out metric items to avoid mixing with resources
    */
   getAllResources(): Observable<any[]> {
     this.resourcesLoading.next(true);
@@ -49,6 +50,7 @@ export class ResourceService {
   
   /**
    * Load all resources with pagination to handle large datasets
+   * IMPORTANT: Filters out metric items (isMetric !== true)
    */
   private async loadAllResourcesWithPagination(): Promise<any[]> {
     let allResources: any[] = [];
@@ -57,23 +59,40 @@ export class ResourceService {
     do {
       try {
         const response: { data: any[]; nextToken?: string | null | undefined } = await client.models.AWSResource.list({
+          // CRITICAL: Filter out metric items to avoid mixing with resources
+          filter: {
+            or: [
+              { isMetric: { eq: false } },
+              { isMetric: { attributeExists: false } }
+            ]
+          },
           limit: 1000, // Maximum allowed limit per request
           nextToken: nextToken
         });
         
+        // Additional safety check: filter out any metric items that might slip through
+        const filteredData = response.data.filter(item => {
+          // Exclude items that are metrics
+          if (item.isMetric === true) return false;
+          if (item.resourceType?.startsWith('METRIC')) return false;
+          if (item.id?.startsWith('METRICS-')) return false;
+          return true;
+        });
+        
         // Process each resource to fix any issues
-        const processedData = response.data.map(item => this.processResourceData(item));
+        const processedData = filteredData.map(item => this.processResourceData(item));
         
         allResources = [...allResources, ...processedData];
         nextToken = response.nextToken;
         
-        console.log(`Loaded batch of ${response.data.length} resources. Total: ${allResources.length}`);
+        console.log(`Loaded batch of ${processedData.length} resources. Total: ${allResources.length}`);
       } catch (error) {
         console.error('Error in pagination batch:', error);
         break; // Exit the loop on error
       }
     } while (nextToken);
     
+    console.log(`Total resources loaded (excluding metrics): ${allResources.length}`);
     return allResources;
   }
   
@@ -107,9 +126,17 @@ export class ResourceService {
   
   /**
    * Get resources by specific type with proper pagination
+   * IMPORTANT: Filters out metric items
    */
   getResourcesByType(resourceType: string): Observable<any[]> {
     console.log(`Attempting to load resources of type: ${resourceType}`);
+    
+    // Prevent loading metric types as resources
+    if (resourceType.startsWith('METRIC')) {
+      console.warn(`Attempted to load metric type ${resourceType} as resource. Returning empty.`);
+      return of([]);
+    }
+    
     this.resourcesLoading.next(true);
     
     // Check if we have a cached result
@@ -137,6 +164,7 @@ export class ResourceService {
   
   /**
    * Load resources by type with pagination
+   * IMPORTANT: Filters out metric items
    */
   private async loadResourcesByTypeWithPagination(resourceType: string): Promise<any[]> {
     let resources: any[] = [];
@@ -146,21 +174,32 @@ export class ResourceService {
       try {
         const response: { data: any[]; nextToken?: string | null | undefined } = await client.models.AWSResource.list({
           filter: {
-            resourceType: {
-              eq: resourceType
-            }
+            and: [
+              { resourceType: { eq: resourceType } },
+              { or: [
+                { isMetric: { eq: false } },
+                { isMetric: { attributeExists: false } }
+              ]}
+            ]
           },
           limit: 1000, // Maximum allowed limit per request
           nextToken: nextToken
         });
         
+        // Additional safety check
+        const filteredData = response.data.filter(item => {
+          if (item.isMetric === true) return false;
+          if (item.id?.startsWith('METRICS-')) return false;
+          return true;
+        });
+        
         // Process each resource to fix any issues
-        const processedData = response.data.map(item => this.processResourceData(item));
+        const processedData = filteredData.map(item => this.processResourceData(item));
         
         resources = [...resources, ...processedData];
         nextToken = response.nextToken;
         
-        console.log(`Loaded batch of ${response.data.length} ${resourceType} resources. Total: ${resources.length}`);
+        console.log(`Loaded batch of ${processedData.length} ${resourceType} resources. Total: ${resources.length}`);
       } catch (error) {
         console.error(`Error in ${resourceType} pagination batch:`, error);
         break; // Exit the loop on error
@@ -172,6 +211,7 @@ export class ResourceService {
   
   /**
    * Get resources by region
+   * IMPORTANT: Filters out metric items
    */
   getResourcesByRegion(region: string): Observable<any[]> {
     this.resourcesLoading.next(true);
@@ -186,15 +226,27 @@ export class ResourceService {
     // Otherwise fetch from API
     return from(client.models.AWSResource.list({
       filter: {
-        region: {
-          eq: region
-        }
+        and: [
+          { region: { eq: region } },
+          { or: [
+            { isMetric: { eq: false } },
+            { isMetric: { attributeExists: false } }
+          ]}
+        ]
       },
       limit: 1000
     })).pipe(
       map(response => {
+        // Additional safety check
+        const filteredData = response.data.filter(item => {
+          if (item.isMetric === true) return false;
+          if (item.resourceType?.startsWith('METRIC')) return false;
+          if (item.id?.startsWith('METRICS-')) return false;
+          return true;
+        });
+        
         // Process each resource to fix any issues
-        return response.data.map(item => this.processResourceData(item));
+        return filteredData.map(item => this.processResourceData(item));
       }),
       tap(resources => {
         // Cache the result
@@ -211,6 +263,7 @@ export class ResourceService {
   
   /**
    * Get resources by account ID
+   * IMPORTANT: Filters out metric items
    */
   getResourcesByAccount(accountId: string): Observable<any[]> {
     this.resourcesLoading.next(true);
@@ -222,18 +275,30 @@ export class ResourceService {
       return of(filteredResources);
     }
     
-    // Otherwise fetch from API
+    // Otherwise fetch from API using GSI
     return from(client.models.AWSResource.list({
       filter: {
-        accountId: {
-          eq: accountId
-        }
+        and: [
+          { accountId: { eq: accountId } },
+          { or: [
+            { isMetric: { eq: false } },
+            { isMetric: { attributeExists: false } }
+          ]}
+        ]
       },
       limit: 1000
     })).pipe(
       map(response => {
+        // Additional safety check
+        const filteredData = response.data.filter(item => {
+          if (item.isMetric === true) return false;
+          if (item.resourceType?.startsWith('METRIC')) return false;
+          if (item.id?.startsWith('METRICS-')) return false;
+          return true;
+        });
+        
         // Process each resource to fix any issues
-        return response.data.map(item => this.processResourceData(item));
+        return filteredData.map(item => this.processResourceData(item));
       }),
       tap(resources => {
         // Cache the result
@@ -253,5 +318,6 @@ export class ResourceService {
    */
   clearCache(): void {
     this.resourcesCache.clear();
+    console.log('Resource cache cleared');
   }
 }

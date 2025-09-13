@@ -23,18 +23,24 @@ from collectors.rds_collector import RDSCollector
 from collectors.s3_collector import S3Collector
 from collectors.networking_collector import NetworkingCollector
 
+# Import metrics calculator
+from collectors.metrics_calculator import MetricsAccumulator, save_metrics_to_dynamodb
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+# Global metrics accumulator
+global_metrics_accumulator = MetricsAccumulator()
 
-def process_region(account_id, account_name, region, credentials, tables):
+
+def process_region(account_id, account_name, region, credentials, tables, metrics_accumulator=None):
     """Processes a single region for an account, running all regional collectors."""
     start_time = datetime.now(timezone.utc)
     logger.info(f"Processing region {region} for account {account_id} ({account_name})")
     region_total_items_saved = 0
     
     # List of regional collector classes to run
-    regional_collectors = [EC2Collector, RDSCollector, NetworkingCollector]  # Add other regional collectors here
+    regional_collectors = [EC2Collector, RDSCollector, NetworkingCollector]
 
     all_collected_items = []  # Accumulate items from all collectors in this region
 
@@ -58,6 +64,15 @@ def process_region(account_id, account_name, region, credentials, tables):
         except Exception as e:
             logger.error(f"Error in collector {collector_name} for region {region}: {str(e)}", exc_info=True)
 
+    # Accumulate metrics before saving
+    if metrics_accumulator and all_collected_items:
+        logger.debug(f"Accumulating metrics for {len(all_collected_items)} items from region {region}")
+        for item in all_collected_items:
+            try:
+                metrics_accumulator.add_resource(item)
+            except Exception as e:
+                logger.warning(f"Error accumulating metrics for item: {e}")
+
     # Save all items collected from this region after all collectors have run
     if all_collected_items:
         try:
@@ -78,7 +93,7 @@ def process_region(account_id, account_name, region, credentials, tables):
     return region_total_items_saved
 
 
-def process_account(account_id, account_name, tables):
+def process_account(account_id, account_name, tables, metrics_accumulator=None):
     """Processes a single account: assumes role, collects S3, processes regions concurrently."""
     account_start_time = datetime.now(timezone.utc)
     logger.info(f"=== Starting collection for account {account_name} ({account_id}) ===")
@@ -113,6 +128,14 @@ def process_account(account_id, account_name, tables):
             s3_collected_items = s3_collector.collect()
             
             if s3_collected_items:
+                # Accumulate S3 metrics
+                if metrics_accumulator:
+                    for item in s3_collected_items:
+                        try:
+                            metrics_accumulator.add_resource(item)
+                        except Exception as e:
+                            logger.warning(f"Error accumulating S3 metrics: {e}")
+                
                 s3_items_saved = s3_collector.save()
                 total_items_saved_for_account += s3_items_saved
                 logger.info(f"Collected and saved {s3_items_saved} S3 buckets for account {account_name}.")
@@ -133,7 +156,7 @@ def process_account(account_id, account_name, tables):
         
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_region = {
-                executor.submit(process_region, account_id, account_name, region, credentials, tables): region
+                executor.submit(process_region, account_id, account_name, region, credentials, tables, metrics_accumulator): region
                 for region in sorted_regions
             }
             
@@ -185,6 +208,9 @@ def lambda_handler(event, context):
     logger.info(f"Lambda execution started at {overall_start_time.isoformat()}")
     logger.info(f"Log stream name: {context.log_stream_name}")
     logger.info(f"Remaining time (ms): {context.get_remaining_time_in_millis()}")
+
+    # Reset metrics accumulator for this run
+    global_metrics_accumulator.reset()
 
     # 1. Get Accounts
     try:
@@ -248,7 +274,7 @@ def lambda_handler(event, context):
     
     with ThreadPoolExecutor(max_workers=max_account_workers) as executor:
         future_to_account = {
-            executor.submit(process_account, account_id, account_name, tables_to_write): (account_id, account_name)
+            executor.submit(process_account, account_id, account_name, tables_to_write, global_metrics_accumulator): (account_id, account_name)
             for account_id, account_name in sorted_accounts
         }
         
@@ -273,10 +299,38 @@ def lambda_handler(event, context):
                 accounts_with_errors.append(f"{account_name} ({account_id})")
                 account_results[(account_id, account_name)] = 'Error'
 
-    # 4. Final Summary and Return
+    # 4. Calculate and Save Aggregated Metrics
     overall_end_time = datetime.now(timezone.utc)
     overall_duration = (overall_end_time - overall_start_time).total_seconds()
+    
+    logger.info("=== Calculating and saving aggregated metrics ===")
+    try:
+        # Get calculated metrics
+        metrics = global_metrics_accumulator.get_metrics()
+        
+        # Log metric summary
+        logger.info(f"Metrics Summary:")
+        logger.info(f"  - Total Resources: {metrics['global']['totalResources']}")
+        logger.info(f"  - Resource Types: {len(metrics['global']['resourceCounts'])}")
+        logger.info(f"  - Accounts Processed: {len(global_metrics_accumulator.account_counts)}")
+        logger.info(f"  - Regions Used: {len(global_metrics_accumulator.region_counts)}")
+        
+        if metrics.get('ec2'):
+            logger.info(f"  - EC2 Instances: {metrics['ec2']['total']} (Running: {global_metrics_accumulator.ec2_running})")
+        if metrics.get('rds'):
+            logger.info(f"  - RDS Instances: {metrics['rds']['total']} (Available: {metrics['rds']['available']})")
+        if metrics.get('cost'):
+            logger.info(f"  - Potential Monthly Savings: ${metrics['cost']['potentialMonthlySavings']}")
+        
+        # Save metrics to DynamoDB
+        metrics_saved = save_metrics_to_dynamodb(tables_to_write, metrics, overall_duration)
+        logger.info(f"Successfully saved {metrics_saved} metric items to DynamoDB")
+        
+    except Exception as e:
+        logger.error(f"Error calculating or saving metrics: {str(e)}", exc_info=True)
+        metrics_saved = 0
 
+    # 5. Final Summary and Return
     processed_ratio = f"{accounts_processed_count}/{len(accounts)}"
     summary_message = f"Collection finished in {overall_duration:.2f}s. Processed {processed_ratio} accounts."
     
@@ -285,16 +339,19 @@ def lambda_handler(event, context):
 
     logger.info(summary_message)
     logger.info(f"Total resources saved across processed accounts: {total_resources_collected_across_accounts}")
+    logger.info(f"Total metric items saved: {metrics_saved}")
     
     if accounts_with_errors:
         logger.warning(f"Critical errors occurred processing accounts: {', '.join(accounts_with_errors)}")
 
-    # Return success, indicating completed (or partially completed) run
+    # Return success with comprehensive metrics
     return {
         'statusCode': 200,
         'body': json.dumps({
             'message': summary_message,
             'totalResourcesSaved': total_resources_collected_across_accounts,
+            'metricsCalculated': metrics_saved > 0,
+            'metricItemsSaved': metrics_saved,
             'accountsProcessedCount': accounts_processed_count,
             'totalAccountsInOrg': len(accounts),
             'accountsWithCriticalErrors': accounts_with_errors,
