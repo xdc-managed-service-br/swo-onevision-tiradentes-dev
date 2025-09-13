@@ -504,7 +504,7 @@ class NetworkingCollector(ResourceCollector):
                 associations = rt.get('Associations', [])
                 associated_subnets = [a.get('SubnetId') for a in associations if a.get('SubnetId')]
                 flat_associated_subnets = {}
-                flatten_metric(flat_associated_subnets, {'AssociatedSubnets': associated_subnets})
+                flatten_metric(flat_associated_subnets, {'associatedSubnets': associated_subnets})
                 is_main = any(a.get('Main', False) for a in associations)
                 
                 item_data = {
@@ -558,7 +558,7 @@ class NetworkingCollector(ResourceCollector):
                 associations = nacl.get('Associations', [])
                 associated_subnets = [a.get('SubnetId') for a in associations if a.get('SubnetId')]
                 flat_associated_subnets = {}
-                flatten_metric(flat_associated_subnets, {'AssociatedSubnets': associated_subnets})
+                flatten_metric(flat_associated_subnets, {'associatedSubnets': associated_subnets})
                 
                 item_data = {
                     'networkAclId': nacl_id,
