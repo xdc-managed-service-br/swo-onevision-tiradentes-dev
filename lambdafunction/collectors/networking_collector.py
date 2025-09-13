@@ -656,17 +656,17 @@ class NetworkingCollector(ResourceCollector):
                 requester_vpc = peering.get('RequesterVpcInfo', {})
                 
                 item_data = {
-                    'VpcPeeringConnectionId': peering_id,
-                    'PeeringConnectionName': peering_name,
-                    'Status': peering.get('Status', {}).get('Code', 'N/A'),
-                    'StatusMessage': peering.get('Status', {}).get('Message', ''),
-                    'AccepterVpcId': accepter_vpc.get('VpcId', 'N/A'),
-                    'AccepterRegion': accepter_vpc.get('Region', 'N/A'),
-                    'AccepterOwnerId': accepter_vpc.get('OwnerId', 'N/A'),
-                    'RequesterVpcId': requester_vpc.get('VpcId', 'N/A'),
-                    'RequesterRegion': requester_vpc.get('Region', 'N/A'),
-                    'RequesterOwnerId': requester_vpc.get('OwnerId', 'N/A'),
-                    'Tags': tags_json
+                    'vpcPeeringConnectionId': peering_id,
+                    'peeringConnectionName': peering_name,
+                    'status': peering.get('Status', {}).get('Code', 'N/A'),
+                    'statusMessage': peering.get('Status', {}).get('Message', ''),
+                    'accepterVpcId': accepter_vpc.get('VpcId', 'N/A'),
+                    'accepterRegion': accepter_vpc.get('Region', 'N/A'),
+                    'accepterOwnerId': accepter_vpc.get('OwnerId', 'N/A'),
+                    'requesterVpcId': requester_vpc.get('VpcId', 'N/A'),
+                    'requesterRegion': requester_vpc.get('Region', 'N/A'),
+                    'requesterOwnerId': requester_vpc.get('OwnerId', 'N/A'),
+                    'tags': tags_json
                 }
                 self.add_item('VPCPeeringConnection', peering_id, to_dynamodb_format(item_data))
                 peering_count += 1
@@ -699,17 +699,17 @@ class NetworkingCollector(ResourceCollector):
                 tunnels_up = sum(1 for t in vgw_telemetry if t.get('Status') == 'UP')
                 
                 item_data = {
-                    'VpnConnectionId': vpn_id,
-                    'VpnConnectionName': vpn_name,
-                    'State': vpn.get('State', 'N/A'),
-                    'Type': vpn.get('Type', 'N/A'),
-                    'CustomerGatewayId': vpn.get('CustomerGatewayId', 'N/A'),
-                    'VpnGatewayId': vpn.get('VpnGatewayId', 'N/A'),
-                    'TransitGatewayId': vpn.get('TransitGatewayId', 'N/A'),
-                    'Category': vpn.get('Category', 'N/A'),
-                    'TunnelCount': len(vgw_telemetry),
-                    'TunnelsUp': tunnels_up,
-                    'Tags': tags_json
+                    'vpnConnectionId': vpn_id,
+                    'vpnConnectionName': vpn_name,
+                    'state': vpn.get('State', 'N/A'),
+                    'type': vpn.get('Type', 'N/A'),
+                    'customerGatewayId': vpn.get('CustomerGatewayId', 'N/A'),
+                    'vpnGatewayId': vpn.get('VpnGatewayId', 'N/A'),
+                    'transitGatewayId': vpn.get('TransitGatewayId', 'N/A'),
+                    'category': vpn.get('Category', 'N/A'),
+                    'tunnelCount': len(vgw_telemetry),
+                    'tunnelsUp': tunnels_up,
+                    'tags': tags_json
                 }
                 self.add_item('VPNConnection', vpn_id, to_dynamodb_format(item_data))
                 vpn_count += 1
@@ -741,21 +741,21 @@ class NetworkingCollector(ResourceCollector):
                     creation_time = tgw.get('CreationTime')
                     formatted_creation = format_aws_datetime(creation_time) if creation_time else None
                     
-                    item_data = {
-                        'TransitGatewayId': tgw_id,
-                        'TransitGatewayName': tgw_name,
-                        'State': tgw.get('State', 'N/A'),
-                        'OwnerId': tgw.get('OwnerId', 'N/A'),
-                        'Description': tgw.get('Description', ''),
-                        'AmazonSideAsn': tgw.get('Options', {}).get('AmazonSideAsn', 'N/A'),
-                        'DnsSupport': tgw.get('Options', {}).get('DnsSupport', 'N/A'),
-                        'VpnEcmpSupport': tgw.get('Options', {}).get('VpnEcmpSupport', 'N/A'),
-                        'DefaultRouteTableAssociation': tgw.get('Options', {}).get('DefaultRouteTableAssociation', 'N/A'),
-                        'DefaultRouteTablePropagation': tgw.get('Options', {}).get('DefaultRouteTablePropagation', 'N/A'),
-                        'MulticastSupport': tgw.get('Options', {}).get('MulticastSupport', 'N/A'),
-                        'CreatedAt': formatted_creation,
-                        'Tags': tags_json
-                    }
+                item_data = {
+                    'transitGatewayId': tgw_id,
+                    'transitGatewayName': tgw_name,
+                    'state': tgw.get('State', 'N/A'),
+                    'ownerId': tgw.get('OwnerId', 'N/A'),
+                    'description': tgw.get('Description', ''),
+                    'amazonSideAsn': tgw.get('Options', {}).get('AmazonSideAsn', 'N/A'),
+                    'dnsSupport': tgw.get('Options', {}).get('DnsSupport', 'N/A'),
+                    'vpnEcmpSupport': tgw.get('Options', {}).get('VpnEcmpSupport', 'N/A'),
+                    'defaultRouteTableAssociation': tgw.get('Options', {}).get('DefaultRouteTableAssociation', 'N/A'),
+                    'defaultRouteTablePropagation': tgw.get('Options', {}).get('DefaultRouteTablePropagation', 'N/A'),
+                    'multicastSupport': tgw.get('Options', {}).get('MulticastSupport', 'N/A'),
+                    'createdAt': formatted_creation,
+                    'tags': tags_json
+                }
                     self.add_item('TransitGateway', tgw_id, to_dynamodb_format(item_data))
                     tgw_count += 1
             
@@ -790,19 +790,19 @@ class NetworkingCollector(ResourceCollector):
                     flat_association = {}
                     flatten_metric(flat_association, {'Association': attachment.get('Association', {})})
                     
-                    item_data = {
-                        'TransitGatewayAttachmentId': attachment_id,
-                        'AttachmentName': attachment_name,
-                        'TransitGatewayId': attachment.get('TransitGatewayId', 'N/A'),
-                        'TransitGatewayOwnerId': attachment.get('TransitGatewayOwnerId', 'N/A'),
-                        'AttachedResourceType': attachment.get('ResourceType', 'N/A'),
-                        'AttachedResourceId': attachment.get('ResourceId', 'N/A'),
-                        'ResourceOwnerId': attachment.get('ResourceOwnerId', 'N/A'),
-                        'State': attachment.get('State', 'N/A'),
-                        'CreatedAt': formatted_creation,
-                        'Tags': tags_json,
-                        **flat_association
-                    }
+                item_data = {
+                    'transitGatewayAttachmentId': attachment_id,
+                    'attachmentName': attachment_name,
+                    'transitGatewayId': attachment.get('TransitGatewayId', 'N/A'),
+                    'transitGatewayOwnerId': attachment.get('TransitGatewayOwnerId', 'N/A'),
+                    'attachedResourceType': attachment.get('ResourceType', 'N/A'),
+                    'attachedResourceId': attachment.get('ResourceId', 'N/A'),
+                    'resourceOwnerId': attachment.get('ResourceOwnerId', 'N/A'),
+                    'state': attachment.get('State', 'N/A'),
+                    'createdAt': formatted_creation,
+                    'tags': tags_json,
+                    **flat_association
+                }
                     self.add_item('TransitGatewayAttachment', attachment_id, to_dynamodb_format(item_data))
                     tgw_attach_count += 1
             
@@ -861,18 +861,18 @@ class NetworkingCollector(ResourceCollector):
                     flatten_metric(flat_target_groups, {'TargetGroups': target_groups})
                     
                     item_data = {
-                        'LoadBalancerArn': lb_arn,
-                        'LoadBalancerName': lb_name,
-                        'LoadBalancerNameTag': lb_name_tag,
-                        'DnsName': lb.get('DNSName', 'N/A'),
-                        'CanonicalHostedZoneId': lb.get('CanonicalHostedZoneId', 'N/A'),
-                        'Scheme': lb.get('Scheme', 'N/A'),
-                        'State': lb.get('State', {}).get('Code', 'N/A'),
-                        'Type': lb.get('Type', 'N/A'),
-                        'VpcId': lb.get('VpcId', 'N/A'),
-                        'IpAddressType': lb.get('IpAddressType', 'N/A'),
-                        'CreatedAt': formatted_creation,
-                        'Tags': tags_json,
+                        'loadBalancerArn': lb_arn,
+                        'loadBalancerName': lb_name,
+                        'loadBalancerNameTag': lb_name_tag,
+                        'dnsName': lb.get('DNSName', 'N/A'),
+                        'canonicalHostedZoneId': lb.get('CanonicalHostedZoneId', 'N/A'),
+                        'scheme': lb.get('Scheme', 'N/A'),
+                        'state': lb.get('State', {}).get('Code', 'N/A'),
+                        'type': lb.get('Type', 'N/A'),
+                        'vpcId': lb.get('VpcId', 'N/A'),
+                        'ipAddressType': lb.get('IpAddressType', 'N/A'),
+                        'createdAt': formatted_creation,
+                        'tags': tags_json,
                         **flat_availability_zones,
                         **flat_security_groups,
                         **flat_target_groups
@@ -930,16 +930,16 @@ class NetworkingCollector(ResourceCollector):
                     flatten_metric(flat_health_check, {'HealthCheck': lb.get('HealthCheck', {})})
                     
                     item_data = {
-                        'LoadBalancerName': lb_name,
-                        'LoadBalancerNameTag': lb_name_tag,
-                        'DnsName': lb.get('DNSName', 'N/A'),
-                        'CanonicalHostedZoneName': lb.get('CanonicalHostedZoneName', 'N/A'),
-                        'CanonicalHostedZoneNameID': lb.get('CanonicalHostedZoneNameID', 'N/A'),
-                        'Scheme': lb.get('Scheme', 'N/A'),
-                        'VpcId': lb.get('VPCId', 'N/A'),
-                        'InstanceCount': len(lb.get('Instances', [])),
-                        'CreatedAt': formatted_creation,
-                        'Tags': tags_json,
+                        'loadBalancerName': lb_name,
+                        'loadBalancerNameTag': lb_name_tag,
+                        'dnsName': lb.get('DNSName', 'N/A'),
+                        'canonicalHostedZoneName': lb.get('CanonicalHostedZoneName', 'N/A'),
+                        'canonicalHostedZoneNameId': lb.get('CanonicalHostedZoneNameID', 'N/A'),
+                        'scheme': lb.get('Scheme', 'N/A'),
+                        'vpcId': lb.get('VPCId', 'N/A'),
+                        'instanceCount': len(lb.get('Instances', [])),
+                        'createdAt': formatted_creation,
+                        'tags': tags_json,
                         **flat_availability_zones,
                         **flat_subnets,
                         **flat_security_groups,
