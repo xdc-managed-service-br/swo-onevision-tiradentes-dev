@@ -5,14 +5,12 @@ import json
 import logging
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from botocore.config import Config
 from botocore.exceptions import ClientError
 
 # Import from collectors module
 from collectors.base import (
     get_dynamodb_table, 
-    get_all_organization_accounts, 
-    batch_write_to_dynamodb,
+    get_all_organization_accounts,
     get_available_regions,
     BOTO3_CONFIG,
     MAX_WORKERS,
@@ -52,10 +50,15 @@ def process_region(account_id, account_name, region, credentials, tables, metric
             collector_instance = collector_class(account_id, account_name, region, credentials, tables)
             # Collect returns the list of items added by this collector instance
             collected_items = collector_instance.collect()
-            
+
             if collected_items:
                 logger.debug(f"{collector_name} collected {len(collected_items)} items in region {region}.")
                 all_collected_items.extend(collected_items)
+                try:
+                    region_items_saved = collector_instance.save()
+                    region_total_items_saved += region_items_saved
+                except Exception as e:
+                    logger.error(f"Error saving items with {collector_name} for region {region}: {str(e)}", exc_info=True)
             else:
                 logger.info(f"No resources found by {collector_name} in region {region}")
 
@@ -73,20 +76,7 @@ def process_region(account_id, account_name, region, credentials, tables, metric
             except Exception as e:
                 logger.warning(f"Error accumulating metrics for item: {e}")
 
-    # Save all items collected from this region after all collectors have run
-    if all_collected_items:
-        try:
-            logger.info(f"Attempting to save {len(all_collected_items)} items collected from region {region}...")
-            # Need a ResourceCollector instance to call save, let's reuse the last one
-            if 'collector_instance' in locals() and collector_instance:
-                # Temporarily assign all collected items to the instance for saving
-                collector_instance.items = all_collected_items
-                region_total_items_saved = collector_instance.save()
-            else:
-                logger.error(f"Cannot save items for region {region}: No valid collector instance available.")
-
-        except Exception as e:
-            logger.error(f"Error saving collected items for region {region}: {str(e)}", exc_info=True)
+    # No need to save all_collected_items here, as each collector saves its own items above.
 
     total_time = (datetime.now(timezone.utc) - start_time).total_seconds()
     logger.info(f"Region {region} processed in {total_time:.2f}s. Saved approx {region_total_items_saved} resources.")
@@ -268,7 +258,7 @@ def lambda_handler(event, context):
     sorted_accounts = sorted(accounts, key=lambda x: x[1])  # Sort by name
 
     # Define optimal max workers based on testing
-    max_account_workers = 5  # Adjust based on performance testing
+    max_account_workers = 4  # Adjust based on performance testing
     
     account_results = {}
     

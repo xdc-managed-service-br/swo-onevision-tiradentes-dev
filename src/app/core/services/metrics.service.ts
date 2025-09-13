@@ -182,7 +182,7 @@ export class MetricsService {
         metricType: { eq: 'GLOBAL_SUMMARY' },
         metricDate: { ge: startDateStr }
       },
-      limit: days + 1 // Account for current + historical
+      limit: days + 1
     })).pipe(
       map(response => {
         const history: MetricHistoryItem[] = [];
@@ -190,7 +190,17 @@ export class MetricsService {
         response.data.forEach(item => {
           if (item.metricDate && item.metricData) {
             try {
-              const data = JSON.parse(typeof item.metricData === 'string' ? item.metricData : JSON.stringify(item.metricData));
+              // CORREÇÃO: Verificar o tipo antes de fazer parse
+              let data: any;
+              if (typeof item.metricData === 'string') {
+                data = JSON.parse(item.metricData);
+              } else if (typeof item.metricData === 'object') {
+                data = item.metricData;
+              } else {
+                console.warn('metricData em formato inesperado:', typeof item.metricData);
+                return;
+              }
+              
               history.push({
                 date: item.metricDate,
                 totalResources: data.totalResources || 0,
@@ -204,7 +214,6 @@ export class MetricsService {
           }
         });
 
-        // Sort by date ascending
         return history.sort((a, b) => a.date.localeCompare(b.date));
       }),
       catchError(error => {
@@ -233,14 +242,21 @@ export class MetricsService {
       lastUpdated: new Date().toISOString()
     };
 
-    // Process each metric item
     data.forEach(item => {
       if (!item.metricData) return;
 
       try {
-        const metricData = typeof item.metricData === 'string' 
-          ? JSON.parse(item.metricData) 
-          : item.metricData;
+        // CORREÇÃO: Verificação de tipo robusta
+        let metricData: any;
+        
+        if (typeof item.metricData === 'string') {
+          metricData = JSON.parse(item.metricData);
+        } else if (typeof item.metricData === 'object' && item.metricData !== null) {
+          metricData = item.metricData;
+        } else {
+          console.warn(`Unexpected metricData type for ${item.metricType}:`, typeof item.metricData);
+          return;
+        }
 
         switch (item.metricType) {
           case 'GLOBAL_SUMMARY':

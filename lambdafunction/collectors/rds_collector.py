@@ -17,7 +17,8 @@ class RDSCollector(ResourceCollector):
         try:
             rds = self.get_client('rds')
             collected_count += self._collect_instances(rds)
-            collected_count += self._collect_snapshots(rds)
+            collected_count += self._collect_snapshots(rds)         # instâncias normais
+            collected_count += self._collect_cluster_snapshots(rds) # aurora
             logger.info(f"Finished RDS collection for account {self.account_id} in region {self.region}. Added {collected_count} resources to item list.")
             return self.items
         except Exception as e:
@@ -144,3 +145,45 @@ class RDSCollector(ResourceCollector):
         except Exception as e:
             logger.error(f"Error collecting RDS snapshots in region {self.region}: {str(e)}", exc_info=True)
             return 0
+    def _collect_cluster_snapshots(self, rds):
+        """Collect Aurora DB cluster snapshots (manual)."""
+        snapshot_count = 0
+        try:
+            paginator = rds.get_paginator('describe_db_cluster_snapshots')
+            for page in paginator.paginate(SnapshotType='manual', PaginationConfig={'PageSize': 50}):
+                for snapshot in page.get('DBClusterSnapshots', []):
+                    snapshot_id = snapshot['DBClusterSnapshotIdentifier']
+                    snapshot_arn = snapshot.get('DBClusterSnapshotArn')
+                    snapshot_time = snapshot.get('SnapshotCreateTime')
+                    formatted_time = format_aws_datetime(snapshot_time) if snapshot_time else None
+                    tags = snapshot.get('TagList', [])
+                    tags_json = json.dumps(tags) if tags else '[]'
+
+                    # Extract Name Tag
+                    snapshot_name = 'N/A'
+                    for tag in tags:
+                        if tag.get('Key') == 'Name':
+                            snapshot_name = tag.get('Value', 'N/A')
+                            break
+
+                    self.add_item('RDSClusterSnapshot', snapshot_id, {
+                        'snapshotId': snapshot_id,
+                        'snapshotName': snapshot_name,
+                        'status': snapshot.get('Status', 'N/A'),
+                        'engine': snapshot.get('Engine', 'N/A'),
+                        'clusterId': snapshot.get('DBClusterIdentifier', 'N/A'),
+                        'snapshotType': snapshot.get('SnapshotType', 'N/A'),
+                        'allocatedStorage': snapshot.get('AllocatedStorage', 0),
+                        'createdAt': formatted_time,
+                        'encrypted': snapshot.get('StorageEncrypted', False),
+                        'tags': tags_json,
+                        'snapshotArn': snapshot_arn
+                    })
+                    snapshot_count += 1
+
+            if snapshot_count > 0:
+                logger.debug(f"Added {snapshot_count} RDS cluster snapshots from region {self.region} to the item list.")
+            return snapshot_count
+        except Exception as e:
+            logger.error(f"Error collecting RDS cluster snapshots in region {self.region}: {str(e)}", exc_info=True)
+            return 0        

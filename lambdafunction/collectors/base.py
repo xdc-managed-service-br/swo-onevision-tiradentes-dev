@@ -1,6 +1,5 @@
 # collectors/base.py
 import boto3
-import json
 import logging
 from datetime import datetime, timezone
 import time
@@ -25,8 +24,8 @@ BOTO3_CONFIG = Config(
     max_pool_connections=50
 )
 
-MAX_BATCH_SIZE = 25  # DynamoDB limit for BatchWriteItem
-MAX_WORKERS = 10     # Workers for concurrent region/S3 processing
+MAX_BATCH_SIZE = 25
+MAX_WORKERS = 10 
 
 DEFAULT_REGIONS = [
     'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2',
@@ -286,8 +285,7 @@ def get_available_regions(credentials):
     except Exception as e:
         logger.error(f"Unexpected error listing enabled regions: {e}. Falling back to default region list.", exc_info=True)
         return DEFAULT_REGIONS
-
-
+    
 class ResourceCollector:
     """Base class for all resource collectors."""
     
@@ -296,7 +294,7 @@ class ResourceCollector:
         self.account_name = account_name
         self.region = region
         self.credentials = credentials
-        self.tables = tables  # Should be a list of table objects
+        self.tables = tables
         self.items = []
         self._cache = {}
     
@@ -317,7 +315,6 @@ class ResourceCollector:
     def add_item(self, resource_type, resource_id, properties):
         """Add a resource item to the collection."""
         now = format_aws_datetime(datetime.now(timezone.utc))
-        # S3 buckets have region determined dynamically, use that if available
         item_region = properties.get('region', self.region)
         resource_type_region_id = f"{resource_type}#{item_region}#{resource_id}"
         
@@ -333,7 +330,6 @@ class ResourceCollector:
             'updatedAt': now
         }
         
-        # Update with provided properties, avoiding None values
         item.update({k: v for k, v in properties.items() if v is not None})
         self.items.append(item)
 
@@ -352,7 +348,7 @@ class ResourceCollector:
             return 0
 
         items_to_save = self.items
-        self.items = []  # Clear items after getting the list to save
+        self.items = []
         
         try:
             count = batch_write_to_dynamodb(self.tables, items_to_save)

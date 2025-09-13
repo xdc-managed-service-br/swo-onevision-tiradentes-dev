@@ -1,65 +1,65 @@
 {
   "id": {
-    "S": "211125526410-eu-north-1-Subnet-subnet-016a4086ec85b6f24"
+    "S": "786960299620-ap-south-1-Subnet-subnet-02c76af1ff3f6d1d3"
   },
   "accountId": {
-    "S": "211125526410"
+    "S": "786960299620"
   },
   "accountName": {
-    "S": "TOTVS - Legado"
+    "S": "RM Desenvolvimento"
   },
-  "assignIpv6AddressOnCreation": {
+  "AssignIpv6AddressOnCreation": {
     "BOOL": false
   },
-  "availabilityZone": {
-    "S": "eu-north-1b"
+  "AvailabilityZone": {
+    "S": "ap-south-1a"
   },
-  "availabilityZoneId": {
-    "S": "eun1-az2"
+  "AvailabilityZoneId": {
+    "S": "aps1-az1"
   },
-  "availableIpAddressCount": {
+  "AvailableIpAddressCount": {
     "N": "4091"
   },
-  "cidrBlock": {
+  "CidrBlock": {
     "S": "172.31.32.0/20"
   },
   "createdAt": {
-    "S": "2025-08-20T04:43:59.744Z"
+    "S": "2025-09-13T20:40:15.017Z"
   },
-  "defaultForAz": {
+  "DefaultForAz": {
     "BOOL": true
   },
   "lastUpdated": {
-    "S": "2025-08-20T04:43:59.744Z"
+    "S": "2025-09-13T20:40:15.017Z"
   },
-  "mapPublicIpOnLaunch": {
+  "MapPublicIpOnLaunch": {
     "BOOL": true
   },
   "region": {
-    "S": "eu-north-1"
+    "S": "ap-south-1"
   },
   "resourceType": {
     "S": "Subnet"
   },
   "resourceTypeRegionId": {
-    "S": "Subnet#eu-north-1#subnet-016a4086ec85b6f24"
+    "S": "Subnet#ap-south-1#subnet-02c76af1ff3f6d1d3"
   },
-  "state": {
+  "State": {
     "S": "available"
   },
-  "subnetId": {
-    "S": "subnet-016a4086ec85b6f24"
+  "SubnetId": {
+    "S": "subnet-02c76af1ff3f6d1d3"
   },
-  "subnetName": {
+  "SubnetName": {
     "S": "N/A"
   },
-  "tags": {
+  "Tags": {
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-08-20T04:43:59.744Z"
+    "S": "2025-09-13T20:40:15.017Z"
   },
-  "vpcId": {
-    "S": "vpc-0ec5bcf4ba34b1868"
+  "VpcId": {
+    "S": "vpc-0b688cfa0ae3a19cc"
   }
 }

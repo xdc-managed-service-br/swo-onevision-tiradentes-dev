@@ -1,6 +1,6 @@
 {
   "id": {
-    "S": "905418331872-us-east-1-SecurityGroup-sg-0efdb8a660f059cf9"
+    "S": "905418331872-us-east-1-SecurityGroup-sg-0f6d7fd08b2be39c5"
   },
   "accountId": {
     "S": "905418331872"
@@ -8,44 +8,80 @@
   "accountName": {
     "S": "Network"
   },
-  "allIngressPortsExposed": {
+  "AllIngressPortsExposed": {
     "BOOL": false
   },
   "createdAt": {
-    "S": "2025-08-20T04:43:57.869Z"
+    "S": "2025-09-13T20:40:12.221Z"
   },
-  "description": {
-    "S": "Unit-Grafana - Servidor de producao do Grafana - Infra"
+  "Description": {
+    "S": "Fortinet FortiManager (BYOL) Centralized Security Management-7.2.5-AutogenByAWSMP--1 created 2024-05-22T19:37:55.766Z"
   },
-  "egressRuleCount": {
+  "EgressRuleCount": {
     "N": "1"
   },
-  "exposedEgressPorts": {
-    "S": "[]"
+  "ExposedIngressPorts_0": {
+    "N": "80"
   },
-  "exposedIngressPorts": {
-    "S": "[]"
+  "ExposedIngressPorts_1": {
+    "N": "8080"
   },
-  "groupId": {
-    "S": "sg-0efdb8a660f059cf9"
+  "ExposedIngressPorts_10": {
+    "N": "2032"
   },
-  "groupName": {
-    "S": "aws-grafana"
+  "ExposedIngressPorts_11": {
+    "N": "3000"
   },
-  "groupNameTag": {
+  "ExposedIngressPorts_12": {
+    "N": "6028"
+  },
+  "ExposedIngressPorts_13": {
+    "N": "5199"
+  },
+  "ExposedIngressPorts_2": {
+    "N": "162"
+  },
+  "ExposedIngressPorts_3": {
+    "N": "443"
+  },
+  "ExposedIngressPorts_4": {
+    "N": "9443"
+  },
+  "ExposedIngressPorts_5": {
+    "N": "161"
+  },
+  "ExposedIngressPorts_6": {
+    "N": "514"
+  },
+  "ExposedIngressPorts_7": {
+    "N": "541"
+  },
+  "ExposedIngressPorts_8": {
+    "N": "6020"
+  },
+  "ExposedIngressPorts_9": {
+    "N": "22"
+  },
+  "GroupId": {
+    "S": "sg-0f6d7fd08b2be39c5"
+  },
+  "GroupName": {
+    "S": "Fortinet FortiManager (BYOL) Centralized Security Management-7.2.5-AutogenByAWSMP--1"
+  },
+  "GroupNameTag": {
     "S": "N/A"
   },
-  "hasExposedEgressPorts": {
+  "HasExposedEgressPorts": {
     "BOOL": false
   },
-  "hasExposedIngressPorts": {
-    "BOOL": false
+  "HasExposedIngressPorts": {
+    "BOOL": true
   },
-  "ingressRuleCount": {
-    "N": "0"
+  "IngressRuleCount": {
+    "N": "15"
   },
   "lastUpdated": {
-    "S": "2025-08-20T04:43:57.869Z"
+    "S": "2025-09-13T20:40:12.221Z"
   },
   "region": {
     "S": "us-east-1"
@@ -54,18 +90,30 @@
     "S": "SecurityGroup"
   },
   "resourceTypeRegionId": {
-    "S": "SecurityGroup#us-east-1#sg-0efdb8a660f059cf9"
+    "S": "SecurityGroup#us-east-1#sg-0f6d7fd08b2be39c5"
   },
-  "riskyIngressRules": {
-    "S": "[]"
+  "RiskyIngressRules_0_port": {
+    "N": "22"
   },
-  "tags": {
+  "RiskyIngressRules_0_protocol": {
+    "S": "tcp"
+  },
+  "RiskyIngressRules_0_service": {
+    "S": "SSH"
+  },
+  "RiskyIngressRules_0_source": {
+    "S": "0.0.0.0/0"
+  },
+  "RiskyIngressRules_0_type": {
+    "S": "risky_port_exposed"
+  },
+  "Tags": {
     "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
   },
   "updatedAt": {
-    "S": "2025-08-20T04:43:57.869Z"
+    "S": "2025-09-13T20:40:12.221Z"
   },
-  "vpcId": {
+  "VpcId": {
     "S": "vpc-04d9fa441c24373b3"
   }
 }

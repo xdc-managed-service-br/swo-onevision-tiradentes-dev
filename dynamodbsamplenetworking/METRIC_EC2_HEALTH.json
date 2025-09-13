@@ -1,0 +1,83 @@
+{
+  "id": {
+    "S": "METRICS-EC2-CURRENT"
+  },
+  "accountId": {
+    "S": "GLOBAL"
+  },
+  "accountName": {
+    "S": "EC2 Health Metrics"
+  },
+  "byState_running": {
+    "N": "104"
+  },
+  "byState_stopped": {
+    "N": "19"
+  },
+  "cloudwatchAgent_bothEnabled": {
+    "N": "86"
+  },
+  "cloudwatchAgent_diskMonitoring": {
+    "N": "86"
+  },
+  "cloudwatchAgent_memoryMonitoring": {
+    "N": "86"
+  },
+  "cloudwatchAgent_noneEnabled": {
+    "N": "18"
+  },
+  "cloudwatchAgent_percentageWithDisk": {
+    "N": "82.7"
+  },
+  "cloudwatchAgent_percentageWithMemory": {
+    "N": "82.7"
+  },
+  "createdAt": {
+    "S": "2025-09-13T20:13:25.521Z"
+  },
+  "healthStatus_Healthy": {
+    "N": "103"
+  },
+  "healthStatus_Stopped": {
+    "N": "19"
+  },
+  "healthStatus_Unknown": {
+    "N": "1"
+  },
+  "isMetric": {
+    "BOOL": true
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T20:13:25.521Z"
+  },
+  "metricDate": {
+    "S": "2025-09-13"
+  },
+  "metricType": {
+    "S": "EC2_HEALTH"
+  },
+  "region": {
+    "S": "global"
+  },
+  "resourceType": {
+    "S": "METRIC_EC2_HEALTH"
+  },
+  "ssmAgent_connected": {
+    "N": "97"
+  },
+  "ssmAgent_notConnected": {
+    "N": "7"
+  },
+  "ssmAgent_notInstalled": {
+    "N": "0"
+  },
+  "ssmAgent_percentageConnected": {
+    "N": "93.3"
+  },
+  "total": {
+    "N": "123"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T20:13:25.521Z"
+  }
+}

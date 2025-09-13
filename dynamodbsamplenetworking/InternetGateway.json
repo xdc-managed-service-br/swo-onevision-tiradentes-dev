@@ -8,23 +8,23 @@
   "accountName": {
     "S": "ITP"
   },
-  "attachedVpcs": {
-    "S": "[\"vpc-01a5b3825ebdeb13e\"]"
+  "AttachedVpcs_0": {
+    "S": "vpc-01a5b3825ebdeb13e"
   },
-  "attachmentCount": {
+  "AttachmentCount": {
     "N": "1"
   },
   "createdAt": {
-    "S": "2025-08-20T04:42:44.261Z"
+    "S": "2025-09-13T19:56:31.339Z"
   },
-  "internetGatewayId": {
+  "InternetGatewayId": {
     "S": "igw-0a1c1f9fdadfbc67e"
   },
-  "internetGatewayName": {
+  "InternetGatewayName": {
     "S": "N/A"
   },
   "lastUpdated": {
-    "S": "2025-08-20T04:42:44.261Z"
+    "S": "2025-09-13T19:56:31.339Z"
   },
   "region": {
     "S": "eu-west-1"
@@ -35,10 +35,10 @@
   "resourceTypeRegionId": {
     "S": "InternetGateway#eu-west-1#igw-0a1c1f9fdadfbc67e"
   },
-  "tags": {
+  "Tags": {
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-08-20T04:42:44.261Z"
+    "S": "2025-09-13T19:56:31.339Z"
   }
 }

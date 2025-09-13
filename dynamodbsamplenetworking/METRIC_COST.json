@@ -1,0 +1,44 @@
+{
+  "id": {
+    "S": "METRICS-COST-CURRENT"
+  },
+  "accountId": {
+    "S": "GLOBAL"
+  },
+  "accountName": {
+    "S": "Cost Optimization"
+  },
+  "createdAt": {
+    "S": "2025-09-13T20:13:25.521Z"
+  },
+  "isMetric": {
+    "BOOL": true
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T20:13:25.521Z"
+  },
+  "metricDate": {
+    "S": "2025-09-13"
+  },
+  "metricType": {
+    "S": "COST_OPTIMIZATION"
+  },
+  "potentialMonthlySavings": {
+    "N": "7.2"
+  },
+  "region": {
+    "S": "global"
+  },
+  "resourceType": {
+    "S": "METRIC_COST"
+  },
+  "unassociatedElasticIPs": {
+    "N": "2"
+  },
+  "unattachedEBSVolumes": {
+    "N": "0"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T20:13:25.521Z"
+  }
+}

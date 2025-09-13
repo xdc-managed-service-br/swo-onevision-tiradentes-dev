@@ -1,13 +1,23 @@
-# collectors/s3_collector.py
 import json
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from botocore.exceptions import ClientError
 from .base import ResourceCollector, format_aws_datetime, batch_write_to_dynamodb, MAX_WORKERS
-from datetime import datetime, timezone
+from datetime import datetime, timedelta
 
 logger = logging.getLogger()
 
+def bytes_to_human_readable(size_bytes):
+    """Convert bytes to a human-readable format (e.g., KB, MB, GB, TB)."""
+    if size_bytes == 0:
+        return "0 B"
+    units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+    unit_index = 0
+    size = float(size_bytes)
+    while size >= 1024 and unit_index < len(units) - 1:
+        size /= 1024
+        unit_index += 1
+    return f"{size:.2f} {units[unit_index]}"
 
 class S3Collector(ResourceCollector):
     """Collects S3 bucket information from all regions."""
@@ -69,6 +79,61 @@ class S3Collector(ResourceCollector):
         except Exception as e:
             logger.error(f"General error during S3 collection for account {self.account_id}: {str(e)}", exc_info=True)
             return []
+
+    def _get_bucket_size(self, bucket_name, bucket_region):
+        """Get the bucket size in bytes from CloudWatch metrics."""
+        try:
+            cloudwatch_client = self.get_client('cloudwatch', region=bucket_region)
+            end_time = datetime.utcnow()
+            start_time = end_time - timedelta(days=2)
+            response = cloudwatch_client.get_metric_statistics(
+                Namespace='AWS/S3',
+                MetricName='BucketSizeBytes',
+                Dimensions=[
+                    {'Name': 'BucketName', 'Value': bucket_name},
+                    {'Name': 'StorageType', 'Value': 'StandardStorage'}
+                ],
+                StartTime=start_time,
+                EndTime=end_time,
+                Period=86400,
+                Statistics=['Average']
+            )
+            datapoints = response.get('Datapoints', [])
+            if not datapoints:
+                return 0
+            # Return the Average of the most recent datapoint
+            most_recent = max(datapoints, key=lambda x: x['Timestamp'])
+            return int(most_recent.get('Average', 0))
+        except Exception as e:
+            logger.warning(f"Failed to get bucket size for {bucket_name} in region {bucket_region}: {e}")
+            return 0
+
+    def _get_bucket_object_count(self, bucket_name, bucket_region):
+        """Get the number of objects in the bucket from CloudWatch metrics."""
+        try:
+            cloudwatch_client = self.get_client('cloudwatch', region=bucket_region)
+            end_time = datetime.utcnow()
+            start_time = end_time - timedelta(days=2)
+            response = cloudwatch_client.get_metric_statistics(
+                Namespace='AWS/S3',
+                MetricName='NumberOfObjects',
+                Dimensions=[
+                    {'Name': 'BucketName', 'Value': bucket_name},
+                    {'Name': 'StorageType', 'Value': 'AllStorageTypes'}
+                ],
+                StartTime=start_time,
+                EndTime=end_time,
+                Period=86400,
+                Statistics=['Average']
+            )
+            datapoints = response.get('Datapoints', [])
+            if not datapoints:
+                return 0
+            most_recent = max(datapoints, key=lambda x: x['Timestamp'])
+            return int(most_recent.get('Average', 0))
+        except Exception as e:
+            logger.warning(f"Failed to get object count for {bucket_name} in region {bucket_region}: {e}")
+            return 0
 
     def _process_bucket(self, s3_global_client, bucket):
         """Fetch details for a single S3 bucket and add it using self.add_item."""
@@ -147,6 +212,13 @@ class S3Collector(ResourceCollector):
                 bucket_name_tag = tag.get('Value', 'N/A')
                 break
 
+        # Get bucket size from CloudWatch and convert to human-readable format
+        bucket_size = self._get_bucket_size(bucket_name, bucket_region)
+        bucket_size_readable = bytes_to_human_readable(bucket_size)
+
+        # Get bucket object count from CloudWatch
+        object_count = self._get_bucket_object_count(bucket_name, bucket_region)
+
         # 4. Add item using the base class method
         try:
             self.add_item('S3Bucket', bucket_name, {
@@ -155,7 +227,9 @@ class S3Collector(ResourceCollector):
                 'region': bucket_region,  # Explicitly set the determined region
                 'createdAt': formatted_creation_date,
                 'hasLifecycleRules': has_lifecycle_rules,
-                'tags': tags_json
+                'tags': tags_json,
+                'storageBytes': bucket_size_readable,
+                'objectCount': object_count
             })
             return True
         except Exception as e:

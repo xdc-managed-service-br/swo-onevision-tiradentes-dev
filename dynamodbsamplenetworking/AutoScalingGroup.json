@@ -1,0 +1,86 @@
+{
+  "id": {
+    "S": "905418331872-us-east-1-AutoScalingGroup-fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group"
+  },
+  "accountId": {
+    "S": "905418331872"
+  },
+  "accountName": {
+    "S": "Network"
+  },
+  "AutoScalingGroupARN": {
+    "S": "arn:aws:autoscaling:us-east-1:905418331872:autoScalingGroup:a554c877-5998-4ce2-9efc-34f16a1f0453:autoScalingGroupName/fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group"
+  },
+  "AutoScalingGroupName": {
+    "S": "fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group"
+  },
+  "AutoScalingGroupNameTag": {
+    "S": "fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group"
+  },
+  "AvailabilityZones_0": {
+    "S": "us-east-1a"
+  },
+  "AvailabilityZones_1": {
+    "S": "us-east-1b"
+  },
+  "CreatedAt": {
+    "S": "2024-04-29T22:47:52.389Z"
+  },
+  "createdAt": {
+    "S": "2025-09-13T19:57:50.856Z"
+  },
+  "CurrentSize": {
+    "N": "0"
+  },
+  "DesiredCapacity": {
+    "N": "0"
+  },
+  "HealthCheckGracePeriod": {
+    "N": "300"
+  },
+  "HealthCheckType": {
+    "S": "EC2"
+  },
+  "HealthyInstances": {
+    "N": "0"
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T19:57:50.856Z"
+  },
+  "LaunchTemplate_LaunchTemplateId": {
+    "S": "lt-04d41236c21774442"
+  },
+  "LaunchTemplate_LaunchTemplateName": {
+    "S": "fgt-tgw-v2-f8438a00-fortigate-payg-autoscale-launch-template"
+  },
+  "LaunchTemplate_Version": {
+    "S": "1"
+  },
+  "MaxSize": {
+    "N": "6"
+  },
+  "MinSize": {
+    "N": "0"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "AutoScalingGroup"
+  },
+  "resourceTypeRegionId": {
+    "S": "AutoScalingGroup#us-east-1#fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group"
+  },
+  "ServiceLinkedRoleARN": {
+    "S": "arn:aws:iam::905418331872:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+  },
+  "Tags": {
+    "S": "[{\"Key\": \"Name\", \"Value\": \"fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group\"}, {\"Key\": \"ResourceGroup\", \"Value\": \"fgt-tgw-v2-f8438a00\"}, {\"Key\": \"aws:cloudformation:logical-id\", \"Value\": \"FgtAutoScalingGroupPayg\"}, {\"Key\": \"aws:cloudformation:stack-id\", \"Value\": \"arn:aws:cloudformation:us-east-1:905418331872:stack/fgt-tgw-v2-StackMainWorkload-11GY4W9FWEDHP-StackCreateFortiGateAutoScalingGroup-19NMPFFULHYR4/7cb3f540-067a-11ef-b705-0affd220fe87\"}, {\"Key\": \"aws:cloudformation:stack-name\", \"Value\": \"fgt-tgw-v2-StackMainWorkload-11GY4W9FWEDHP-StackCreateFortiGateAutoScalingGroup-19NMPFFULHYR4\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T19:57:50.856Z"
+  },
+  "VpcZoneIdentifier": {
+    "S": "subnet-02eb9de9206315fec,subnet-0c5eb4ae3651fbcd6"
+  }
+}

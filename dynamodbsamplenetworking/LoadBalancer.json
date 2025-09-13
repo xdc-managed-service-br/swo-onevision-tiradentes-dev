@@ -1,0 +1,80 @@
+{
+  "id": {
+    "S": "905418331872-us-east-1-LoadBalancer-arn:aws:elasticloadbalancing:us-east-1:905418331872:loadbalancer/net/NLB-FWB-INTERNAL/e82b3a24e06ec74a"
+  },
+  "accountId": {
+    "S": "905418331872"
+  },
+  "accountName": {
+    "S": "Network"
+  },
+  "AvailabilityZones_0": {
+    "S": "us-east-1a"
+  },
+  "AvailabilityZones_1": {
+    "S": "us-east-1b"
+  },
+  "CanonicalHostedZoneId": {
+    "S": "Z26RNL4JYFTOTI"
+  },
+  "CreatedAt": {
+    "S": "2024-05-31T17:45:25.237Z"
+  },
+  "createdAt": {
+    "S": "2025-09-13T19:57:49.438Z"
+  },
+  "DnsName": {
+    "S": "NLB-FWB-INTERNAL-e82b3a24e06ec74a.elb.us-east-1.amazonaws.com"
+  },
+  "IpAddressType": {
+    "S": "ipv4"
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T19:57:49.438Z"
+  },
+  "LoadBalancerArn": {
+    "S": "arn:aws:elasticloadbalancing:us-east-1:905418331872:loadbalancer/net/NLB-FWB-INTERNAL/e82b3a24e06ec74a"
+  },
+  "LoadBalancerName": {
+    "S": "NLB-FWB-INTERNAL"
+  },
+  "LoadBalancerNameTag": {
+    "S": "N/A"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "LoadBalancer"
+  },
+  "resourceTypeRegionId": {
+    "S": "LoadBalancer#us-east-1#arn:aws:elasticloadbalancing:us-east-1:905418331872:loadbalancer/net/NLB-FWB-INTERNAL/e82b3a24e06ec74a"
+  },
+  "Scheme": {
+    "S": "internal"
+  },
+  "SecurityGroups_0": {
+    "S": "sg-00a1454285fcfa7c2"
+  },
+  "State": {
+    "S": "active"
+  },
+  "Tags": {
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}]"
+  },
+  "TargetGroups_0": {
+    "S": "arn:aws:elasticloadbalancing:us-east-1:905418331872:targetgroup/tg-fwb-private-443/21388ab5aa52ced2"
+  },
+  "TargetGroups_1": {
+    "S": "arn:aws:elasticloadbalancing:us-east-1:905418331872:targetgroup/tg-fwb-private-80/f8db457e35ea1aa0"
+  },
+  "Type": {
+    "S": "network"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T19:57:49.438Z"
+  },
+  "VpcId": {
+    "S": "vpc-0d65345bc2e8fc452"
+  }
+}

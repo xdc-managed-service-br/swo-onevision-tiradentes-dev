@@ -1,0 +1,74 @@
+{
+  "id": {
+    "S": "905418331872-us-east-1-DirectConnectConnection-dxcon-fh5mqy42"
+  },
+  "accountId": {
+    "S": "905418331872"
+  },
+  "accountName": {
+    "S": "Network"
+  },
+  "AwsDevice": {
+    "S": "EQMI1-2rm2ukk8bk2x9"
+  },
+  "AwsDeviceV2": {
+    "S": "EQMI1-24zdkcqcg82lg"
+  },
+  "Bandwidth": {
+    "S": "1Gbps"
+  },
+  "ConnectionId": {
+    "S": "dxcon-fh5mqy42"
+  },
+  "ConnectionName": {
+    "S": "UNIT-AJUAWS27903-P2P"
+  },
+  "ConnectionState": {
+    "S": "available"
+  },
+  "createdAt": {
+    "S": "2025-09-13T19:57:51.599Z"
+  },
+  "EncryptionMode": {
+    "S": "unknown"
+  },
+  "HasLogicalRedundancy": {
+    "S": "no"
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T19:57:51.599Z"
+  },
+  "Location": {
+    "S": "EQMI1"
+  },
+  "MacSecCapable": {
+    "BOOL": false
+  },
+  "PartnerName": {
+    "S": "EQUINIX NNI"
+  },
+  "PortEncryptionStatus": {
+    "S": "Encryption Down"
+  },
+  "Region": {
+    "S": "us-east-1"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "DirectConnectConnection"
+  },
+  "resourceTypeRegionId": {
+    "S": "DirectConnectConnection#us-east-1#dxcon-fh5mqy42"
+  },
+  "Tags": {
+    "S": "[]"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T19:57:51.599Z"
+  },
+  "Vlan": {
+    "N": "301"
+  }
+}

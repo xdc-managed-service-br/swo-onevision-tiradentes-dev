@@ -8,29 +8,26 @@
   "accountName": {
     "S": "SandBox + BedRock"
   },
-  "associatedSubnets": {
-    "S": "[]"
-  },
-  "associationCount": {
+  "AssociationCount": {
     "N": "1"
   },
   "createdAt": {
-    "S": "2025-08-20T04:43:32.878Z"
+    "S": "2025-09-13T20:12:41.999Z"
   },
-  "hasInternetRoute": {
+  "HasInternetRoute": {
     "BOOL": true
   },
-  "hasNatRoute": {
+  "HasNatRoute": {
     "BOOL": false
   },
-  "hasVpcPeeringRoute": {
+  "HasVpcPeeringRoute": {
     "BOOL": false
   },
-  "isMain": {
+  "IsMain": {
     "BOOL": true
   },
   "lastUpdated": {
-    "S": "2025-08-20T04:43:32.878Z"
+    "S": "2025-09-13T20:12:41.999Z"
   },
   "region": {
     "S": "eu-central-1"
@@ -41,22 +38,22 @@
   "resourceTypeRegionId": {
     "S": "RouteTable#eu-central-1#rtb-02ebfae6b392dda16"
   },
-  "routeCount": {
+  "RouteCount": {
     "N": "2"
   },
-  "routeTableId": {
+  "RouteTableId": {
     "S": "rtb-02ebfae6b392dda16"
   },
-  "routeTableName": {
+  "RouteTableName": {
     "S": "N/A"
   },
-  "tags": {
+  "Tags": {
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-08-20T04:43:32.878Z"
+    "S": "2025-09-13T20:12:41.999Z"
   },
-  "vpcId": {
+  "VpcId": {
     "S": "vpc-0f9fdf572930fcb0e"
   }
 }

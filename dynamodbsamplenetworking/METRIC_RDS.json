@@ -1,0 +1,59 @@
+{
+  "id": {
+    "S": "METRICS-RDS-CURRENT"
+  },
+  "accountId": {
+    "S": "GLOBAL"
+  },
+  "accountName": {
+    "S": "RDS Metrics"
+  },
+  "available": {
+    "N": "10"
+  },
+  "createdAt": {
+    "S": "2025-09-13T20:13:25.521Z"
+  },
+  "engines_aurora-mysql": {
+    "N": "4"
+  },
+  "engines_aurora-postgresql": {
+    "N": "6"
+  },
+  "isMetric": {
+    "BOOL": true
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T20:13:25.521Z"
+  },
+  "metricDate": {
+    "S": "2025-09-13"
+  },
+  "metricType": {
+    "S": "RDS_METRICS"
+  },
+  "multiAZ": {
+    "N": "0"
+  },
+  "percentageMultiAZ": {
+    "N": "0"
+  },
+  "percentageWithPerfInsights": {
+    "N": "70"
+  },
+  "performanceInsights": {
+    "N": "7"
+  },
+  "region": {
+    "S": "global"
+  },
+  "resourceType": {
+    "S": "METRIC_RDS"
+  },
+  "total": {
+    "N": "10"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T20:13:25.521Z"
+  }
+}

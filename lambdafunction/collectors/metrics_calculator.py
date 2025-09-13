@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from collections import defaultdict
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -93,17 +93,17 @@ class MetricsAccumulator:
             self.region_counts[region] += 1
         
         # Track recent resources (keep only last 10)
-        if item.get('lastUpdated'):
+        if item.get('createdAt'):
             self.recent_resources.append({
                 'resourceType': resource_type,
                 'region': region,
-                'lastUpdated': item.get('lastUpdated'),
+                'createdAt': item.get('createdAt'),
                 'identifier': self._get_resource_identifier(item)
             })
             # Keep only the 10 most recent
             self.recent_resources = sorted(
                 self.recent_resources, 
-                key=lambda x: x['lastUpdated'], 
+                key=lambda x: x['createdAt'], 
                 reverse=True
             )[:10]
         
@@ -377,6 +377,35 @@ class MetricsAccumulator:
         return round(savings, 2)
 
 
+def flatten_metric(item: dict, metric: dict, parent_key: str = "") -> dict:
+    """
+    Flattens nested dictionaries/lists into item.
+    Example:
+      {"ssmAgent": {"connected": 97, "notConnected": 7}}
+    Becomes:
+      {"ssmAgent_connected": 97, "ssmAgent_notConnected": 7}
+    Lists are expanded into numbered keys.
+    """
+    for k, v in metric.items():
+        new_key = f"{parent_key}_{k}" if parent_key else k
+        if isinstance(v, dict):
+            flatten_metric(item, v, new_key)
+        elif isinstance(v, list):
+            # For each item in the list, expand recursively if dict, else assign directly
+            for i, elem in enumerate(v):
+                indexed_key = f"{new_key}_{i}"
+                if isinstance(elem, dict):
+                    flatten_metric(item, elem, indexed_key)
+                elif isinstance(elem, list):
+                    # Handle nested lists recursively
+                    flatten_metric(item, {str(i): elem}, new_key)
+                else:
+                    item[indexed_key] = elem
+        else:
+            item[new_key] = v
+    return item
+
+
 def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: float) -> int:
     """
     Save calculated metrics as DynamoDB items.
@@ -406,7 +435,6 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
         'region': 'global',
         'metricType': 'GLOBAL_SUMMARY',
         'metricDate': date_str,
-        'metricData': json.dumps(metrics['global']),
         'isMetric': True,
         'collectionDuration': processing_duration,
         'resourcesProcessed': metrics['global']['totalResources'],
@@ -414,15 +442,16 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
         'createdAt': iso_timestamp,
         'updatedAt': iso_timestamp
     }
+    global_item_current = flatten_metric(global_item_current, metrics['global'])
     items_to_save.append(global_item_current)
-    
+
     # Historical global metrics (for trend analysis)
     global_item_historical = {
         **global_item_current,
         'id': f'METRICS-GLOBAL-{date_str}'
     }
     items_to_save.append(global_item_historical)
-    
+
     # EC2 Health metrics
     if metrics.get('ec2'):
         ec2_item_current = {
@@ -433,21 +462,21 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
             'region': 'global',
             'metricType': 'EC2_HEALTH',
             'metricDate': date_str,
-            'metricData': json.dumps(metrics['ec2']),
             'isMetric': True,
             'lastUpdated': iso_timestamp,
             'createdAt': iso_timestamp,
             'updatedAt': iso_timestamp
         }
+        ec2_item_current = flatten_metric(ec2_item_current, metrics['ec2'])
         items_to_save.append(ec2_item_current)
-        
+
         # Historical EC2 metrics
         ec2_item_historical = {
             **ec2_item_current,
             'id': f'METRICS-EC2-{date_str}'
         }
         items_to_save.append(ec2_item_historical)
-    
+
     # RDS metrics
     if metrics.get('rds'):
         rds_item_current = {
@@ -458,14 +487,14 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
             'region': 'global',
             'metricType': 'RDS_METRICS',
             'metricDate': date_str,
-            'metricData': json.dumps(metrics['rds']),
             'isMetric': True,
             'lastUpdated': iso_timestamp,
             'createdAt': iso_timestamp,
             'updatedAt': iso_timestamp
         }
+        rds_item_current = flatten_metric(rds_item_current, metrics['rds'])
         items_to_save.append(rds_item_current)
-    
+
     # Storage metrics
     if metrics.get('storage'):
         storage_item_current = {
@@ -476,14 +505,14 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
             'region': 'global',
             'metricType': 'STORAGE_METRICS',
             'metricDate': date_str,
-            'metricData': json.dumps(metrics['storage']),
             'isMetric': True,
             'lastUpdated': iso_timestamp,
             'createdAt': iso_timestamp,
             'updatedAt': iso_timestamp
         }
+        storage_item_current = flatten_metric(storage_item_current, metrics['storage'])
         items_to_save.append(storage_item_current)
-    
+
     # Cost optimization metrics
     if metrics.get('cost'):
         cost_item_current = {
@@ -494,14 +523,14 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
             'region': 'global',
             'metricType': 'COST_OPTIMIZATION',
             'metricDate': date_str,
-            'metricData': json.dumps(metrics['cost']),
             'isMetric': True,
             'lastUpdated': iso_timestamp,
             'createdAt': iso_timestamp,
             'updatedAt': iso_timestamp
         }
+        cost_item_current = flatten_metric(cost_item_current, metrics['cost'])
         items_to_save.append(cost_item_current)
-    
+
     # Security metrics
     if metrics.get('security'):
         security_item_current = {
@@ -512,12 +541,12 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
             'region': 'global',
             'metricType': 'SECURITY_METRICS',
             'metricDate': date_str,
-            'metricData': json.dumps(metrics['security']),
             'isMetric': True,
             'lastUpdated': iso_timestamp,
             'createdAt': iso_timestamp,
             'updatedAt': iso_timestamp
         }
+        security_item_current = flatten_metric(security_item_current, metrics['security'])
         items_to_save.append(security_item_current)
     
     # Save to all configured tables

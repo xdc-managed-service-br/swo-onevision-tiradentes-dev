@@ -1,59 +1,59 @@
 {
   "id": {
-    "S": "905418331872-ap-south-1-VPC-vpc-0237da6e58373f9dd"
+    "S": "767397744237-us-east-1-VPC-vpc-008207cd530af7b3c"
   },
   "accountId": {
-    "S": "905418331872"
+    "S": "767397744237"
   },
   "accountName": {
-    "S": "Network"
+    "S": "Gestao de Seguranca"
   },
-  "cidrBlock": {
-    "S": "172.31.0.0/16"
+  "CidrBlock": {
+    "S": "172.24.24.0/22"
   },
   "createdAt": {
-    "S": "2025-08-20T04:43:26.931Z"
+    "S": "2025-09-13T20:39:06.875Z"
   },
-  "enableDnsHostnames": {
+  "EnableDnsHostnames": {
     "BOOL": false
   },
-  "enableDnsSupport": {
+  "EnableDnsSupport": {
     "BOOL": true
   },
-  "flowLogsEnabled": {
-    "BOOL": false
+  "FlowLogsEnabled": {
+    "BOOL": true
   },
-  "instanceTenancy": {
+  "InstanceTenancy": {
     "S": "default"
   },
-  "isDefault": {
-    "BOOL": true
+  "IsDefault": {
+    "BOOL": false
   },
   "lastUpdated": {
-    "S": "2025-08-20T04:43:26.931Z"
+    "S": "2025-09-13T20:39:06.875Z"
   },
   "region": {
-    "S": "ap-south-1"
+    "S": "us-east-1"
   },
   "resourceType": {
     "S": "VPC"
   },
   "resourceTypeRegionId": {
-    "S": "VPC#ap-south-1#vpc-0237da6e58373f9dd"
+    "S": "VPC#us-east-1#vpc-008207cd530af7b3c"
   },
-  "state": {
+  "State": {
     "S": "available"
   },
-  "tags": {
-    "S": "[]"
+  "Tags": {
+    "S": "[{\"Key\": \"Name\", \"Value\": \"vpc-gestao-sec\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
   },
   "updatedAt": {
-    "S": "2025-08-20T04:43:26.931Z"
+    "S": "2025-09-13T20:39:06.875Z"
   },
-  "vpcId": {
-    "S": "vpc-0237da6e58373f9dd"
+  "VpcId": {
+    "S": "vpc-008207cd530af7b3c"
   },
-  "vpcName": {
-    "S": "N/A"
+  "VpcName": {
+    "S": "vpc-gestao-sec"
   }
 }

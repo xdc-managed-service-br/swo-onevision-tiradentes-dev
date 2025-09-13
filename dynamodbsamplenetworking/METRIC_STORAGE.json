@@ -1,0 +1,50 @@
+{
+  "id": {
+    "S": "METRICS-STORAGE-CURRENT"
+  },
+  "accountId": {
+    "S": "GLOBAL"
+  },
+  "accountName": {
+    "S": "Storage Metrics"
+  },
+  "amiSnapshots": {
+    "N": "3050"
+  },
+  "createdAt": {
+    "S": "2025-09-13T20:13:25.521Z"
+  },
+  "ebsSnapshots": {
+    "N": "4644"
+  },
+  "ebsVolumes": {
+    "N": "192"
+  },
+  "isMetric": {
+    "BOOL": true
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T20:13:25.521Z"
+  },
+  "metricDate": {
+    "S": "2025-09-13"
+  },
+  "metricType": {
+    "S": "STORAGE_METRICS"
+  },
+  "region": {
+    "S": "global"
+  },
+  "resourceType": {
+    "S": "METRIC_STORAGE"
+  },
+  "s3Buckets": {
+    "N": "202"
+  },
+  "s3WithLifecycle": {
+    "N": "75"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T20:13:25.521Z"
+  }
+}

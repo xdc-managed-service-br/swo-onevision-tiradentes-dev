@@ -572,8 +572,8 @@ class EC2Collector(ResourceCollector):
                             break
                     create_time = volume.get('CreateTime')
                     formatted_create_time = format_aws_datetime(create_time) if create_time else None
-                    
-                    self.add_item('EBSVolume', volume['VolumeId'], {
+
+                    volume_item = {
                         'volumeId': volume['VolumeId'],
                         'volumeName': volume_name,
                         'volumeState': volume.get('State', 'N/A'),
@@ -582,8 +582,10 @@ class EC2Collector(ResourceCollector):
                         'encrypted': volume.get('Encrypted', False),
                         'createdAt': formatted_create_time,
                         'tags': tags_json,
-                        'attachedInstances': json.dumps(attached_instances)
-                    })
+                        # 'attachedInstances': json.dumps(attached_instances)  # removed, replaced with flattened keys
+                        **{f"attachedInstances_{i}": inst for i, inst in enumerate(attached_instances)}
+                    }
+                    self.add_item('EBSVolume', volume['VolumeId'], volume_item)
                     volume_count += 1
             if volume_count > 0:
                 logger.debug(f"Added {volume_count} EBS volumes from region {self.region} to the item list.")

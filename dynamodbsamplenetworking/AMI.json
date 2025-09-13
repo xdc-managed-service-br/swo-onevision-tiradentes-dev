@@ -1,33 +1,33 @@
 {
   "id": {
-    "S": "905418331872-us-east-1-AMI-ami-0eaacdf39ce2eaca1"
+    "S": "767397734112-us-east-1-AMI-ami-005dd8a9ac4678696"
   },
   "accountId": {
-    "S": "905418331872"
+    "S": "767397734112"
   },
   "accountName": {
-    "S": "Network"
+    "S": "Arquiteturas e Sistemas"
   },
   "createdAt": {
-    "S": "2025-09-09T04:24:01.000Z"
+    "S": "2024-07-24T11:25:19.000Z"
   },
   "description": {
-    "S": "This image is created by the AWS Backup service."
+    "S": ""
   },
   "imageId": {
-    "S": "ami-0eaacdf39ce2eaca1"
+    "S": "ami-005dd8a9ac4678696"
   },
   "imageName": {
-    "S": "AwsBackup_i-06d2d2743174be60b_0A16AD13-833E-9C97-8F6F-4E30391FCD92"
+    "S": "testeDecript1"
   },
   "imageState": {
     "S": "available"
   },
   "lastUpdated": {
-    "S": "2025-09-09T12:02:22.572Z"
+    "S": "2025-09-13T19:22:39.575Z"
   },
   "platform": {
-    "S": "Linux/UNIX"
+    "S": "Windows"
   },
   "region": {
     "S": "us-east-1"
@@ -36,12 +36,12 @@
     "S": "AMI"
   },
   "resourceTypeRegionId": {
-    "S": "AMI#us-east-1#ami-0eaacdf39ce2eaca1"
+    "S": "AMI#us-east-1#ami-005dd8a9ac4678696"
   },
   "tags": {
-    "S": "[{\"Key\": \"Billing-Network\", \"Value\": \"0\"}, {\"Key\": \"aws:backup:source-resource\", \"Value\": \"i-06d2d2743174be60b:0A16AD13-833E-9C97-8F6F-4E30391FCD92\"}, {\"Key\": \"SolutionName\", \"Value\": \"aws-backup\"}, {\"Key\": \"swoResize\", \"Value\": \"0\"}, {\"Key\": \"swoBackup\", \"Value\": \"2\"}, {\"Key\": \"TFModuleVersion\", \"Value\": \"3.2.4\"}, {\"Key\": \"swoPatch\", \"Value\": \"0\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}, {\"Key\": \"swoMonitor\", \"Value\": \"0\"}, {\"Key\": \"Name\", \"Value\": \"Recovery Point created by sysops-us-east-1-abr-2-rule1\"}, {\"Key\": \"TFModule\", \"Value\": \"hc-aws-backup\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
+    "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-09T12:02:22.572Z"
+    "S": "2025-09-13T19:22:39.575Z"
   }
 }

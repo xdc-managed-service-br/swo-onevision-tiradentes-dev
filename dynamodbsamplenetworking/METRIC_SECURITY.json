@@ -1,0 +1,44 @@
+{
+  "id": {
+    "S": "METRICS-SECURITY-CURRENT"
+  },
+  "accountId": {
+    "S": "GLOBAL"
+  },
+  "accountName": {
+    "S": "Security Metrics"
+  },
+  "createdAt": {
+    "S": "2025-09-13T20:13:25.521Z"
+  },
+  "exposedSecurityGroups": {
+    "N": "0"
+  },
+  "isMetric": {
+    "BOOL": true
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T20:13:25.521Z"
+  },
+  "metricDate": {
+    "S": "2025-09-13"
+  },
+  "metricType": {
+    "S": "SECURITY_METRICS"
+  },
+  "percentageExposed": {
+    "N": "0"
+  },
+  "region": {
+    "S": "global"
+  },
+  "resourceType": {
+    "S": "METRIC_SECURITY"
+  },
+  "securityGroups": {
+    "N": "547"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T20:13:25.521Z"
+  }
+}

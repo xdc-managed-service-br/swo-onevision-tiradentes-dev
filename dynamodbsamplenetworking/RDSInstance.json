@@ -33,7 +33,7 @@
     "S": "db.serverless"
   },
   "lastUpdated": {
-    "S": "2025-09-13T05:46:25.445Z"
+    "S": "2025-09-13T20:10:40.145Z"
   },
   "multiAZ": {
     "BOOL": false
@@ -60,6 +60,6 @@
     "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"Billing-ASIS\", \"Value\": \"0\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T05:46:25.445Z"
+    "S": "2025-09-13T20:10:40.145Z"
   }
 }

@@ -1,0 +1,110 @@
+{
+  "id": {
+    "S": "905418331872-us-east-1-DirectConnectVirtualInterface-dxvif-fh6ecnf3"
+  },
+  "accountId": {
+    "S": "905418331872"
+  },
+  "accountName": {
+    "S": "Network"
+  },
+  "AmazonAddress": {
+    "S": "169.254.10.2/30"
+  },
+  "AmazonSideAsn": {
+    "N": "64513"
+  },
+  "Asn": {
+    "N": "266589"
+  },
+  "AuthKey": {
+    "S": "REDACTED"
+  },
+  "BgpPeers_0_addressFamily": {
+    "S": "ipv4"
+  },
+  "BgpPeers_0_amazonAddress": {
+    "S": "169.254.10.2/30"
+  },
+  "BgpPeers_0_asn": {
+    "N": "266589"
+  },
+  "BgpPeers_0_authKey": {
+    "S": "0xtE1ruxb2LTGG6cKBuBRN6P"
+  },
+  "BgpPeers_0_awsDeviceV2": {
+    "S": "EQMI1-2pzovgjkgns5f"
+  },
+  "BgpPeers_0_awsLogicalDeviceId": {
+    "S": "EQMI1-2pzovgjkgns5f"
+  },
+  "BgpPeers_0_bgpPeerId": {
+    "S": "dxpeer-ffomc52f"
+  },
+  "BgpPeers_0_bgpPeerState": {
+    "S": "available"
+  },
+  "BgpPeers_0_bgpStatus": {
+    "S": "up"
+  },
+  "BgpPeers_0_customerAddress": {
+    "S": "169.254.10.1/30"
+  },
+  "ConnectionId": {
+    "S": "dxcon-fh5mqy42"
+  },
+  "createdAt": {
+    "S": "2025-09-13T19:57:52.132Z"
+  },
+  "CustomerAddress": {
+    "S": "169.254.10.1/30"
+  },
+  "CustomerRouterConfig": {
+    "S": "Available"
+  },
+  "DirectConnectGatewayId": {
+    "S": "1b7eba1c-fc87-40d5-b3d3-0fdee18f75ef"
+  },
+  "JumboFrameCapable": {
+    "BOOL": true
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T19:57:52.132Z"
+  },
+  "Mtu": {
+    "N": "1500"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "DirectConnectVirtualInterface"
+  },
+  "resourceTypeRegionId": {
+    "S": "DirectConnectVirtualInterface#us-east-1#dxvif-fh6ecnf3"
+  },
+  "Tags": {
+    "S": "[]"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T19:57:52.132Z"
+  },
+  "VirtualGatewayId": {
+    "S": ""
+  },
+  "VirtualInterfaceId": {
+    "S": "dxvif-fh6ecnf3"
+  },
+  "VirtualInterfaceName": {
+    "S": "Virtual-Interface-DX-Tiradentes"
+  },
+  "VirtualInterfaceState": {
+    "S": "available"
+  },
+  "VirtualInterfaceType": {
+    "S": "transit"
+  },
+  "Vlan": {
+    "N": "301"
+  }
+}

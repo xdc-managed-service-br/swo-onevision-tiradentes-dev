@@ -68,7 +68,7 @@ interface RecentResource {
     SharedModule,
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css'],
+  styleUrls: ['../../shared/styles/onevision-base.css'],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   // Estado de carregamento

@@ -1,59 +1,65 @@
 {
   "id": {
-    "S": "590183843163-eu-north-1-NetworkACL-acl-0304c74b2b17530ce"
+    "S": "339712694259-eu-central-1-NetworkACL-acl-097409bf16dd8ab01"
   },
   "accountId": {
-    "S": "590183843163"
+    "S": "339712694259"
   },
   "accountName": {
-    "S": "A4L"
+    "S": "MagisterApps Dev/Hom"
   },
-  "associatedSubnets": {
-    "S": "[\"subnet-05fb04b0a5b280651\", \"subnet-030cd553ac047181a\", \"subnet-02ccd73372acd8966\"]"
+  "AssociatedSubnets_0": {
+    "S": "subnet-0474fd621f984bb73"
   },
-  "associationCount": {
+  "AssociatedSubnets_1": {
+    "S": "subnet-0b0624eb77767a5be"
+  },
+  "AssociatedSubnets_2": {
+    "S": "subnet-0e2abf585023fd6b2"
+  },
+  "AssociationCount": {
     "N": "3"
   },
   "createdAt": {
-    "S": "2025-08-20T04:41:56.604Z"
+    "S": "2025-09-13T20:11:40.321Z"
   },
-  "customDenyRuleCount": {
+  "CustomDenyRuleCount": {
     "N": "0"
   },
-  "egressRuleCount": {
+  "EgressRuleCount": {
     "N": "2"
   },
-  "ingressRuleCount": {
+  "IngressRuleCount": {
     "N": "2"
   },
-  "isDefault": {
+  "IsDefault": {
     "BOOL": true
   },
   "lastUpdated": {
-    "S": "2025-08-20T04:41:56.604Z"
+    "S": "2025-09-13T20:11:40.321Z"
   },
-  "networkAclId": {
-    "S": "acl-0304c74b2b17530ce"
+  "NetworkAclId": {
+    "S": "acl-097409bf16dd8ab01"
   },
-  "networkAclName": {
+  "NetworkAclName": {
     "S": "N/A"
   },
   "region": {
-    "S": "eu-north-1"
+    "S": "eu-central-1"
   },
   "resourceType": {
     "S": "NetworkACL"
   },
   "resourceTypeRegionId": {
-    "S": "NetworkACL#eu-north-1#acl-0304c74b2b17530ce"
+    "S": "NetworkACL#eu-central-1#acl-097409bf16dd8ab01"
   },
-  "tags": {
+  "Tags": {
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-08-20T04:41:56.604Z"
+    "S": "2025-09-13T20:11:40.321Z"
   },
-  "vpcId": {
-    "S": "vpc-002d80b7cf9b0f429"
+  "VpcId": {
+    "S": "vpc-0af3e6a7762434b5c"
   }
 }
