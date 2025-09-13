@@ -1,0 +1,65 @@
+{
+  "id": {
+    "S": "767397734112-us-east-1-RDSInstance-database-1-instance-1"
+  },
+  "accountId": {
+    "S": "767397734112"
+  },
+  "accountName": {
+    "S": "Arquiteturas e Sistemas"
+  },
+  "allocatedStorage": {
+    "N": "1"
+  },
+  "createdAt": {
+    "S": "2024-05-12T00:11:45.739Z"
+  },
+  "dbInstanceArn": {
+    "S": "arn:aws:rds:us-east-1:767397734112:db:database-1-instance-1"
+  },
+  "dbInstanceId": {
+    "S": "database-1-instance-1"
+  },
+  "dbInstanceName": {
+    "S": "N/A"
+  },
+  "engine": {
+    "S": "aurora-postgresql"
+  },
+  "engineVersion": {
+    "S": "15.10"
+  },
+  "instanceClass": {
+    "S": "db.serverless"
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T05:46:25.445Z"
+  },
+  "multiAZ": {
+    "BOOL": false
+  },
+  "performanceInsightsEnabled": {
+    "BOOL": true
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "RDSInstance"
+  },
+  "resourceTypeRegionId": {
+    "S": "RDSInstance#us-east-1#database-1-instance-1"
+  },
+  "status": {
+    "S": "available"
+  },
+  "storageType": {
+    "S": "aurora"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"Billing-ASIS\", \"Value\": \"0\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}]"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T05:46:25.445Z"
+  }
+}

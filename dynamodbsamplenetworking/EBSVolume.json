@@ -1,0 +1,53 @@
+{
+  "id": {
+    "S": "992382742081-us-east-1-EBSVolume-vol-0e8153581b041b30a"
+  },
+  "accountId": {
+    "S": "992382742081"
+  },
+  "accountName": {
+    "S": "BackOffice"
+  },
+  "attachedInstances": {
+    "S": "[\"i-0db7133ca0b560cf8\"]"
+  },
+  "createdAt": {
+    "S": "2025-04-24T06:55:38.285Z"
+  },
+  "encrypted": {
+    "BOOL": true
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T05:46:20.800Z"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "EBSVolume"
+  },
+  "resourceTypeRegionId": {
+    "S": "EBSVolume#us-east-1#vol-0e8153581b041b30a"
+  },
+  "size": {
+    "N": "200"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"swoBackup\", \"Value\": \"0\"}]"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T05:46:20.800Z"
+  },
+  "volumeId": {
+    "S": "vol-0e8153581b041b30a"
+  },
+  "volumeName": {
+    "S": "N/A"
+  },
+  "volumeState": {
+    "S": "in-use"
+  },
+  "volumeType": {
+    "S": "gp3"
+  }
+}

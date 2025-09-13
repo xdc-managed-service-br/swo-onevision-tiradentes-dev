@@ -13,6 +13,14 @@ const schema = a.schema({
     createdAt: a.datetime(),
     updatedAt: a.datetime(), 
     
+    // ======= CAMPOS DE MÉTRICAS AGREGADAS =======
+    metricData: a.json(),           // Dados agregados complexos (JSON string)
+    metricType: a.string(),         // GLOBAL_SUMMARY, EC2_HEALTH, RDS_HEALTH, etc
+    metricDate: a.string(),         // Data da métrica (2024-01-15)
+    isMetric: a.boolean(),          // Flag para identificar items de métricas
+    collectionDuration: a.float(),  // Tempo de coleta em segundos
+    resourcesProcessed: a.integer(), // Total de recursos processados
+    
     // ======= EC2 INSTANCE FIELDS =======
     instanceId: a.string(),
     instanceName: a.string(),
@@ -92,12 +100,15 @@ const schema = a.schema({
 
     // ======= S3 BUCKET FIELDS =======
     bucketName: a.string(),
+    bucketNameTag: a.string(),
     creationDate: a.datetime(),
     hasLifecycleRules: a.boolean(),
     storageClass: a.string(),
 
     // ======= RDS INSTANCE FIELDS =======
     dbInstanceId: a.string(),
+    dbInstanceName: a.string(),
+    dbInstanceArn: a.string(),
     engine: a.string(),
     engineVersion: a.string(),
     status: a.string(),
@@ -231,7 +242,7 @@ const schema = a.schema({
     transitGatewayName: a.string(),
     tgwState: a.string(),
     ownerId: a.string(),
-    amazonSideAsn: a.string(),
+    tgwAmazonSideAsn: a.string(),
     dnsSupport: a.string(),
     vpnEcmpSupport: a.string(),
     multicastSupport: a.string(),
@@ -280,6 +291,7 @@ const schema = a.schema({
     desiredCapacity: a.integer(),
     currentSize: a.integer(),
     healthyInstances: a.integer(),
+    instanceIds: a.json(),
     loadBalancerNames: a.json(),
     targetGroupARNs: a.json(),
     healthCheckType: a.string(),
@@ -311,7 +323,7 @@ const schema = a.schema({
     virtualInterfaceState: a.string(),
     customerAddress: a.string(),
     amazonAddress: a.string(),
-    asn: a.integer(),
+    vifAsn: a.integer(),
     vifAmazonSideAsn: a.integer(),
     authKey: a.string(),
     routeFilterPrefixes: a.json(),
@@ -321,13 +333,6 @@ const schema = a.schema({
     jumboFrameCapable: a.boolean(),
     virtualGatewayId: a.string(),
     directConnectGatewayId: a.string(),
-
-    // Novos campos para métricas agregadas
-    metricData: a.json(),        // Para dados complexos de métricas
-    metricType: a.string(),      // GLOBAL, EC2_HEALTH, RDS_HEALTH, etc
-    metricDate: a.string(),      // Data da métrica (2024-01-15)
-    isMetric: a.boolean(),       // Flag para identificar items de métricas
-
   })
   .authorization(allow => [
     allow.authenticated('userPools'),

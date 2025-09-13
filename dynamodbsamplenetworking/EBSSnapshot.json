@@ -1,0 +1,50 @@
+{
+  "id": {
+    "S": "905418331872-us-east-1-EBSSnapshot-snap-0c9dd3b9d0afa7558"
+  },
+  "accountId": {
+    "S": "905418331872"
+  },
+  "accountName": {
+    "S": "Network"
+  },
+  "createdAt": {
+    "S": "2025-09-12T04:25:00.057Z"
+  },
+  "encrypted": {
+    "BOOL": false
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T05:47:50.043Z"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "EBSSnapshot"
+  },
+  "resourceTypeRegionId": {
+    "S": "EBSSnapshot#us-east-1#snap-0c9dd3b9d0afa7558"
+  },
+  "snapshotId": {
+    "S": "snap-0c9dd3b9d0afa7558"
+  },
+  "snapshotName": {
+    "S": "Recovery Point created by sysops-us-east-1-abr-2-rule1"
+  },
+  "snapshotState": {
+    "S": "completed"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"Name\", \"Value\": \"Recovery Point created by sysops-us-east-1-abr-2-rule1\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"TFModuleVersion\", \"Value\": \"3.2.4\"}, {\"Key\": \"aws:backup:source-resource\", \"Value\": \"i-0044b5c5c81bffcc0:772E36E8-ECF6-2C52-5BB7-4F58B6B1AF83\"}, {\"Key\": \"TFModule\", \"Value\": \"hc-aws-backup\"}, {\"Key\": \"SolutionName\", \"Value\": \"aws-backup\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}]"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T05:47:50.043Z"
+  },
+  "volumeId": {
+    "S": "vol-05da7db488ec70695"
+  },
+  "volumeSize": {
+    "N": "30"
+  }
+}
