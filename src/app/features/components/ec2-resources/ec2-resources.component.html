@@ -48,9 +48,9 @@
       </div>
 
       <div class="resource-filter">
-        <label for="typeFilter">SWO P</label>
-        <select id="typeFilter" (change)="filterByswoPatch($event)">
-          <option value="">SWO Patch</option>
+        <label for="typeFilter">SWO Patch</label>
+        <select id="typeFilter" (change)="filterBySWOPatch($event)">
+          <option value="">All</option>
           <option *ngFor="let type of swoPatchFilter" [value]="type">{{ type }}</option>
         </select>      
       </div>      

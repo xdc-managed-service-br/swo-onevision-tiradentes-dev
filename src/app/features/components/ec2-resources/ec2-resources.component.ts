@@ -27,9 +27,10 @@ type ColumnKey = keyof EC2Instance | 'privateIpArray' | 'publicIpArray';
   ]
 })
 export class EC2ResourcesComponent implements OnInit, OnDestroy {
+  // Data
   resources: EC2Instance[] = [];
-  filteredResources: any[] = [];
-  paginatedResources: any[] = [];
+  filteredResources: EC2Instance[] = [];
+  paginatedResources: EC2Instance[] = [];
   loading = true;
   selectedResource: any = null;
 
@@ -51,7 +52,8 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
   regionFilter = '';
   cwAgentFilter = '';
   accountFilter = '';
-  swoPatchFilter = '';
+  swoPatchFilter: string[] = ['0', '1', '2', '3', 'N/A'];
+  selectedSWOPatch: string = '';
 
   // Sorting
   sortColumn: ColumnKey | '' = '';
@@ -228,7 +230,10 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
   filterByRegion(e: Event): void { this.regionFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
   filterByCWAgent(e: Event): void { this.cwAgentFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
   filterByAccount(e: Event): void { this.accountFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
-  filterByswoPatch(e: Event): void { this.swoPatchFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
+  filterBySWOPatch(e: Event): void {
+  this.selectedSWOPatch = ((e.target as HTMLSelectElement).value ?? '').trim();
+  this.applyFilters();
+}
 
   applyFilters(): void {
     this.filteredResources = this.resources.filter(r => {
@@ -245,6 +250,13 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
         if (r.cwAgentMemoryDetected !== isEnabled) return false;
       }
       if (this.accountFilter && (r.accountName || r.accountId) !== this.accountFilter) return false;
+      if (this.selectedSWOPatch) {
+        if (this.selectedSWOPatch === 'N/A') {
+          if (r.swoPatch !== null && r.swoPatch !== undefined) return false;
+        } else {
+          if (String(r.swoPatch) !== this.selectedSWOPatch) return false;
+        }
+      }
       return true;
     });
 
@@ -270,8 +282,8 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
       const valueA = a[column];
       const valueB = b[column];
       if (column.toLowerCase().includes('date') || column.toLowerCase().includes('time')) {
-        const dateA = valueA ? new Date(valueA).getTime() : 0;
-        const dateB = valueB ? new Date(valueB).getTime() : 0;
+        const dateA = (valueA && (typeof valueA === 'string' || typeof valueA === 'number' || valueA instanceof Date)) ? new Date(valueA).getTime() : 0;
+        const dateB = (valueB && (typeof valueB === 'string' || typeof valueB === 'number' || valueB instanceof Date)) ? new Date(valueB).getTime() : 0;
         return this.sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
       }
       if (typeof valueA === 'number' && typeof valueB === 'number') return this.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
