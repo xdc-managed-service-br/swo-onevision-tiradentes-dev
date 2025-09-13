@@ -33,7 +33,7 @@ interface AttachedInstance {
   standalone: true,
   imports: [CommonModule, ResourceTagsComponent],
   templateUrl: './ebs-resources.component.html',
-  styleUrls: ['./ebs-resources.component.css']
+  styleUrls: ['../../../shared/styles/onevision-base.css']
 })
 
 export class EbsResourcesComponent implements OnInit, OnDestroy {

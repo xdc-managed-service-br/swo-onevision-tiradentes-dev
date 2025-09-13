@@ -23,7 +23,7 @@ export interface ResourceSection {
   imports: [CommonModule, ResourceTagsComponent],
   // Corrected typo: resource-detail.component.html (singular)
   templateUrl: './resource-detail.component.html', 
-  styleUrls: ['./resource-detail.component.css']
+  styleUrls: ['../../styles/onevision-base.css']
 })
 export class ResourceDetailsComponent {
   // Use more specific types if possible, but 'any' allows flexibility

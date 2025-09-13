@@ -321,6 +321,13 @@ const schema = a.schema({
     jumboFrameCapable: a.boolean(),
     virtualGatewayId: a.string(),
     directConnectGatewayId: a.string(),
+
+    // Novos campos para métricas agregadas
+    metricData: a.json(),        // Para dados complexos de métricas
+    metricType: a.string(),      // GLOBAL, EC2_HEALTH, RDS_HEALTH, etc
+    metricDate: a.string(),      // Data da métrica (2024-01-15)
+    isMetric: a.boolean(),       // Flag para identificar items de métricas
+
   })
   .authorization(allow => [
     allow.authenticated('userPools'),

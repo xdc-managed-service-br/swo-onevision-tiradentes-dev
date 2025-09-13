@@ -11,7 +11,7 @@ import { ExportService, ExportColumn } from '../../../core/services/export.servi
   standalone: true,
   imports: [CommonModule, ResourceTagsComponent],
   templateUrl: './ebs-snapshots.component.html',
-  styleUrls: ['./ebs-snapshots.component.css']
+  styleUrls: ['../../../shared/styles/onevision-base.css']
 })
 export class EbsSnapshotsComponent implements OnInit, OnDestroy {
   resources: any[] = [];
