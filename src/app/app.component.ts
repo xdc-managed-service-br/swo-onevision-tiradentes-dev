@@ -2,9 +2,11 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Amplify } from 'aws-amplify';
 import { signOut, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
-import { filter } from 'rxjs/operators';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import outputs from '../../amplify_outputs.json';
 
 @Component({
   selector: 'app-root',
@@ -29,10 +31,15 @@ export class AppComponent implements OnInit, OnDestroy {
   private sessionTimeoutId: any;
   private readonly SESSION_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour in milliseconds
   
+  // For cleanup
+  private destroy$ = new Subject<void>();
+  
   constructor(private router: Router) {
+    Amplify.configure(outputs);
   }
   
   ngOnInit() {
+    Amplify.configure(outputs);
     this.checkAuthState();
     this.checkScreenSize();
     
@@ -43,7 +50,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-        takeUntilDestroyed()
+        takeUntil(this.destroy$)
       )
       .subscribe((event: NavigationEnd) => {
         // Handle async checkAuthState without async keyword
@@ -61,8 +68,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
   
   ngOnDestroy() {
-    // Ensure any timers are cleared
-    this.clearSessionTimeout();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
   
   @HostListener('window:resize', ['$event'])
@@ -113,6 +120,14 @@ export class AppComponent implements OnInit, OnDestroy {
       // Set authenticated state immediately
       this.isAuthenticated = true;
       
+      // Check if user is on login page while authenticated
+      const currentPath = window.location.pathname;
+      if (currentPath === '/login' || currentPath === '/reset-password') {
+        console.log('Authenticated user on login page, redirecting to dashboard');
+        this.router.navigate(['/dashboard']);
+        return;
+      }
+      
       // Fetch the user attributes to get the email
       try {
         const attributes = await fetchUserAttributes();
@@ -140,7 +155,14 @@ export class AppComponent implements OnInit, OnDestroy {
       this.isAuthenticated = false;
       this.username = '';
       this.clearSessionTimeout();
-      // Rely on route guards for redirection
+      
+      // Only redirect to login if not already on login/reset-password pages
+      const currentPath = window.location.pathname;
+      if (!currentPath.includes('/login') && !currentPath.includes('/reset-password')) {
+        console.log('User not authenticated, redirecting to login');
+        this.router.navigate(['/login']);
+      }
+      
       console.log('Authentication state updated: authenticated =', this.isAuthenticated);
     }
   }

@@ -2,7 +2,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ResourceHealthComponent } from './resource-health/resource-health.component';
 import { SharedModule } from '../../shared/shared.module';
 import { InstanceStatusWidgetComponent } from './instance-status-widget/instance-status-widget.component';
@@ -76,6 +77,9 @@ interface RecentResource {
 export class DashboardComponent implements OnInit, OnDestroy {
   // Estado de carregamento
   loading = true;
+  
+  // Subject para cleanup das subscriptions
+  private destroy$ = new Subject<void>();
 
   // Dados do dashboard
   resourceCounts: ResourceCounts = {
@@ -122,13 +126,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // no-op: cleanup handled by takeUntilDestroyed()
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // ========== CARREGAMENTO PRINCIPAL DOS DADOS ==========
   private loadDashboardData(): void {
     this.resourceService.getAllResources()
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (resources) => {
           console.log('Dashboard - Recursos carregados do banco:', resources.length);

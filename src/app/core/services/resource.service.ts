@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { Observable, from, of, BehaviorSubject } from 'rxjs';
 import { map, catchError, tap, shareReplay } from 'rxjs/operators';
 import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '../../../../amplify/data/resource';
+import type { Schema } from '.../../../amplify/data/resource';
 
 const client = generateClient<Schema>();
 
