@@ -7,6 +7,8 @@ import time
 import random
 from botocore.config import Config
 from botocore.exceptions import ClientError
+from decimal import Decimal, InvalidOperation
+import math
 
 try:
     from dateutil import parser
@@ -33,6 +35,45 @@ DEFAULT_REGIONS = [
     'ap-south-1', 'sa-east-1', 'ca-central-1', 'eu-north-1'
 ]
 
+def _to_dynamodb_compatible(value):
+    """Converte floats para Decimal e saneia NaN/Inf; processa recursivamente dict/list."""
+    if value is None:
+        return None
+
+    # Tipos primários já válidos
+    if isinstance(value, (str, bool, int, Decimal)):
+        return value
+
+    # Floats -> Decimal (string para evitar binário impreciso)
+    if isinstance(value, float):
+        if math.isnan(value) or math.isinf(value):
+            # Remova o campo problemático retornando None
+            return None
+        try:
+            return Decimal(str(value))
+        except (InvalidOperation, ValueError):
+            return None  # se der ruim, descartamos o campo
+
+    # Listas
+    if isinstance(value, list):
+        cleaned = []
+        for v in value:
+            cv = _to_dynamodb_compatible(v)
+            if cv is not None:
+                cleaned.append(cv)
+        return cleaned
+
+    # Dicionários
+    if isinstance(value, dict):
+        cleaned = {}
+        for k, v in value.items():
+            cv = _to_dynamodb_compatible(v)
+            if cv is not None:
+                cleaned[k] = cv
+        return cleaned
+
+    # Fallback: serializa como string
+    return str(value)
 
 def format_aws_datetime(timestamp):
     """Format various timestamp types to AWS-compatible ISO 8601 format."""
@@ -139,12 +180,24 @@ def batch_write_to_dynamodb(table_objects, items):
             if not valid_batch_items:
                 logger.warning(f"Skipping empty batch for {table_name}.")
                 continue
-
             # Prepare PutRequests
             put_requests = [{'PutRequest': {'Item': item}} for item in valid_batch_items]
             request_items = {table_name: put_requests}
             current_batch_size = len(valid_batch_items)
+            
+            sanitized_batch_items = []
+            for it in valid_batch_items:
+                sanitized = _to_dynamodb_compatible(it)
+                if sanitized:  # evita {} vazios
+                    sanitized_batch_items.append(sanitized)
 
+            if not sanitized_batch_items:
+                logger.warning(f"Skipping empty/unsanitary batch for {table_name}.")
+                continue
+            put_requests = [{'PutRequest': {'Item': item}} for item in sanitized_batch_items]
+            request_items = {table_name: put_requests}
+            current_batch_size = len(sanitized_batch_items)
+            
             retries = 0
             max_retries = 5
             backoff_base = 0.1
