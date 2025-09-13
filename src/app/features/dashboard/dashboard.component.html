@@ -1,77 +1,131 @@
+<!-- src/app/features/dashboard/dashboard.component.html -->
 <article class="ov-container" aria-labelledby="dashboard-title">
-  <h1 id="dashboard-title" class="ov-title">Dashboard</h1>
+  <div class="ov-header-with-actions">
+    <h1 id="dashboard-title" class="ov-title">Dashboard</h1>
+    <div class="ov-actions">
+      <!-- Metrics Status Indicator -->
+      <div class="metrics-status" *ngIf="!loading">
+        <span class="status-indicator" [class.stale]="metricsStale">
+          <span class="status-dot"></span>
+          <span class="status-text">
+            Last updated: {{ getTimeSinceCollection() }}
+            <span *ngIf="collectionDuration" class="duration">
+              ({{ formatDuration(collectionDuration) }})
+            </span>
+          </span>
+        </span>
+        <button 
+          class="ov-btn ov-btn--subtle" 
+          (click)="refreshMetrics()"
+          [disabled]="loading"
+          aria-label="Refresh metrics">
+          <span>↻</span> Refresh
+        </button>
+      </div>
+    </div>
+  </div>
 
-  <!-- Loading -->
-  <div *ngIf="loading" class="ov-loading">Loading dashboard data…</div>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="ov-loading">
+    <div class="ov-loading-spinner"></div>
+    <p>Loading optimized metrics...</p>
+    <small>This should take less than a second</small>
+  </div>
 
-  <!-- Conteúdo -->
+  <!-- Metrics Warning if Stale -->
+  <div *ngIf="!loading && metricsStale" class="ov-alert ov-alert--warning">
+    <strong>Metrics may be outdated</strong>
+    <p>The last data collection was more than 24 hours ago. Consider running the Lambda function to update metrics.</p>
+  </div>
+
+  <!-- Dashboard Content -->
   <div *ngIf="!loading" class="db-grid">
 
-    <!-- 1) Cards de resumo -->
+    <!-- 1) Resource Summary Cards -->
     <section class="db-stats" aria-label="Resource summary">
       <a class="db-stat is-total" [routerLink]="['/resources']" [attr.aria-label]="'Total resources: ' + resourceCounts.total">
-        <span class="db-stat__value">{{ resourceCounts.total }}</span>
+        <span class="db-stat__value">{{ resourceCounts.total | number }}</span>
         <span class="db-stat__label">Total Resources</span>
       </a>
 
       <a class="db-stat" [routerLink]="['/resources/ec2']" [attr.aria-label]="'EC2 Instances: ' + resourceCounts.ec2">
-        <span class="db-stat__value">{{ resourceCounts.ec2 }}</span>
+        <span class="db-stat__value">{{ resourceCounts.ec2 | number }}</span>
         <span class="db-stat__label">EC2 Instances</span>
       </a>
 
       <a class="db-stat" [routerLink]="['/resources/rds']" [attr.aria-label]="'RDS Instances: ' + resourceCounts.rds">
-        <span class="db-stat__value">{{ resourceCounts.rds }}</span>
+        <span class="db-stat__value">{{ resourceCounts.rds | number }}</span>
         <span class="db-stat__label">RDS Instances</span>
       </a>
 
       <a class="db-stat" [routerLink]="['/resources/s3']" [attr.aria-label]="'S3 Buckets: ' + resourceCounts.s3">
-        <span class="db-stat__value">{{ resourceCounts.s3 }}</span>
+        <span class="db-stat__value">{{ resourceCounts.s3 | number }}</span>
         <span class="db-stat__label">S3 Buckets</span>
       </a>
 
       <a class="db-stat" [routerLink]="['/resources/ebs']" [attr.aria-label]="'EBS Volumes: ' + resourceCounts.ebs">
-        <span class="db-stat__value">{{ resourceCounts.ebs }}</span>
+        <span class="db-stat__value">{{ resourceCounts.ebs | number }}</span>
         <span class="db-stat__label">EBS Volumes</span>
       </a>
 
       <a class="db-stat" [routerLink]="['/resources/ebs-snapshots']" [attr.aria-label]="'EBS Snapshots: ' + resourceCounts.ebsSnapshots">
-        <span class="db-stat__value">{{ resourceCounts.ebsSnapshots }}</span>
+        <span class="db-stat__value">{{ resourceCounts.ebsSnapshots | number }}</span>
         <span class="db-stat__label">EBS Snapshots</span>
       </a>
 
       <a class="db-stat" [routerLink]="['/resources/ami-snapshots']" [attr.aria-label]="'AMI Snapshots: ' + resourceCounts.amiSnapshots">
-        <span class="db-stat__value">{{ resourceCounts.amiSnapshots }}</span>
+        <span class="db-stat__value">{{ resourceCounts.amiSnapshots | number }}</span>
         <span class="db-stat__label">AMI Snapshots</span>
       </a>
     </section>
 
-    <!-- 2) Resource Health (componente padronizado) -->
+    <!-- 2) Cost Optimization Alert (if savings available) -->
+    <section *ngIf="costSavings > 0" class="db-section">
+      <div class="ov-alert ov-alert--info">
+        <h3>💰 Cost Optimization Opportunity</h3>
+        <p>
+          Potential monthly savings: <strong>${{ costSavings | number:'1.2-2' }}</strong>
+        </p>
+        <ul>
+          <li *ngIf="unattachedVolumes > 0">
+            {{ unattachedVolumes }} unattached EBS volumes
+          </li>
+          <li *ngIf="unassociatedEIPs > 0">
+            {{ unassociatedEIPs }} unassociated Elastic IPs
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3) Resource Health (still uses component, but could be optimized too) -->
     <section class="db-section">
       <app-resource-health></app-resource-health>
     </section>
 
-    <!-- 3) Monitoring / Status -->
+    <!-- 4) Monitoring / Status Section -->
     <section class="db-section">
       <div class="db-monitoring">
+        <!-- CloudWatch Monitoring -->
         <div class="db-monitoring__block">
           <h3 class="db-h3">Resource Monitoring (CloudWatch)</h3>
           <div class="db-monitoring__grid">
             <app-monitoring-widget
               title="RAM Monitoring"
               [percentage]="monitoringStatus.ramMonitoredPercentage"
-              label="Active Monitoring on Resources"
+              label="Active on Running Instances"
               color="#4fd1c5">
             </app-monitoring-widget>
 
             <app-monitoring-widget
               title="Disk Monitoring"
               [percentage]="monitoringStatus.diskMonitoredPercentage"
-              label="Active Monitoring on Resources"
+              label="Active on Running Instances"
               color="#9f7aea">
             </app-monitoring-widget>
           </div>
         </div>
 
+        <!-- Instance Status -->
         <div class="db-monitoring__block">
           <h3 class="db-h3">Instance Status</h3>
           <app-instance-status-widget
@@ -83,33 +137,52 @@
           </app-instance-status-widget>
         </div>
 
+        <!-- SSM Agent Status -->
         <div class="db-monitoring__block">
           <h3 class="db-h3">SSM Agent Status</h3>
           <app-monitoring-widget
             title="SSM Agent"
             [percentage]="ssmStatus.connectedPercentage"
-            label="Instances with SSM Agent Connected"
+            [label]="ssmStatus.connected + ' of ' + ssmStatus.total + ' running instances'"
             color="#68d391">
           </app-monitoring-widget>
         </div>
       </div>
     </section>
 
-    <!-- 4) Widgets (Distribuição / Recentes) -->
+    <!-- 5) Security Alert (if exposed security groups) -->
+    <section *ngIf="exposedSecurityGroups > 0" class="db-section">
+      <div class="ov-alert ov-alert--warning">
+        <h3>⚠️ Security Review Needed</h3>
+        <p>
+          <strong>{{ exposedSecurityGroups }}</strong> of {{ totalSecurityGroups }} security groups 
+          have ports exposed to the internet (0.0.0.0/0).
+        </p>
+        <a [routerLink]="['/resources/security-groups']" class="ov-btn ov-btn--primary">
+          Review Security Groups
+        </a>
+      </div>
+    </section>
+
+    <!-- 6) Distribution Widgets -->
     <section class="db-widgets">
 
-      <!-- Distribuição por Account -->
+      <!-- Resources by Account -->
       <div class="db-widget">
         <div class="db-widget__head">
           <h3 class="db-h3">Resources by Account</h3>
         </div>
         <div class="db-widget__body">
           <div *ngIf="accountDistribution.length > 0; else noAccountData" class="db-bars">
-            <div *ngFor="let item of accountDistribution" class="db-bar" [attr.aria-label]="item.account + ': ' + item.count">
-              <div class="db-bar__label" [title]="item.account">{{ item.account }}</div>
+            <div *ngFor="let item of accountDistribution; trackBy: trackByAccount" 
+                 class="db-bar" 
+                 [attr.aria-label]="item.accountName + ': ' + item.count">
+              <div class="db-bar__label" [title]="item.accountName">
+                {{ item.accountName || item.account }}
+              </div>
               <div class="db-bar__track">
                 <div class="db-bar__fill" [style.width.%]="getBarWidth(item.count, accountMaxCount)">
-                  <span class="db-bar__value">{{ item.count }}</span>
+                  <span class="db-bar__value">{{ item.count | number }}</span>
                 </div>
               </div>
             </div>
@@ -120,18 +193,20 @@
         </div>
       </div>
 
-      <!-- Distribuição por Region -->
+      <!-- Resources by Region -->
       <div class="db-widget">
         <div class="db-widget__head">
           <h3 class="db-h3">Resources by Region</h3>
         </div>
         <div class="db-widget__body">
           <div *ngIf="regionDistribution.length > 0; else noRegionData" class="db-bars">
-            <div *ngFor="let item of regionDistribution" class="db-bar" [attr.aria-label]="item.region + ': ' + item.count">
+            <div *ngFor="let item of regionDistribution; trackBy: trackByRegion" 
+                 class="db-bar" 
+                 [attr.aria-label]="item.region + ': ' + item.count">
               <div class="db-bar__label" [title]="item.region">{{ item.region }}</div>
               <div class="db-bar__track">
                 <div class="db-bar__fill" [style.width.%]="getBarWidth(item.count, regionMaxCount)">
-                  <span class="db-bar__value">{{ item.count }}</span>
+                  <span class="db-bar__value">{{ item.count | number }}</span>
                 </div>
               </div>
             </div>
@@ -150,7 +225,7 @@
         </div>
         <div class="db-widget__body">
           <div *ngIf="recentResources.length > 0; else noRecentData">
-            <!-- Desktop: tabela -->
+            <!-- Desktop: table -->
             <section class="ov-tablewrap db-hide-mobile">
               <table class="ov-table" role="table" aria-label="Recent resources">
                 <thead>
@@ -169,10 +244,10 @@
                     <td>
                       <span class="resource-type-badge">{{ resource.resourceType }}</span>
                     </td>
-                    <td>{{ resource.region || 'Unknown' }}</td>
+                    <td>{{ resource.region || 'global' }}</td>
                     <td>
-                      <span class="resource-identifier" [title]="getResourceIdentifier(resource)">
-                        {{ getResourceIdentifier(resource) }}
+                      <span class="resource-identifier" [title]="resource.identifier">
+                        {{ resource.identifier }}
                       </span>
                     </td>
                     <td>
@@ -195,13 +270,13 @@
                 <header class="ov-card__head">
                   <div>
                     <div class="ov-card__title">{{ resource.resourceType }}</div>
-                    <div class="ov-card__sub">{{ getResourceIdentifier(resource) }}</div>
+                    <div class="ov-card__sub">{{ resource.identifier }}</div>
                   </div>
                 </header>
                 <div class="ov-card__grid">
                   <div>
                     <div class="ov-k">Region</div>
-                    <div class="ov-v">{{ resource.region || 'Unknown' }}</div>
+                    <div class="ov-v">{{ resource.region || 'global' }}</div>
                   </div>
                   <div>
                     <div class="ov-k">Last Updated</div>
@@ -220,7 +295,7 @@
             <div class="ov-empty">
               <div class="ov-empty__icon">📄</div>
               <p class="ov-empty__text">No recent resources found</p>
-              <p class="ov-empty__sub">Resources will appear here as they are created or updated</p>
+              <p class="ov-empty__sub">Resources will appear here after the next collection</p>
             </div>
           </ng-template>
         </div>
@@ -229,3 +304,112 @@
     </section>
   </div>
 </article>
+
+<!-- Additional styles for metrics status -->
+<style>
+.ov-header-with-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ov-space-4);
+}
+
+.ov-actions {
+  display: flex;
+  gap: var(--ov-space-3);
+  align-items: center;
+}
+
+.metrics-status {
+  display: flex;
+  gap: var(--ov-space-3);
+  align-items: center;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--ov-space-2);
+  padding: var(--ov-space-2) var(--ov-space-3);
+  background: var(--ov-surface-raised);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius);
+}
+
+.status-indicator.stale .status-dot {
+  background-color: var(--ov-warning);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--ov-success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.status-text {
+  font-size: var(--ov-text-sm);
+  color: var(--ov-text-secondary);
+}
+
+.duration {
+  opacity: 0.7;
+}
+
+.ov-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ov-space-8);
+  text-align: center;
+}
+
+.ov-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--ov-border);
+  border-top-color: var(--ov-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ov-alert {
+  padding: var(--ov-space-4);
+  border-radius: var(--ov-radius);
+  margin-bottom: var(--ov-space-4);
+}
+
+.ov-alert--warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid var(--ov-warning);
+  color: var(--ov-text);
+}
+
+.ov-alert--info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid var(--ov-info);
+  color: var(--ov-text);
+}
+
+.ov-alert h3 {
+  margin-top: 0;
+  margin-bottom: var(--ov-space-2);
+}
+
+.ov-alert ul {
+  margin: var(--ov-space-2) 0;
+  padding-left: var(--ov-space-4);
+}
+</style>
