@@ -1,30 +1,27 @@
 {
   "id": {
-    "S": "058264289687-ap-northeast-2-NetworkACL-acl-0ee0cc10feb718f1a"
+    "S": "058264393294-eu-north-1-NetworkACL-acl-0e23421e03c41e62c"
   },
   "accountId": {
-    "S": "058264289687"
+    "S": "058264393294"
   },
   "accountName": {
-    "S": "Terminal Service"
+    "S": "Banco de Dados"
   },
-  "AssociatedSubnets_0": {
-    "S": "subnet-05030e3faa680edb9"
+  "associatedSubnets_0": {
+    "S": "subnet-094c4a9d4dacb6e7c"
   },
-  "AssociatedSubnets_1": {
-    "S": "subnet-09c891d9de6523937"
+  "associatedSubnets_1": {
+    "S": "subnet-085825577fd74c563"
   },
-  "AssociatedSubnets_2": {
-    "S": "subnet-0569d7074ef19f95c"
-  },
-  "AssociatedSubnets_3": {
-    "S": "subnet-0299ef5ef1d3a9f48"
+  "associatedSubnets_2": {
+    "S": "subnet-007bc99f0ddc7e0b9"
   },
   "associationCount": {
-    "N": "4"
+    "N": "3"
   },
   "createdAt": {
-    "S": "2025-09-13T22:07:45.364Z"
+    "S": "2025-09-13T22:32:42.892Z"
   },
   "customDenyRuleCount": {
     "N": "0"
@@ -39,30 +36,30 @@
     "BOOL": true
   },
   "lastUpdated": {
-    "S": "2025-09-13T22:07:45.364Z"
+    "S": "2025-09-13T22:32:42.892Z"
   },
   "networkAclId": {
-    "S": "acl-0ee0cc10feb718f1a"
+    "S": "acl-0e23421e03c41e62c"
   },
   "networkAclName": {
     "S": "N/A"
   },
   "region": {
-    "S": "ap-northeast-2"
+    "S": "eu-north-1"
   },
   "resourceType": {
     "S": "NetworkACL"
   },
   "resourceTypeRegionId": {
-    "S": "NetworkACL#ap-northeast-2#acl-0ee0cc10feb718f1a"
+    "S": "NetworkACL#eu-north-1#acl-0e23421e03c41e62c"
   },
   "tags": {
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:07:45.364Z"
+    "S": "2025-09-13T22:32:42.892Z"
   },
   "vpcId": {
-    "S": "vpc-0c9b24f215f64be2e"
+    "S": "vpc-05c901c7fb10d99e0"
   }
 }

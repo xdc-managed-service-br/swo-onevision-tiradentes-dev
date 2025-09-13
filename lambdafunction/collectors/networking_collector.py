@@ -854,12 +854,12 @@ class NetworkingCollector(ResourceCollector):
                     
                     # Flatten availability zones, security groups, and target groups
                     flat_availability_zones = {}
-                    flatten_metric(flat_availability_zones, {'AvailabilityZones': [az['ZoneName'] for az in lb.get('AvailabilityZones', [])]})
+                    flatten_metric(flat_availability_zones, {'availabilityZones': [az['ZoneName'] for az in lb.get('AvailabilityZones', [])]})
                     flat_security_groups = {}
-                    flatten_metric(flat_security_groups, {'SecurityGroups': lb.get('SecurityGroups', [])})
+                    flatten_metric(flat_security_groups, {'securityGroups': lb.get('SecurityGroups', [])})
                     flat_target_groups = {}
-                    flatten_metric(flat_target_groups, {'TargetGroups': target_groups})
-                    
+                    flatten_metric(flat_target_groups, {'targetGroups': target_groups})
+
                     item_data = {
                         'loadBalancerArn': lb_arn,
                         'loadBalancerName': lb_name,
