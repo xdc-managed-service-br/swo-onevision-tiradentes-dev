@@ -27,7 +27,22 @@
         alt="OneVision Brand Mark"
         loading="lazy" />
     </div>
-
+    <div class="user-controls">
+      <button
+        class="theme-toggle"
+        (click)="toggleTheme()"
+        [attr.aria-label]="theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
+        [attr.aria-pressed]="theme === 'light'">
+        <!-- Sun -->
+        <svg class="theme-toggle__icon sun" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 4.5a1 1 0 0 1 1 1V7a1 1 0 1 1-2 0V5.5a1 1 0 0 1 1-1zm0 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM4.5 12a1 1 0 0 1 1-1H7a1 1 0 1 1 0 2H5.5a1 1 0 0 1-1-1zm11.5 7.5a1 1 0 0 1 1-1h1.5a1 1 0 1 1 0 2H17a1 1 0 0 1-1-1zM4.5 17a1 1 0 0 1 1.414-1.414l1.06 1.06a1 1 0 0 1-1.414 1.415L4.5 18.414A1 1 0 0 1 4.5 17zm12.02-9.58a1 1 0 0 1 1.415-1.414l1.06 1.06A1 1 0 0 1 18.58 8.48l-1.06-1.06zM4.5 7a1 1 0 0 1 1.414 0l1.06 1.06A1 1 0 1 1 5.56 9.536L4.5 8.475A1 1 0 0 1 4.5 7zm12.02 9.52a1 1 0 0 1 1.415 0l1.06 1.06a1 1 0 0 1-1.415 1.415l-1.06-1.06a1 1 0 0 1 0-1.415zM12 17a1 1 0 0 1 1 1v1.5a1 1 0 1 1-2 0V18a1 1 0 0 1 1-1z"/>
+        </svg>
+        <!-- Moon -->
+        <svg class="theme-toggle__icon moon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
     <div class="user-controls">
       <span class="user-welcome" aria-label="Current user">Welcome, {{ username }}</span>
       <button

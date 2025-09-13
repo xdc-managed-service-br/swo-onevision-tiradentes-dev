@@ -26,7 +26,9 @@ export class AppComponent implements OnInit, OnDestroy {
   username = '';
   isSidebarOpen = true;
   isMobile = false;
-  
+  theme: 'light' | 'dark' = 'dark';
+  private themeSource: 'system' | 'user' = 'system';
+  private mql?: MediaQueryList;
   // Session timeout properties
   private sessionTimeoutId: any;
   private readonly SESSION_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour in milliseconds
@@ -40,13 +42,10 @@ export class AppComponent implements OnInit, OnDestroy {
   
   ngOnInit() {
     Amplify.configure(outputs);
+    this.initTheme(); 
     this.checkAuthState();
     this.checkScreenSize();
-    
-    // Setup session timeout monitoring
     this.setupSessionTimeout();
-    
-    // Listen to router navigation events to re-check auth state
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
@@ -66,10 +65,49 @@ export class AppComponent implements OnInit, OnDestroy {
       this.checkScreenSize();
     }, 100);
   }
-  
+  // Inicializa tema (LS -> sistema -> dark)
+  private initTheme(): void {
+    const saved = localStorage.getItem('ov-theme') as 'light' | 'dark' | null;
+    const savedSource = localStorage.getItem('ov-theme-source') as 'system' | 'user' | null;
+    this.themeSource = savedSource || 'system';
+
+    this.mql = window.matchMedia('(prefers-color-scheme: light)');
+    if (this.themeSource === 'user' && saved) {
+      this.applyTheme(saved);
+    } else {
+      this.applyTheme(this.mql.matches ? 'light' : 'dark');
+    }
+
+    // Reage à mudança do sistema (se usuário não “forçou”)
+    this.mql.addEventListener('change', this.handleSystemThemeChange);
+  }
+
+  private handleSystemThemeChange = (e: MediaQueryListEvent) => {
+    if (this.themeSource === 'system') {
+      this.applyTheme(e.matches ? 'light' : 'dark');
+    }
+  };
+
+  // Aplica no <html data-theme="light"> (dark = remove atributo)
+  private applyTheme(theme: 'light' | 'dark'): void {
+    this.theme = theme;
+    const root = document.documentElement;
+    if (theme === 'light') root.setAttribute('data-theme', 'light');
+    else root.removeAttribute('data-theme');
+  }
+
+  // Alterna e persiste como “user”
+  toggleTheme(): void {
+    this.themeSource = 'user';
+    const next = this.theme === 'light' ? 'dark' : 'light';
+    this.applyTheme(next);
+    localStorage.setItem('ov-theme', next);
+    localStorage.setItem('ov-theme-source', 'user');
+  }
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    this.mql?.removeEventListener('change', this.handleSystemThemeChange);
   }
   
   @HostListener('window:resize', ['$event'])
