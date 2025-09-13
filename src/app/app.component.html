@@ -1,10 +1,9 @@
-<!-- src/app/app.component.html -->
 <a class="skip-link" href="#main">Skip to main content</a>
 
 <div *ngIf="isAuthenticated" class="app-container">
   <!-- Top Bar (Fixed Full Width) -->
   <header class="top-bar">
-    <!-- Hamburger Menu Button (Mobile) -->
+    <!-- Hamburger Menu Button (Always Visible) -->
     <button
       class="hamburger-menu"
       (click)="toggleSidebar()"
@@ -43,7 +42,7 @@
   </header>
 
   <!-- Main Wrapper (Below Top Bar) -->
-  <div class="main-wrapper">
+  <div class="main-wrapper" [class.sidebar-collapsed]="!isSidebarOpen">
     <!-- Overlay para mobile quando a sidebar está aberta -->
     <div
       class="sidebar-overlay"

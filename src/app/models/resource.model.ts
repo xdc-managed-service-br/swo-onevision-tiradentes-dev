@@ -56,9 +56,10 @@ export interface EC2Instance extends BaseResource {
   patchGroup?: string;
 
   // Networking
-  instancePrivateIps: string[];      // JSON string → convertido para array
-  instancePublicIps: string[];       // JSON string → convertido para array
-
+  instancePrivateIps?: string[];      // JSON string → convertido para array
+  instancePublicIps?: string[];       // JSON string → convertido para array
+  privateIpArray?: string[];
+  publicIpArray?: string[];
   // Health
   healthStatus?: string;
   healthChecksPassed?: number;

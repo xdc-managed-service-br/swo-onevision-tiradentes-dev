@@ -12,7 +12,7 @@ import outputs from '../../amplify_outputs.json';
   selector: 'app-root',
   standalone: true,
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
+  styleUrl: './shared/styles/onevision-base.css',
   imports: [
     RouterOutlet, 
     RouterLink, 
