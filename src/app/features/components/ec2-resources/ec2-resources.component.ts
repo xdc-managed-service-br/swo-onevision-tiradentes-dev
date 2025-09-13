@@ -51,6 +51,7 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
   regionFilter = '';
   cwAgentFilter = '';
   accountFilter = '';
+  swoPatchFilter = '';
 
   // Sorting
   sortColumn: ColumnKey | '' = '';
@@ -150,7 +151,6 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
           this.uniqueTypes = [...new Set(this.resources.map(r => r.instanceType).filter(Boolean))].sort();
           this.uniqueRegions = [...new Set(this.resources.map(r => r.region).filter(Boolean))].sort();
           this.uniqueAccounts = [...new Set(this.resources.map(r => r.accountName || r.accountId).filter(Boolean))].sort();
-
           this.recomputePagination();
           this.loading = false;
         },
@@ -228,6 +228,7 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
   filterByRegion(e: Event): void { this.regionFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
   filterByCWAgent(e: Event): void { this.cwAgentFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
   filterByAccount(e: Event): void { this.accountFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
+  filterByswoPatch(e: Event): void { this.swoPatchFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
 
   applyFilters(): void {
     this.filteredResources = this.resources.filter(r => {

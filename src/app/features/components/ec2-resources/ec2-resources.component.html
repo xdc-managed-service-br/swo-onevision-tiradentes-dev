@@ -7,18 +7,10 @@
     <!-- Filtros (grid) -->
     <div class="resource-header__filters">
       <div class="resource-filter">
-        <label for="stateFilter">State</label>
-        <select id="stateFilter" (change)="filterByState($event)">
-          <option value="">All States</option>
-          <option *ngFor="let state of uniqueStates" [value]="state">{{ state }}</option>
-        </select>
-      </div>
-
-      <div class="resource-filter">
-        <label for="typeFilter">Instance Type</label>
-        <select id="typeFilter" (change)="filterByType($event)">
-          <option value="">All Types</option>
-          <option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</option>
+        <label for="accountFilter">Account</label>
+        <select id="accountFilter" (change)="filterByAccount($event)">
+          <option value="">All Accounts</option>
+          <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
         </select>
       </div>
 
@@ -27,7 +19,15 @@
         <select id="regionFilter" (change)="filterByRegion($event)">
           <option value="">All Regions</option>
           <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
-        </select>
+        </select>        
+      </div>
+
+      <div class="resource-filter">
+        <label for="stateFilter">State</label>
+        <select id="stateFilter" (change)="filterByState($event)">
+          <option value="">All States</option>
+          <option *ngFor="let state of uniqueStates" [value]="state">{{ state }}</option>
+        </select>          
       </div>
 
       <div class="resource-filter">
@@ -40,12 +40,20 @@
       </div>
 
       <div class="resource-filter">
-        <label for="accountFilter">Account</label>
-        <select id="accountFilter" (change)="filterByAccount($event)">
-          <option value="">All Accounts</option>
-          <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
-        </select>
+        <label for="typeFilter">Instance Type</label>
+        <select id="typeFilter" (change)="filterByType($event)">
+          <option value="">All Types</option>
+          <option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</option>
+        </select>      
       </div>
+
+      <div class="resource-filter">
+        <label for="typeFilter">SWO P</label>
+        <select id="typeFilter" (change)="filterByswoPatch($event)">
+          <option value="">SWO Patch</option>
+          <option *ngFor="let type of swoPatchFilter" [value]="type">{{ type }}</option>
+        </select>      
+      </div>      
     </div>
 
     <!-- Ações + Busca (na mesma linha) -->
