@@ -1,44 +1,44 @@
 {
   "id": {
-    "S": "058264289687-eu-west-3-InternetGateway-igw-05669cd5a3f57b36c"
+    "S": "590183843163-ap-northeast-2-InternetGateway-igw-06515ba69fa9e1d13"
   },
   "accountId": {
-    "S": "058264289687"
+    "S": "590183843163"
   },
   "accountName": {
-    "S": "Terminal Service"
+    "S": "A4L"
   },
-  "AttachedVpcs_0": {
-    "S": "vpc-007e5b997c63ce229"
+  "attachedVpcs_0": {
+    "S": "vpc-0c7a33e2086d5bb8c"
   },
   "attachmentCount": {
     "N": "1"
   },
   "createdAt": {
-    "S": "2025-09-13T22:07:52.008Z"
+    "S": "2025-09-13T22:44:21.153Z"
   },
   "internetGatewayId": {
-    "S": "igw-05669cd5a3f57b36c"
+    "S": "igw-06515ba69fa9e1d13"
   },
   "internetGatewayName": {
     "S": "N/A"
   },
   "lastUpdated": {
-    "S": "2025-09-13T22:07:52.008Z"
+    "S": "2025-09-13T22:44:21.153Z"
   },
   "region": {
-    "S": "eu-west-3"
+    "S": "ap-northeast-2"
   },
   "resourceType": {
     "S": "InternetGateway"
   },
   "resourceTypeRegionId": {
-    "S": "InternetGateway#eu-west-3#igw-05669cd5a3f57b36c"
+    "S": "InternetGateway#ap-northeast-2#igw-06515ba69fa9e1d13"
   },
   "tags": {
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:07:52.008Z"
+    "S": "2025-09-13T22:44:21.153Z"
   }
 }

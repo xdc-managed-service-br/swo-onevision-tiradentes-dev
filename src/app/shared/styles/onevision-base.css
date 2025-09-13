@@ -55,7 +55,7 @@
   --ov-space-5: 1.25rem;
   --ov-space-6: 1.5rem;
   --ov-space-8: 2rem;
-  
+  --ov-space-10: 2.5rem;
   /* Borders & Radius */
   --ov-radius: 6px;
   --ov-radius-sm: 4px;
@@ -611,7 +611,6 @@
    10. STATES
    ======================================== */
 
-.ov-loading,
 .ov-empty {
   text-align: center;
   padding: var(--ov-space-8) var(--ov-space-4);
@@ -621,19 +620,6 @@
   border: 1px solid var(--ov-border);
   border-radius: var(--ov-radius);
   margin: var(--ov-space-6) 0;
-}
-
-.ov-loading::before {
-  content: "";
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--ov-border);
-  border-top-color: var(--ov-accent);
-  border-radius: 50%;
-  animation: ov-spin 0.8s linear infinite;
-  margin-right: var(--ov-space-2);
-  vertical-align: middle;
 }
 
 @keyframes ov-spin {
@@ -654,7 +640,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2000;
   padding: var(--ov-space-4);
   animation: ov-fade-in 0.2s ease;
 }
@@ -935,7 +921,6 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--ov-surface);
   border: 1px solid var(--ov-border);
   border-radius: var(--ov-radius);
   padding: var(--ov-space-5);
@@ -943,6 +928,7 @@
   box-shadow: var(--ov-shadow-2);
   backdrop-filter: blur(10px);
   background-color: rgba(26, 29, 35, 0.95); /* Semi-transparent for dark theme */
+  animation: slideDown 0.3s ease-out;
 }
 
 /* Header Title */
@@ -1237,10 +1223,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.resource-header {
-  animation: slideDown 0.3s ease-out;
 }
 
 /* ========================================
@@ -1544,7 +1526,6 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  margin-left: 260px; /* Space for sidebar on desktop */
   min-height: calc(100vh - 64px);
 }
 
@@ -1742,10 +1723,6 @@
 
 .sidebar::-webkit-scrollbar-thumb:hover {
   background: var(--ov-accent);
-}
-
-.sidebar {
-  transition: transform 0.3s ease;
 }
 
 .main-wrapper.sidebar-collapsed .sidebar {
@@ -1953,18 +1930,16 @@
 }
 
 .db-bar__fill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 100%;
   background: var(--ov-accent);
   color: var(--ov-accent-contrast);
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: var(--ov-space-3);
   font-weight: 600;
   transition: width .3s ease;
-  min-width: 40px; /* mantém uma pílula mínima visível */
-  justify-content: center; /* centraliza o número em barras curtas */
-  padding-right: 0; /* evita empurrar o número para a direita em barras pequenas */
+  min-width: 40px;
+  padding-right: 0;
 }
 
 .db-bar__value {
@@ -2055,10 +2030,6 @@
   border-top-color: var(--ov-accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 .ov-alert {

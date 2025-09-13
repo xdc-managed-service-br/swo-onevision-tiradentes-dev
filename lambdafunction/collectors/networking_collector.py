@@ -274,11 +274,11 @@ class NetworkingCollector(ResourceCollector):
                     
                     # Flatten analysis results
                     flat_ingress_ports = {}
-                    flatten_metric(flat_ingress_ports, {'ExposedIngressPorts': ingress_analysis['exposedPorts']})
+                    flatten_metric(flat_ingress_ports, {'exposedIngressPorts': ingress_analysis['exposedPorts']})
                     flat_egress_ports = {}
-                    flatten_metric(flat_egress_ports, {'ExposedEgressPorts': egress_analysis['exposedPorts']})
+                    flatten_metric(flat_egress_ports, {'exposedEgressPorts': egress_analysis['exposedPorts']})
                     flat_risky_rules = {}
-                    flatten_metric(flat_risky_rules, {'RiskyIngressRules': ingress_analysis['riskyRules']})
+                    flatten_metric(flat_risky_rules, {'riskyIngressRules': ingress_analysis['riskyRules']})
                     
                     item_data = {
                         'groupId': sg_id,
@@ -370,7 +370,7 @@ class NetworkingCollector(ResourceCollector):
                     # Get public IP addresses
                     public_ips = [addr['PublicIp'] for addr in nat.get('NatGatewayAddresses', []) if addr.get('PublicIp')]
                     flat_public_ips = {}
-                    flatten_metric(flat_public_ips, {'PublicIps': public_ips})
+                    flatten_metric(flat_public_ips, {'publicIps': public_ips})
                     
                     item_data = {
                         'natGatewayId': nat_id,
@@ -412,7 +412,7 @@ class NetworkingCollector(ResourceCollector):
                 # Get attached VPCs
                 attached_vpcs = [att['VpcId'] for att in igw.get('Attachments', [])]
                 flat_attached_vpcs = {}
-                flatten_metric(flat_attached_vpcs, {'AttachedVpcs': attached_vpcs})
+                flatten_metric(flat_attached_vpcs, {'attachedVpcs': attached_vpcs})
                 
                 item_data = {
                     'internetGatewayId': igw_id,
@@ -604,12 +604,12 @@ class NetworkingCollector(ResourceCollector):
                     
                     # Flatten route tables, subnets, and security groups
                     flat_route_tables = {}
-                    flatten_metric(flat_route_tables, {'RouteTableIds': endpoint.get('RouteTableIds', [])})
+                    flatten_metric(flat_route_tables, {'routeTableIds': endpoint.get('RouteTableIds', [])})
                     flat_subnets = {}
-                    flatten_metric(flat_subnets, {'SubnetIds': endpoint.get('SubnetIds', [])})
+                    flatten_metric(flat_subnets, {'subnetIds': endpoint.get('SubnetIds', [])})
                     flat_security_groups = {}
-                    flatten_metric(flat_security_groups, {'SecurityGroupIds': [g['GroupId'] for g in endpoint.get('Groups', [])]})
-                    
+                    flatten_metric(flat_security_groups, {'securityGroupIds': [g['GroupId'] for g in endpoint.get('Groups', [])]})
+
                     item_data = {
                         'vpcEndpointId': endpoint_id,
                         'vpcEndpointName': endpoint_name,
@@ -919,15 +919,15 @@ class NetworkingCollector(ResourceCollector):
                     
                     # Flatten availability zones, subnets, security groups, instances, and health check
                     flat_availability_zones = {}
-                    flatten_metric(flat_availability_zones, {'AvailabilityZones': lb.get('AvailabilityZones', [])})
+                    flatten_metric(flat_availability_zones, {'availabilityZones': lb.get('AvailabilityZones', [])})
                     flat_subnets = {}
-                    flatten_metric(flat_subnets, {'Subnets': lb.get('Subnets', [])})
+                    flatten_metric(flat_subnets, {'subnets': lb.get('Subnets', [])})
                     flat_security_groups = {}
-                    flatten_metric(flat_security_groups, {'SecurityGroups': lb.get('SecurityGroups', [])})
+                    flatten_metric(flat_security_groups, {'securityGroups': lb.get('SecurityGroups', [])})
                     flat_instances = {}
-                    flatten_metric(flat_instances, {'Instances': [i['InstanceId'] for i in lb.get('Instances', [])]})
+                    flatten_metric(flat_instances, {'instances': [i['InstanceId'] for i in lb.get('Instances', [])]})
                     flat_health_check = {}
-                    flatten_metric(flat_health_check, {'HealthCheck': lb.get('HealthCheck', {})})
+                    flatten_metric(flat_health_check, {'healthCheck': lb.get('HealthCheck', {})})
                     
                     item_data = {
                         'loadBalancerName': lb_name,
@@ -1088,9 +1088,9 @@ class NetworkingCollector(ResourceCollector):
                 
                 # Flatten route filter prefixes and BGP peers
                 flat_route_filter_prefixes = {}
-                flatten_metric(flat_route_filter_prefixes, {'RouteFilterPrefixes': vif.get('routeFilterPrefixes', [])})
+                flatten_metric(flat_route_filter_prefixes, {'routeFilterPrefixes': vif.get('routeFilterPrefixes', [])})
                 flat_bgp_peers = {}
-                flatten_metric(flat_bgp_peers, {'BgpPeers': vif.get('bgpPeers', [])})
+                flatten_metric(flat_bgp_peers, {'bgpPeers': vif.get('bgpPeers', [])})
                 
                 item_data = {
                     'virtualInterfaceId': vif_id,

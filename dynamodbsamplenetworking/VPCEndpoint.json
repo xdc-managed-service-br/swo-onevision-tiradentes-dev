@@ -1,0 +1,65 @@
+{
+  "id": {
+    "S": "590183843163-us-east-1-VPCEndpoint-vpce-0d19afad150c62c57"
+  },
+  "accountId": {
+    "S": "590183843163"
+  },
+  "accountName": {
+    "S": "A4L"
+  },
+  "createdAt": {
+    "S": "2025-04-02T14:26:34.209Z"
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T22:44:38.468Z"
+  },
+  "policyDocument": {
+    "S": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":\"*\",\"Resource\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\"},{\"Condition\":{\"StringNotEquals\":{\"aws:PrincipalAccount\":\"590183843163\"}},\"Action\":\"*\",\"Resource\":\"*\",\"Effect\":\"Deny\",\"Principal\":\"*\"}]}"
+  },
+  "privateDnsEnabled": {
+    "BOOL": true
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "VPCEndpoint"
+  },
+  "resourceTypeRegionId": {
+    "S": "VPCEndpoint#us-east-1#vpce-0d19afad150c62c57"
+  },
+  "securityGroupIds_0": {
+    "S": "sg-04f3e4ebfbd0ba85d"
+  },
+  "serviceName": {
+    "S": "com.amazonaws.us-east-1.guardduty-data"
+  },
+  "state": {
+    "S": "available"
+  },
+  "subnetIds_0": {
+    "S": "subnet-05716cf807dabb3ce"
+  },
+  "subnetIds_1": {
+    "S": "subnet-0b55bf2b1e004552d"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"GuardDutyManaged\", \"Value\": \"true\"}]"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T22:44:38.468Z"
+  },
+  "vpcEndpointId": {
+    "S": "vpce-0d19afad150c62c57"
+  },
+  "vpcEndpointName": {
+    "S": "N/A"
+  },
+  "vpcEndpointType": {
+    "S": "Interface"
+  },
+  "vpcId": {
+    "S": "vpc-0bcb253437b9db896"
+  }
+}

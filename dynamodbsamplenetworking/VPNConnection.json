@@ -1,0 +1,62 @@
+{
+  "id": {
+    "S": "905418331872-us-east-1-VPNConnection-vpn-0ec51f21a36a93a93"
+  },
+  "accountId": {
+    "S": "905418331872"
+  },
+  "accountName": {
+    "S": "Network"
+  },
+  "category": {
+    "S": "VPN"
+  },
+  "createdAt": {
+    "S": "2025-09-13T22:46:49.418Z"
+  },
+  "customerGatewayId": {
+    "S": "cgw-09d886c01728f2f6b"
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T22:46:49.418Z"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "VPNConnection"
+  },
+  "resourceTypeRegionId": {
+    "S": "VPNConnection#us-east-1#vpn-0ec51f21a36a93a93"
+  },
+  "state": {
+    "S": "available"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"AutoscaleTgwVpnResource\", \"Value\": \"tgw-0a20534250c42cbbb\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"ResourceGroup\", \"Value\": \"fgt-tgw-v2-f8438a00\"}, {\"Key\": \"Name\", \"Value\": \"fgt-tgw-v2-f8438a00-vpn-connection-i-0044b5c5c81bffcc0-54.152.84.89\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}]"
+  },
+  "transitGatewayId": {
+    "S": "tgw-0a20534250c42cbbb"
+  },
+  "tunnelCount": {
+    "N": "2"
+  },
+  "tunnelsUp": {
+    "N": "2"
+  },
+  "type": {
+    "S": "ipsec.1"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T22:46:49.418Z"
+  },
+  "vpnConnectionId": {
+    "S": "vpn-0ec51f21a36a93a93"
+  },
+  "vpnConnectionName": {
+    "S": "fgt-tgw-v2-f8438a00-vpn-connection-i-0044b5c5c81bffcc0-54.152.84.89"
+  },
+  "vpnGatewayId": {
+    "S": "N/A"
+  }
+}
