@@ -756,8 +756,8 @@ class NetworkingCollector(ResourceCollector):
                     'createdAt': formatted_creation,
                     'tags': tags_json
                 }
-                    self.add_item('TransitGateway', tgw_id, to_dynamodb_format(item_data))
-                    tgw_count += 1
+                self.add_item('TransitGateway', tgw_id, to_dynamodb_format(item_data))
+                tgw_count += 1
             
             if tgw_count > 0:
                 logger.debug(f"Added {tgw_count} Transit Gateways from region {self.region} to the item list.")
@@ -788,7 +788,7 @@ class NetworkingCollector(ResourceCollector):
                     
                     # Flatten association
                     flat_association = {}
-                    flatten_metric(flat_association, {'Association': attachment.get('Association', {})})
+                    flatten_metric(flat_association, {'association': attachment.get('Association', {})})
                     
                 item_data = {
                     'transitGatewayAttachmentId': attachment_id,
@@ -803,8 +803,8 @@ class NetworkingCollector(ResourceCollector):
                     'tags': tags_json,
                     **flat_association
                 }
-                    self.add_item('TransitGatewayAttachment', attachment_id, to_dynamodb_format(item_data))
-                    tgw_attach_count += 1
+                self.add_item('TransitGatewayAttachment', attachment_id, to_dynamodb_format(item_data))
+                tgw_attach_count += 1
             
             if tgw_attach_count > 0:
                 logger.debug(f"Added {tgw_attach_count} Transit Gateway Attachments from region {self.region} to the item list.")

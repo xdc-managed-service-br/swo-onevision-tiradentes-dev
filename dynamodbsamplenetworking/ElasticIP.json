@@ -8,25 +8,25 @@
   "accountName": {
     "S": "Network"
   },
-  "AllocationId": {
+  "allocationId": {
     "S": "eipalloc-0f6fcbe91b55fe9b4"
   },
   "createdAt": {
-    "S": "2025-09-13T19:57:46.851Z"
+    "S": "2025-09-13T22:07:12.565Z"
   },
-  "Domain": {
+  "domain": {
     "S": "vpc"
   },
-  "EipName": {
+  "eipName": {
     "S": "SMTP Relay"
   },
   "lastUpdated": {
-    "S": "2025-09-13T19:57:46.851Z"
+    "S": "2025-09-13T22:07:12.565Z"
   },
-  "NetworkBorderGroup": {
+  "networkBorderGroup": {
     "S": "us-east-1"
   },
-  "PublicIp": {
+  "publicIp": {
     "S": "44.194.224.102"
   },
   "region": {
@@ -38,10 +38,10 @@
   "resourceTypeRegionId": {
     "S": "ElasticIP#us-east-1#eipalloc-0f6fcbe91b55fe9b4"
   },
-  "Tags": {
+  "tags": {
     "S": "[{\"Key\": \"Name\", \"Value\": \"SMTP Relay\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T19:57:46.851Z"
+    "S": "2025-09-13T22:07:12.565Z"
   }
 }

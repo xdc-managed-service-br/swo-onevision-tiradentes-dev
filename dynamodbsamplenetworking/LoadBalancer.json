@@ -14,31 +14,28 @@
   "AvailabilityZones_1": {
     "S": "us-east-1b"
   },
-  "CanonicalHostedZoneId": {
+  "canonicalHostedZoneId": {
     "S": "Z26RNL4JYFTOTI"
   },
-  "CreatedAt": {
+  "createdAt": {
     "S": "2024-05-31T17:45:25.237Z"
   },
-  "createdAt": {
-    "S": "2025-09-13T19:57:49.438Z"
-  },
-  "DnsName": {
+  "dnsName": {
     "S": "NLB-FWB-INTERNAL-e82b3a24e06ec74a.elb.us-east-1.amazonaws.com"
   },
-  "IpAddressType": {
+  "ipAddressType": {
     "S": "ipv4"
   },
   "lastUpdated": {
-    "S": "2025-09-13T19:57:49.438Z"
+    "S": "2025-09-13T22:07:15.256Z"
   },
-  "LoadBalancerArn": {
+  "loadBalancerArn": {
     "S": "arn:aws:elasticloadbalancing:us-east-1:905418331872:loadbalancer/net/NLB-FWB-INTERNAL/e82b3a24e06ec74a"
   },
-  "LoadBalancerName": {
+  "loadBalancerName": {
     "S": "NLB-FWB-INTERNAL"
   },
-  "LoadBalancerNameTag": {
+  "loadBalancerNameTag": {
     "S": "N/A"
   },
   "region": {
@@ -50,16 +47,16 @@
   "resourceTypeRegionId": {
     "S": "LoadBalancer#us-east-1#arn:aws:elasticloadbalancing:us-east-1:905418331872:loadbalancer/net/NLB-FWB-INTERNAL/e82b3a24e06ec74a"
   },
-  "Scheme": {
+  "scheme": {
     "S": "internal"
   },
   "SecurityGroups_0": {
     "S": "sg-00a1454285fcfa7c2"
   },
-  "State": {
+  "state": {
     "S": "active"
   },
-  "Tags": {
+  "tags": {
     "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}]"
   },
   "TargetGroups_0": {
@@ -68,13 +65,13 @@
   "TargetGroups_1": {
     "S": "arn:aws:elasticloadbalancing:us-east-1:905418331872:targetgroup/tg-fwb-private-80/f8db457e35ea1aa0"
   },
-  "Type": {
+  "type": {
     "S": "network"
   },
   "updatedAt": {
-    "S": "2025-09-13T19:57:49.438Z"
+    "S": "2025-09-13T22:07:15.256Z"
   },
-  "VpcId": {
+  "vpcId": {
     "S": "vpc-0d65345bc2e8fc452"
   }
 }

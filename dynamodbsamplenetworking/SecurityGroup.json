@@ -1,87 +1,45 @@
 {
   "id": {
-    "S": "905418331872-us-east-1-SecurityGroup-sg-0f6d7fd08b2be39c5"
+    "S": "211125526410-us-east-1-SecurityGroup-sg-04ad7ede782b32f35"
   },
   "accountId": {
-    "S": "905418331872"
+    "S": "211125526410"
   },
   "accountName": {
-    "S": "Network"
+    "S": "TOTVS - Legado"
   },
-  "AllIngressPortsExposed": {
+  "allIngressPortsExposed": {
     "BOOL": false
   },
   "createdAt": {
-    "S": "2025-09-13T20:40:12.221Z"
+    "S": "2025-09-13T22:07:48.311Z"
   },
-  "Description": {
-    "S": "Fortinet FortiManager (BYOL) Centralized Security Management-7.2.5-AutogenByAWSMP--1 created 2024-05-22T19:37:55.766Z"
+  "description": {
+    "S": "Conexao dos banco de dados Oracle com outros servidores"
   },
-  "EgressRuleCount": {
+  "egressRuleCount": {
     "N": "1"
   },
-  "ExposedIngressPorts_0": {
-    "N": "80"
+  "groupId": {
+    "S": "sg-04ad7ede782b32f35"
   },
-  "ExposedIngressPorts_1": {
-    "N": "8080"
+  "groupName": {
+    "S": "SG-bancodedados-oracle-servidores"
   },
-  "ExposedIngressPorts_10": {
-    "N": "2032"
-  },
-  "ExposedIngressPorts_11": {
-    "N": "3000"
-  },
-  "ExposedIngressPorts_12": {
-    "N": "6028"
-  },
-  "ExposedIngressPorts_13": {
-    "N": "5199"
-  },
-  "ExposedIngressPorts_2": {
-    "N": "162"
-  },
-  "ExposedIngressPorts_3": {
-    "N": "443"
-  },
-  "ExposedIngressPorts_4": {
-    "N": "9443"
-  },
-  "ExposedIngressPorts_5": {
-    "N": "161"
-  },
-  "ExposedIngressPorts_6": {
-    "N": "514"
-  },
-  "ExposedIngressPorts_7": {
-    "N": "541"
-  },
-  "ExposedIngressPorts_8": {
-    "N": "6020"
-  },
-  "ExposedIngressPorts_9": {
-    "N": "22"
-  },
-  "GroupId": {
-    "S": "sg-0f6d7fd08b2be39c5"
-  },
-  "GroupName": {
-    "S": "Fortinet FortiManager (BYOL) Centralized Security Management-7.2.5-AutogenByAWSMP--1"
-  },
-  "GroupNameTag": {
+  "groupNameTag": {
     "S": "N/A"
   },
-  "HasExposedEgressPorts": {
+  "hasExposedEgressPorts": {
     "BOOL": false
   },
-  "HasExposedIngressPorts": {
-    "BOOL": true
+  "hasExposedIngressPorts": {
+    "BOOL": false
   },
-  "IngressRuleCount": {
-    "N": "15"
+  "ingressRuleCount": {
+    "N": "1"
   },
   "lastUpdated": {
-    "S": "2025-09-13T20:40:12.221Z"
+    "S": "2025-09-13T22:07:48.311Z"
   },
   "region": {
     "S": "us-east-1"
@@ -90,30 +48,15 @@
     "S": "SecurityGroup"
   },
   "resourceTypeRegionId": {
-    "S": "SecurityGroup#us-east-1#sg-0f6d7fd08b2be39c5"
+    "S": "SecurityGroup#us-east-1#sg-04ad7ede782b32f35"
   },
-  "RiskyIngressRules_0_port": {
-    "N": "22"
-  },
-  "RiskyIngressRules_0_protocol": {
-    "S": "tcp"
-  },
-  "RiskyIngressRules_0_service": {
-    "S": "SSH"
-  },
-  "RiskyIngressRules_0_source": {
-    "S": "0.0.0.0/0"
-  },
-  "RiskyIngressRules_0_type": {
-    "S": "risky_port_exposed"
-  },
-  "Tags": {
-    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
+  "tags": {
+    "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-13T20:40:12.221Z"
+    "S": "2025-09-13T22:07:48.311Z"
   },
-  "VpcId": {
-    "S": "vpc-04d9fa441c24373b3"
+  "vpcId": {
+    "S": "vpc-0cc4dd5e16f0d3fb5"
   }
 }

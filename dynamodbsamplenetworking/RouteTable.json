@@ -1,59 +1,59 @@
 {
   "id": {
-    "S": "985539761262-eu-central-1-RouteTable-rtb-02ebfae6b392dda16"
+    "S": "339712896448-ap-northeast-1-RouteTable-rtb-03d45ccdfd8dc5547"
   },
   "accountId": {
-    "S": "985539761262"
+    "S": "339712896448"
   },
   "accountName": {
-    "S": "SandBox + BedRock"
+    "S": "Audit"
   },
-  "AssociationCount": {
+  "associationCount": {
     "N": "1"
   },
   "createdAt": {
-    "S": "2025-09-13T20:12:41.999Z"
+    "S": "2025-09-13T22:04:43.927Z"
   },
-  "HasInternetRoute": {
+  "hasInternetRoute": {
     "BOOL": true
   },
-  "HasNatRoute": {
+  "hasNatRoute": {
     "BOOL": false
   },
-  "HasVpcPeeringRoute": {
+  "hasVpcPeeringRoute": {
     "BOOL": false
   },
-  "IsMain": {
+  "isMain": {
     "BOOL": true
   },
   "lastUpdated": {
-    "S": "2025-09-13T20:12:41.999Z"
+    "S": "2025-09-13T22:04:43.927Z"
   },
   "region": {
-    "S": "eu-central-1"
+    "S": "ap-northeast-1"
   },
   "resourceType": {
     "S": "RouteTable"
   },
   "resourceTypeRegionId": {
-    "S": "RouteTable#eu-central-1#rtb-02ebfae6b392dda16"
+    "S": "RouteTable#ap-northeast-1#rtb-03d45ccdfd8dc5547"
   },
-  "RouteCount": {
+  "routeCount": {
     "N": "2"
   },
-  "RouteTableId": {
-    "S": "rtb-02ebfae6b392dda16"
+  "routeTableId": {
+    "S": "rtb-03d45ccdfd8dc5547"
   },
-  "RouteTableName": {
+  "routeTableName": {
     "S": "N/A"
   },
-  "Tags": {
+  "tags": {
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-13T20:12:41.999Z"
+    "S": "2025-09-13T22:04:43.927Z"
   },
-  "VpcId": {
-    "S": "vpc-0f9fdf572930fcb0e"
+  "vpcId": {
+    "S": "vpc-02d7308e96487a25e"
   }
 }

@@ -8,16 +8,16 @@
   "accountName": {
     "S": "Network"
   },
-  "AmazonAddress": {
+  "amazonAddress": {
     "S": "169.254.10.2/30"
   },
-  "AmazonSideAsn": {
+  "amazonSideAsn": {
     "N": "64513"
   },
-  "Asn": {
+  "asn": {
     "N": "266589"
   },
-  "AuthKey": {
+  "authKey": {
     "S": "REDACTED"
   },
   "BgpPeers_0_addressFamily": {
@@ -50,28 +50,28 @@
   "BgpPeers_0_customerAddress": {
     "S": "169.254.10.1/30"
   },
-  "ConnectionId": {
+  "connectionId": {
     "S": "dxcon-fh5mqy42"
   },
   "createdAt": {
-    "S": "2025-09-13T19:57:52.132Z"
+    "S": "2025-09-13T22:07:18.078Z"
   },
-  "CustomerAddress": {
+  "customerAddress": {
     "S": "169.254.10.1/30"
   },
-  "CustomerRouterConfig": {
+  "customerRouterConfig": {
     "S": "Available"
   },
-  "DirectConnectGatewayId": {
+  "directConnectGatewayId": {
     "S": "1b7eba1c-fc87-40d5-b3d3-0fdee18f75ef"
   },
-  "JumboFrameCapable": {
+  "jumboFrameCapable": {
     "BOOL": true
   },
   "lastUpdated": {
-    "S": "2025-09-13T19:57:52.132Z"
+    "S": "2025-09-13T22:07:18.078Z"
   },
-  "Mtu": {
+  "mtu": {
     "N": "1500"
   },
   "region": {
@@ -83,28 +83,28 @@
   "resourceTypeRegionId": {
     "S": "DirectConnectVirtualInterface#us-east-1#dxvif-fh6ecnf3"
   },
-  "Tags": {
+  "tags": {
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-13T19:57:52.132Z"
+    "S": "2025-09-13T22:07:18.078Z"
   },
-  "VirtualGatewayId": {
+  "virtualGatewayId": {
     "S": ""
   },
-  "VirtualInterfaceId": {
+  "virtualInterfaceId": {
     "S": "dxvif-fh6ecnf3"
   },
-  "VirtualInterfaceName": {
+  "virtualInterfaceName": {
     "S": "Virtual-Interface-DX-Tiradentes"
   },
-  "VirtualInterfaceState": {
+  "virtualInterfaceState": {
     "S": "available"
   },
-  "VirtualInterfaceType": {
+  "virtualInterfaceType": {
     "S": "transit"
   },
-  "Vlan": {
+  "vlan": {
     "N": "301"
   }
 }

@@ -1,44 +1,44 @@
 {
   "id": {
-    "S": "654654547936-eu-west-1-InternetGateway-igw-0a1c1f9fdadfbc67e"
+    "S": "058264289687-eu-west-3-InternetGateway-igw-05669cd5a3f57b36c"
   },
   "accountId": {
-    "S": "654654547936"
+    "S": "058264289687"
   },
   "accountName": {
-    "S": "ITP"
+    "S": "Terminal Service"
   },
   "AttachedVpcs_0": {
-    "S": "vpc-01a5b3825ebdeb13e"
+    "S": "vpc-007e5b997c63ce229"
   },
-  "AttachmentCount": {
+  "attachmentCount": {
     "N": "1"
   },
   "createdAt": {
-    "S": "2025-09-13T19:56:31.339Z"
+    "S": "2025-09-13T22:07:52.008Z"
   },
-  "InternetGatewayId": {
-    "S": "igw-0a1c1f9fdadfbc67e"
+  "internetGatewayId": {
+    "S": "igw-05669cd5a3f57b36c"
   },
-  "InternetGatewayName": {
+  "internetGatewayName": {
     "S": "N/A"
   },
   "lastUpdated": {
-    "S": "2025-09-13T19:56:31.339Z"
+    "S": "2025-09-13T22:07:52.008Z"
   },
   "region": {
-    "S": "eu-west-1"
+    "S": "eu-west-3"
   },
   "resourceType": {
     "S": "InternetGateway"
   },
   "resourceTypeRegionId": {
-    "S": "InternetGateway#eu-west-1#igw-0a1c1f9fdadfbc67e"
+    "S": "InternetGateway#eu-west-3#igw-05669cd5a3f57b36c"
   },
-  "Tags": {
+  "tags": {
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-13T19:56:31.339Z"
+    "S": "2025-09-13T22:07:52.008Z"
   }
 }
