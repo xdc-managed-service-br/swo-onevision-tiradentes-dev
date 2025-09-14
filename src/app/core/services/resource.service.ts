@@ -15,10 +15,15 @@ export class ResourceService {
   private resourcesCache = new Map<string, any[]>();
   private resourcesLoading = new BehaviorSubject<boolean>(false);
   
+  // Expose loading state as an observable
   public loading$ = this.resourcesLoading.asObservable();
   
   constructor() { }
-
+  
+  /**
+   * Get all resources from the database with proper pagination
+   * IMPORTANT: Now filters out metric items to avoid mixing with resources
+   */
   getAllResources(): Observable<any[]> {
     this.resourcesLoading.next(true);
     
@@ -42,7 +47,11 @@ export class ResourceService {
       shareReplay(1) // Share the result with all subscribers
     );
   }
-
+  
+  /**
+   * Load all resources with pagination to handle large datasets
+   * IMPORTANT: Filters out metric items (isMetric !== true)
+   */
   private async loadAllResourcesWithPagination(): Promise<any[]> {
     let allResources: any[] = [];
     let nextToken: string | null | undefined = null;

@@ -2,6 +2,7 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
 const schema = a.schema({
+  
   AWSResource: a.model({
     // ======= CAMPOS BASE (OBRIGATÓRIOS) =======
     id: a.string().required(),
@@ -119,7 +120,7 @@ const schema = a.schema({
     status: a.string(),
     storageType: a.string(),
     allocatedStorage: a.float(),
-    multiAz: a.boolean(),
+    multiAZ: a.boolean(),
     instanceClass: a.string(),
     performanceInsightsEnabled: a.boolean(),
     
@@ -204,8 +205,6 @@ const schema = a.schema({
     // ======= NETWORKING: NETWORK ACL FIELDS =======
     networkAclId: a.string(),
     networkAclName: a.string(),
-    naclIngressRuleCount: a.integer(),
-    naclEgressRuleCount: a.integer(),
     customDenyRuleCount: a.integer(),
     
     // ======= NETWORKING: VPC ENDPOINT FIELDS =======
@@ -345,7 +344,7 @@ const schema = a.schema({
     // Leitura para usuários autenticados
     allow.authenticated().to(['read']),
     // Escrita restrita para grupo de administradores
-    allow.group('Admins').to(['create', 'update', 'delete']),
+    allow.group('Admins').to(['read','create', 'update', 'delete']),
     // API Key para processos de coleta automatizada
     allow.publicApiKey().to(['create', 'update'])
   ])
@@ -354,12 +353,40 @@ const schema = a.schema({
   index('resourceType')
     .queryField('listByResourceType')
     .sortKeys(['createdAt']),
-
   // Índice por conta → agrupado por tipo de recurso
   index('accountId')
     .queryField('listByAccountId')
     .sortKeys(['resourceType'])
-    ])
+]),
+
+  PatchRequest: a.model({
+    id: a.string().required(),              
+    instanceId: a.string().required(),      
+    action: a.string().required(),          
+    status: a.string().required(),          
+    requestedBy: a.string().required(),     
+    requestedAt: a.datetime().required(),
+    approvedBy: a.string(),
+    approvedAt: a.datetime(),
+    notes: a.string()
+  })
+  .authorization(allow => [
+    allow.authenticated().to(['create', 'read']),   
+    allow.group('Admins').to(['create', 'update', 'delete', 'read'])  
+  ]),
+
+  ResourceComment: a.model({
+    id: a.string().required(),              
+    resourceId: a.string().required(),      
+    author: a.string().required(),          
+    text: a.string().required(),            
+    createdAt: a.datetime().required()
+  })
+  .authorization(allow => [
+    allow.authenticated().to(['create', 'read']),  
+    allow.group('Admins').to(['create', 'update', 'delete', 'read']),          
+    allow.owner().to(['delete'])                   
+  ])
 });
 
 export type Schema = ClientSchema<typeof schema>;

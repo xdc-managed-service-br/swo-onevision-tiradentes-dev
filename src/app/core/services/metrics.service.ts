@@ -61,7 +61,7 @@ export interface RDSMetrics {
   total: number;
   available: number;
   engines: { [key: string]: number };
-  multiAZ: number;
+  multiAZ?: number;
   performanceInsights: number;
   percentageMultiAZ: number;
   percentageWithPerfInsights: number;
