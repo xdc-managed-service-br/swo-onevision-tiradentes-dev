@@ -168,11 +168,10 @@ def batch_write_to_dynamodb(table_objects, items):
         table_name = table.name
         logger.debug(f"Starting batch write for table: {table_name} with {len(items_to_process)} items.")
         table_items_written_this_loop = 0
-        items_for_this_table = list(items_to_process)  # Use the original full list for each table
 
-        while items_for_this_table:
-            batch_items = items_for_this_table[:MAX_BATCH_SIZE]
-            del items_for_this_table[:MAX_BATCH_SIZE]
+        # Iterate over items_to_process in chunks of MAX_BATCH_SIZE
+        for start_idx in range(0, len(items_to_process), MAX_BATCH_SIZE):
+            batch_items = items_to_process[start_idx:start_idx + MAX_BATCH_SIZE]
 
             # Check for empty items in the batch
             valid_batch_items = [item for item in batch_items if item]
@@ -183,7 +182,7 @@ def batch_write_to_dynamodb(table_objects, items):
             put_requests = [{'PutRequest': {'Item': item}} for item in valid_batch_items]
             request_items = {table_name: put_requests}
             current_batch_size = len(valid_batch_items)
-            
+
             sanitized_batch_items = []
             for it in valid_batch_items:
                 sanitized = _to_dynamodb_compatible(it)
@@ -196,7 +195,7 @@ def batch_write_to_dynamodb(table_objects, items):
             put_requests = [{'PutRequest': {'Item': item}} for item in sanitized_batch_items]
             request_items = {table_name: put_requests}
             current_batch_size = len(sanitized_batch_items)
-            
+
             retries = 0
             max_retries = 5
             backoff_base = 0.1
@@ -316,16 +315,13 @@ class ResourceCollector:
         """Add a resource item to the collection."""
         now = format_aws_datetime(datetime.now(timezone.utc))
         item_region = properties.get('region', self.region)
-        resource_type_region_id = f"{resource_type}#{item_region}#{resource_id}"
         
         item = {
             'accountId': self.account_id,
-            'resourceTypeRegionId': resource_type_region_id,  # Partition Key + Sort Key
             'id': f'{self.account_id}-{item_region}-{resource_type}-{resource_id}',  # Unique ID
             'accountName': self.account_name,
             'resourceType': resource_type,
             'region': item_region,
-            'lastUpdated': now,
             'createdAt': now,
             'updatedAt': now
         }

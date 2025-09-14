@@ -438,7 +438,6 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
         'isMetric': True,
         'collectionDuration': processing_duration,
         'resourcesProcessed': metrics['global']['totalResources'],
-        'lastUpdated': iso_timestamp,
         'createdAt': iso_timestamp,
         'updatedAt': iso_timestamp
     }
@@ -463,7 +462,6 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
             'metricType': 'EC2_HEALTH',
             'metricDate': date_str,
             'isMetric': True,
-            'lastUpdated': iso_timestamp,
             'createdAt': iso_timestamp,
             'updatedAt': iso_timestamp
         }
@@ -488,7 +486,6 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
             'metricType': 'RDS_METRICS',
             'metricDate': date_str,
             'isMetric': True,
-            'lastUpdated': iso_timestamp,
             'createdAt': iso_timestamp,
             'updatedAt': iso_timestamp
         }
@@ -506,7 +503,6 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
             'metricType': 'STORAGE_METRICS',
             'metricDate': date_str,
             'isMetric': True,
-            'lastUpdated': iso_timestamp,
             'createdAt': iso_timestamp,
             'updatedAt': iso_timestamp
         }
@@ -524,7 +520,6 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
             'metricType': 'COST_OPTIMIZATION',
             'metricDate': date_str,
             'isMetric': True,
-            'lastUpdated': iso_timestamp,
             'createdAt': iso_timestamp,
             'updatedAt': iso_timestamp
         }
@@ -542,7 +537,6 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
             'metricType': 'SECURITY_METRICS',
             'metricDate': date_str,
             'isMetric': True,
-            'lastUpdated': iso_timestamp,
             'createdAt': iso_timestamp,
             'updatedAt': iso_timestamp
         }
