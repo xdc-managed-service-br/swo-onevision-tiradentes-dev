@@ -987,15 +987,15 @@ class NetworkingCollector(ResourceCollector):
                     
                     # Flatten instance IDs, availability zones, load balancer names, target groups, and launch template
                     flat_instance_ids = {}
-                    flatten_metric(flat_instance_ids, {'InstanceIds': instance_ids})
+                    flatten_metric(flat_instance_ids, {'instanceIds': instance_ids})
                     flat_availability_zones = {}
-                    flatten_metric(flat_availability_zones, {'AvailabilityZones': asg.get('AvailabilityZones', [])})
+                    flatten_metric(flat_availability_zones, {'availabilityZones': asg.get('AvailabilityZones', [])})
                     flat_load_balancer_names = {}
-                    flatten_metric(flat_load_balancer_names, {'LoadBalancerNames': asg.get('LoadBalancerNames', [])})
+                    flatten_metric(flat_load_balancer_names, {'loadBalancerNames': asg.get('LoadBalancerNames', [])})
                     flat_target_group_arns = {}
-                    flatten_metric(flat_target_group_arns, {'TargetGroupARNs': asg.get('TargetGroupARNs', [])})
+                    flatten_metric(flat_target_group_arns, {'targetGroupARNs': asg.get('TargetGroupARNs', [])})
                     flat_launch_template = {}
-                    flatten_metric(flat_launch_template, {'LaunchTemplate': asg.get('LaunchTemplate', {})})
+                    flatten_metric(flat_launch_template, {'launchTemplate': asg.get('LaunchTemplate', {})})
                     
                     item_data = {
                         'autoScalingGroupName': asg_name,

@@ -582,7 +582,6 @@ class EC2Collector(ResourceCollector):
                         'encrypted': volume.get('Encrypted', False),
                         'createdAt': formatted_create_time,
                         'tags': tags_json,
-                        # 'attachedInstances': json.dumps(attached_instances)  # removed, replaced with flattened keys
                         **{f"attachedInstances_{i}": inst for i, inst in enumerate(attached_instances)}
                     }
                     self.add_item('EBSVolume', volume['VolumeId'], volume_item)
