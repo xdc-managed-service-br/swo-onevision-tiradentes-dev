@@ -6,7 +6,7 @@
     "S": "905418331872"
   },
   "accountName": {
-    "S": "Network"
+    "S": "CustomAccount"
   },
   "autoScalingGroupARN": {
     "S": "arn:aws:autoscaling:us-east-1:905418331872:autoScalingGroup:9111137d-f3d4-42dd-a311-d60502c9658e:autoScalingGroupName/fgt-tgw-v2-f8438a00-fortigate-byol-auto-scaling-group"
@@ -17,11 +17,15 @@
   "autoScalingGroupNameTag": {
     "S": "fgt-tgw-v2-f8438a00-fortigate-byol-auto-scaling-group"
   },
-  "availabilityZones_0": {
-    "S": "us-east-1a"
-  },
-  "availabilityZones_1": {
-    "S": "us-east-1b"
+  "availabilityZones": {
+    "L": [
+      {
+        "S": "us-east-1a"
+      },
+      {
+        "S": "us-east-1b"
+      }
+    ]
   },
   "createdAt": {
     "S": "2024-04-29T22:47:52.327Z"
@@ -41,20 +45,21 @@
   "healthyInstances": {
     "N": "2"
   },
-  "instanceIds_0": {
-    "S": "i-0044b5c5c81bffcc0"
+  "instanceIds": {
+    "L": [
+      {
+        "S": "i-0044b5c5c81bffcc0"
+      },
+      {
+        "S": "i-04531cc1f7a640f6a"
+      }
+    ]
   },
-  "instanceIds_1": {
-    "S": "i-04531cc1f7a640f6a"
+  "launchTemplate": {
+    "S": "{\"LaunchTemplateId\": \"lt-0b823593cbe7981dd\", \"LaunchTemplateName\": \"fgt-tgw-v2-f8438a00-fortigate-byol-autoscale-launch-template\", \"Version\": \"2\"}"
   },
-  "launchTemplate_LaunchTemplateId": {
-    "S": "lt-0b823593cbe7981dd"
-  },
-  "launchTemplate_LaunchTemplateName": {
-    "S": "fgt-tgw-v2-f8438a00-fortigate-byol-autoscale-launch-template"
-  },
-  "launchTemplate_Version": {
-    "S": "2"
+  "loadBalancerNames": {
+    "L": []
   },
   "maxSize": {
     "N": "2"
@@ -74,8 +79,11 @@
   "tags": {
     "S": "[{\"Key\": \"Name\", \"Value\": \"fgt-tgw-v2-f8438a00-fortigate-byol-auto-scaling-group\"}, {\"Key\": \"ResourceGroup\", \"Value\": \"fgt-tgw-v2-f8438a00\"}, {\"Key\": \"aws:cloudformation:logical-id\", \"Value\": \"FgtAutoScalingGroupByol\"}, {\"Key\": \"aws:cloudformation:stack-id\", \"Value\": \"arn:aws:cloudformation:us-east-1:905418331872:stack/fgt-tgw-v2-StackMainWorkload-11GY4W9FWEDHP-StackCreateFortiGateAutoScalingGroup-19NMPFFULHYR4/7cb3f540-067a-11ef-b705-0affd220fe87\"}, {\"Key\": \"aws:cloudformation:stack-name\", \"Value\": \"fgt-tgw-v2-StackMainWorkload-11GY4W9FWEDHP-StackCreateFortiGateAutoScalingGroup-19NMPFFULHYR4\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
   },
+  "targetGroupARNs": {
+    "L": []
+  },
   "updatedAt": {
-    "S": "2025-09-14T17:57:35.223Z"
+    "S": "2025-09-14T20:14:13.736Z"
   },
   "vpcZoneIdentifier": {
     "S": "subnet-02eb9de9206315fec,subnet-0c5eb4ae3651fbcd6"

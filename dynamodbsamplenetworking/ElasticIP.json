@@ -1,33 +1,45 @@
 {
   "id": {
-    "S": "905418331872-us-east-1-ElasticIP-eipalloc-0f6fcbe91b55fe9b4"
+    "S": "905418331872-us-east-1-ElasticIP-eipalloc-014f3e57ce0d8b44a"
   },
   "accountId": {
     "S": "905418331872"
   },
   "accountName": {
-    "S": "Network"
+    "S": "CustomAccount"
   },
   "allocationId": {
-    "S": "eipalloc-0f6fcbe91b55fe9b4"
+    "S": "eipalloc-014f3e57ce0d8b44a"
+  },
+  "associationId": {
+    "S": "eipassoc-0a020cd0cb9323e33"
   },
   "createdAt": {
-    "S": "2025-09-13T22:07:12.565Z"
+    "S": "2025-09-14T20:46:15.773Z"
   },
   "domain": {
     "S": "vpc"
   },
   "eipName": {
-    "S": "SMTP Relay"
+    "S": "fwbASG-EIP"
   },
-  "lastUpdated": {
-    "S": "2025-09-13T22:07:12.565Z"
+  "instanceId": {
+    "S": "i-011b231ed6474b5f7"
   },
   "networkBorderGroup": {
     "S": "us-east-1"
   },
+  "networkInterfaceId": {
+    "S": "eni-0898ea3dd32670d5d"
+  },
+  "networkInterfaceOwnerId": {
+    "S": "905418331872"
+  },
+  "privateIpAddress": {
+    "S": "172.24.3.14"
+  },
   "publicIp": {
-    "S": "44.194.224.102"
+    "S": "52.201.55.137"
   },
   "region": {
     "S": "us-east-1"
@@ -35,13 +47,10 @@
   "resourceType": {
     "S": "ElasticIP"
   },
-  "resourceTypeRegionId": {
-    "S": "ElasticIP#us-east-1#eipalloc-0f6fcbe91b55fe9b4"
-  },
   "tags": {
-    "S": "[{\"Key\": \"Name\", \"Value\": \"SMTP Relay\"}]"
+    "S": "[{\"Key\": \"aws:cloudformation:stack-id\", \"Value\": \"arn:aws:cloudformation:us-east-1:905418331872:stack/fwb-tiradentes-StackDeployFwbAsgSolution-IYNXQS5A0V6Z/90fbda10-1866-11ef-8ce2-0affe22bff19\"}, {\"Key\": \"aws:cloudformation:logical-id\", \"Value\": \"NewFortiWebElasticIP\"}, {\"Key\": \"Name\", \"Value\": \"fwbASG-EIP\"}, {\"Key\": \"aws:cloudformation:stack-name\", \"Value\": \"fwb-tiradentes-StackDeployFwbAsgSolution-IYNXQS5A0V6Z\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:07:12.565Z"
+    "S": "2025-09-14T20:46:15.773Z"
   }
 }

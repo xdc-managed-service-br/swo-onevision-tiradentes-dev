@@ -317,14 +317,14 @@ class MetricsAccumulator:
                     'diskMonitoring': self.ec2_cw_disk,
                     'bothEnabled': self.ec2_cw_both,
                     'noneEnabled': self.ec2_running - max(self.ec2_cw_memory, self.ec2_cw_disk) if self.ec2_running > 0 else 0,
-                    'percentageWithMemory': round((self.ec2_cw_memory / self.ec2_running * 100) if self.ec2_running > 0 else 0, 1),
-                    'percentageWithDisk': round((self.ec2_cw_disk / self.ec2_running * 100) if self.ec2_running > 0 else 0, 1)
+                    'percentageWithMemory': int(round((self.ec2_cw_memory / self.ec2_running * 100) if self.ec2_running > 0 else 0)),
+                    'percentageWithDisk': int(round((self.ec2_cw_disk / self.ec2_running * 100) if self.ec2_running > 0 else 0))
                 },
                 'ssmAgent': {
                     'connected': self.ec2_ssm_connected,
                     'notConnected': self.ec2_ssm_notconnected,
                     'notInstalled': self.ec2_ssm_notinstalled,
-                    'percentageConnected': round((self.ec2_ssm_connected / self.ec2_running * 100) if self.ec2_running > 0 else 0, 1)
+                    'percentageConnected': int(round((self.ec2_ssm_connected / self.ec2_running * 100) if self.ec2_running > 0 else 0))
                 }
             }
         
@@ -337,8 +337,8 @@ class MetricsAccumulator:
                 'engines': dict(self.rds_engines),
                 'multiAZ': self.rds_multiaz,
                 'performanceInsights': self.rds_performance_insights,
-                'percentageMultiAZ': round((self.rds_multiaz / self.rds_total * 100), 1),
-                'percentageWithPerfInsights': round((self.rds_performance_insights / self.rds_total * 100), 1)
+                'percentageMultiAZ': int(round((self.rds_multiaz / self.rds_total * 100))),
+                'percentageWithPerfInsights': int(round((self.rds_performance_insights / self.rds_total * 100)))
             }
         
         # Storage metrics
@@ -361,7 +361,7 @@ class MetricsAccumulator:
         security_metrics = {
             'securityGroups': self.sg_total,
             'exposedSecurityGroups': self.sg_with_exposed_ports,
-            'percentageExposed': round((self.sg_with_exposed_ports / self.sg_total * 100) if self.sg_total > 0 else 0, 1)
+            'percentageExposed': int(round((self.sg_with_exposed_ports / self.sg_total * 100) if self.sg_total > 0 else 0))
         }
         
         return {

@@ -6,7 +6,7 @@
     "S": "905418331872"
   },
   "accountName": {
-    "S": "Network"
+    "S": "CustomAccount"
   },
   "amazonAddress": {
     "S": "169.254.10.2/30"
@@ -20,41 +20,49 @@
   "authKey": {
     "S": "REDACTED"
   },
-  "BgpPeers_0_addressFamily": {
-    "S": "ipv4"
-  },
-  "BgpPeers_0_amazonAddress": {
-    "S": "169.254.10.2/30"
-  },
-  "BgpPeers_0_asn": {
-    "N": "266589"
-  },
-  "BgpPeers_0_authKey": {
-    "S": "0xtE1ruxb2LTGG6cKBuBRN6P"
-  },
-  "BgpPeers_0_awsDeviceV2": {
-    "S": "EQMI1-2pzovgjkgns5f"
-  },
-  "BgpPeers_0_awsLogicalDeviceId": {
-    "S": "EQMI1-2pzovgjkgns5f"
-  },
-  "BgpPeers_0_bgpPeerId": {
-    "S": "dxpeer-ffomc52f"
-  },
-  "BgpPeers_0_bgpPeerState": {
-    "S": "available"
-  },
-  "BgpPeers_0_bgpStatus": {
-    "S": "up"
-  },
-  "BgpPeers_0_customerAddress": {
-    "S": "169.254.10.1/30"
+  "bgpPeers": {
+    "L": [
+      {
+        "M": {
+          "addressFamily": {
+            "S": "ipv4"
+          },
+          "amazonAddress": {
+            "S": "169.254.10.2/30"
+          },
+          "asn": {
+            "N": "266589"
+          },
+          "authKey": {
+            "S": "0xtE1ruxb2LTGG6cKBuBRN6P"
+          },
+          "awsDeviceV2": {
+            "S": "EQMI1-2pzovgjkgns5f"
+          },
+          "awsLogicalDeviceId": {
+            "S": "EQMI1-2pzovgjkgns5f"
+          },
+          "bgpPeerId": {
+            "S": "dxpeer-ffomc52f"
+          },
+          "bgpPeerState": {
+            "S": "available"
+          },
+          "bgpStatus": {
+            "S": "up"
+          },
+          "customerAddress": {
+            "S": "169.254.10.1/30"
+          }
+        }
+      }
+    ]
   },
   "connectionId": {
     "S": "dxcon-fh5mqy42"
   },
   "createdAt": {
-    "S": "2025-09-13T22:07:18.078Z"
+    "S": "2025-09-14T20:14:14.953Z"
   },
   "customerAddress": {
     "S": "169.254.10.1/30"
@@ -68,9 +76,6 @@
   "jumboFrameCapable": {
     "BOOL": true
   },
-  "lastUpdated": {
-    "S": "2025-09-13T22:07:18.078Z"
-  },
   "mtu": {
     "N": "1500"
   },
@@ -80,14 +85,14 @@
   "resourceType": {
     "S": "DirectConnectVirtualInterface"
   },
-  "resourceTypeRegionId": {
-    "S": "DirectConnectVirtualInterface#us-east-1#dxvif-fh6ecnf3"
+  "routeFilterPrefixes": {
+    "L": []
   },
   "tags": {
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:07:18.078Z"
+    "S": "2025-09-14T20:14:14.953Z"
   },
   "virtualGatewayId": {
     "S": ""

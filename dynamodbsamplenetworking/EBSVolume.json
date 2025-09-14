@@ -1,24 +1,25 @@
 {
   "id": {
-    "S": "992382742081-us-east-1-EBSVolume-vol-0e8153581b041b30a"
+    "S": "767398083881-us-east-1-EBSVolume-vol-0d3f270460073721a"
   },
   "accountId": {
-    "S": "992382742081"
+    "S": "767398083881"
   },
   "accountName": {
-    "S": "BackOffice"
+    "S": "CustomAccount"
   },
   "attachedInstances": {
-    "S": "[\"i-0db7133ca0b560cf8\"]"
+    "L": [
+      {
+        "S": "i-009e4ac1defebc994"
+      }
+    ]
   },
   "createdAt": {
-    "S": "2025-04-24T06:55:38.285Z"
+    "S": "2025-05-22T05:18:44.575Z"
   },
   "encrypted": {
-    "BOOL": true
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T05:46:20.800Z"
+    "BOOL": false
   },
   "region": {
     "S": "us-east-1"
@@ -26,20 +27,17 @@
   "resourceType": {
     "S": "EBSVolume"
   },
-  "resourceTypeRegionId": {
-    "S": "EBSVolume#us-east-1#vol-0e8153581b041b30a"
-  },
   "size": {
-    "N": "200"
+    "N": "100"
   },
   "tags": {
     "S": "[{\"Key\": \"swoBackup\", \"Value\": \"0\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T05:46:20.800Z"
+    "S": "2025-09-14T20:46:41.699Z"
   },
   "volumeId": {
-    "S": "vol-0e8153581b041b30a"
+    "S": "vol-0d3f270460073721a"
   },
   "volumeName": {
     "S": "N/A"

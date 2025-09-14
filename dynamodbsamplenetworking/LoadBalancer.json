@@ -6,13 +6,17 @@
     "S": "905418331872"
   },
   "accountName": {
-    "S": "Network"
+    "S": "CustomAccount"
   },
-  "availabilityZones_0": {
-    "S": "us-east-1a"
-  },
-  "availabilityZones_1": {
-    "S": "us-east-1b"
+  "availabilityZones": {
+    "L": [
+      {
+        "S": "us-east-1a"
+      },
+      {
+        "S": "us-east-1b"
+      }
+    ]
   },
   "canonicalHostedZoneId": {
     "S": "Z26RNL4JYFTOTI"
@@ -25,9 +29,6 @@
   },
   "ipAddressType": {
     "S": "ipv4"
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T22:39:17.324Z"
   },
   "loadBalancerArn": {
     "S": "arn:aws:elasticloadbalancing:us-east-1:905418331872:loadbalancer/net/NLB-FWB-INTERNAL/e82b3a24e06ec74a"
@@ -44,14 +45,15 @@
   "resourceType": {
     "S": "LoadBalancer"
   },
-  "resourceTypeRegionId": {
-    "S": "LoadBalancer#us-east-1#arn:aws:elasticloadbalancing:us-east-1:905418331872:loadbalancer/net/NLB-FWB-INTERNAL/e82b3a24e06ec74a"
-  },
   "scheme": {
     "S": "internal"
   },
-  "securityGroups_0": {
-    "S": "sg-00a1454285fcfa7c2"
+  "securityGroups": {
+    "L": [
+      {
+        "S": "sg-00a1454285fcfa7c2"
+      }
+    ]
   },
   "state": {
     "S": "active"
@@ -59,17 +61,21 @@
   "tags": {
     "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}]"
   },
-  "targetGroups_0": {
-    "S": "arn:aws:elasticloadbalancing:us-east-1:905418331872:targetgroup/tg-fwb-private-443/21388ab5aa52ced2"
-  },
-  "targetGroups_1": {
-    "S": "arn:aws:elasticloadbalancing:us-east-1:905418331872:targetgroup/tg-fwb-private-80/f8db457e35ea1aa0"
+  "targetGroups": {
+    "L": [
+      {
+        "S": "arn:aws:elasticloadbalancing:us-east-1:905418331872:targetgroup/tg-fwb-private-443/21388ab5aa52ced2"
+      },
+      {
+        "S": "arn:aws:elasticloadbalancing:us-east-1:905418331872:targetgroup/tg-fwb-private-80/f8db457e35ea1aa0"
+      }
+    ]
   },
   "type": {
     "S": "network"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:39:17.324Z"
+    "S": "2025-09-14T20:46:18.353Z"
   },
   "vpcId": {
     "S": "vpc-0d65345bc2e8fc452"

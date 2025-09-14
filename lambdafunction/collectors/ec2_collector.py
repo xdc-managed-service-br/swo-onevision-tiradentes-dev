@@ -410,12 +410,12 @@ class EC2Collector(ResourceCollector):
                     'instanceState': state,
                     'createdAt': formatted_launch_time,
                     'tags': tags_json,
-                    
+
                     # System info
                     'platformDetails': platform_details,
                     'amiName': ami_name,
                     'iamRole': iam_role,
-                    
+
                     # Health status
                     'healthStatus': health_status['status'],
                     'healthChecksPassed': health_status['passed'],
@@ -423,36 +423,36 @@ class EC2Collector(ResourceCollector):
                     'systemStatus': health_status['systemStatus'],
                     'instanceStatus': health_status['instanceStatus'],
                     'ebsStatus': health_status['ebsStatus'],
-                    
+
                     # SWO configuration
                     'swoBackup': swoBackup,
                     'swoPatch': swoPatch,
                     'swoRiskClass': swoRiskClass,
                     'swoMonitor': swoMonitor,
                     'patchGroup': patchGroup,
-                    
+
                     # Auto scheduling
                     'startStop': startStop,
                     'autoStart': start_value,
                     'autoShutdown': shutdown_value,
                     'saturday': saturday_value,
                     'sunday': sunday_value,
-                    
+
                     # SSM info
                     'ssmStatus': ssm_data.get('ssmStatus', 'N/A'),
                     'ssmPingStatus': ssm_data.get('ssmPingStatus', 'N/A'),
                     'ssmVersion': ssm_data.get('ssmVersion', 'N/A'),
                     'ssmLastPingTime': ssm_data.get('ssmLastPingTime', 'N/A'),
-                    
+
                     # CloudWatch Agent detection
                     'cwAgentMemoryDetected': cw_mem,
                     'cwAgentDiskDetected': cw_disk,
                     'ramUtilization': ram_util,
                     'diskUtilization': disk_util,
-                    
-                    'instancePrivateIps': json.dumps(private_ips),
-                    'instancePublicIps': json.dumps(public_ips),
-                    
+
+                    'instancePrivateIps': private_ips,
+                    'instancePublicIps': public_ips,
+
                     # Add platform type for reference
                     'isWindows': is_windows
                 })
@@ -582,7 +582,7 @@ class EC2Collector(ResourceCollector):
                         'encrypted': volume.get('Encrypted', False),
                         'createdAt': formatted_create_time,
                         'tags': tags_json,
-                        **{f"attachedInstances_{i}": inst for i, inst in enumerate(attached_instances)}
+                        'attachedInstances': attached_instances
                     }
                     self.add_item('EBSVolume', volume['VolumeId'], volume_item)
                     volume_count += 1
@@ -640,6 +640,13 @@ class EC2Collector(ResourceCollector):
                     tags = image.get('Tags', [])
                     tags_json = json.dumps(tags) if tags else '[]'
                     image_name = image.get('Name', 'N/A')
+
+                    # Extract the Name tag value from tags
+                    image_name_tag = 'N/A'
+                    for tag in tags:
+                        if tag.get('Key') == 'Name':
+                            image_name_tag = tag.get('Value', 'N/A')
+                            break
                     
                     self.add_item('AMI', image['ImageId'], {
                         'imageId': image['ImageId'],
@@ -648,7 +655,8 @@ class EC2Collector(ResourceCollector):
                         'description': image.get('Description', ''),
                         'platform': image.get('PlatformDetails', image.get('Platform', 'N/A')),
                         'createdAt': formatted_date,
-                        'tags': tags_json
+                        'tags': tags_json,
+                        'imageNameTag': image_name_tag
                     })
                     ami_count += 1
             if ami_count > 0:

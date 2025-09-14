@@ -1,24 +1,24 @@
 {
   "id": {
-    "S": "381492155025-us-east-1-EC2Instance-i-04b29a638eec35190"
+    "S": "905418331872-us-east-1-EC2Instance-i-0c667f5e46fa4348a"
   },
   "accountId": {
-    "S": "381492155025"
+    "S": "905418331872"
   },
   "accountName": {
-    "S": "MagisterApps Prod"
+    "S": "CustomAccount"
   },
   "amiName": {
     "S": "N/A"
   },
   "createdAt": {
-    "S": "2025-08-20T05:15:36.000Z"
+    "S": "2025-08-23T05:58:11.000Z"
   },
   "cwAgentDiskDetected": {
-    "BOOL": false
+    "BOOL": true
   },
   "cwAgentMemoryDetected": {
-    "BOOL": false
+    "BOOL": true
   },
   "ebsStatus": {
     "S": "ok"
@@ -36,16 +36,23 @@
     "S": "SWOSystemsManagerRole"
   },
   "instanceId": {
-    "S": "i-04b29a638eec35190"
+    "S": "i-0c667f5e46fa4348a"
   },
   "instanceName": {
-    "S": "AWSSRVUNITWWWS (WWWS UNIT)"
+    "S": "aws-teltec-zabbix"
   },
   "instancePrivateIps": {
-    "S": "[\"172.24.57.38\", \"172.24.57.39\", \"172.24.57.40\", \"172.24.57.41\", \"172.24.57.42\", \"172.24.57.43\", \"172.24.57.44\", \"172.24.57.45\", \"172.24.57.46\", \"172.24.57.47\", \"172.24.57.48\", \"172.24.57.49\", \"172.24.57.15\", \"172.24.57.30\", \"172.24.57.31\", \"172.24.57.32\", \"172.24.57.33\", \"172.24.57.34\"]"
+    "L": [
+      {
+        "S": "172.24.81.66"
+      },
+      {
+        "S": "172.24.81.8"
+      }
+    ]
   },
   "instancePublicIps": {
-    "S": "[]"
+    "L": []
   },
   "instanceState": {
     "S": "running"
@@ -54,19 +61,16 @@
     "S": "ok"
   },
   "instanceType": {
-    "S": "t3a.xlarge"
+    "S": "m6a.large"
   },
   "isWindows": {
-    "BOOL": true
-  },
-  "lastUpdated": {
-    "S": "2025-09-12T12:02:08.917Z"
+    "BOOL": false
   },
   "patchGroup": {
-    "S": "3"
+    "S": "1"
   },
   "platformDetails": {
-    "S": "Windows"
+    "S": "Linux/UNIX"
   },
   "region": {
     "S": "us-east-1"
@@ -74,11 +78,8 @@
   "resourceType": {
     "S": "EC2Instance"
   },
-  "resourceTypeRegionId": {
-    "S": "EC2Instance#us-east-1#i-04b29a638eec35190"
-  },
   "ssmLastPingTime": {
-    "S": "2025-09-12T11:57:24.754Z"
+    "S": "2025-09-14T20:43:34.942Z"
   },
   "ssmPingStatus": {
     "S": "Online"
@@ -96,7 +97,7 @@
     "S": "1"
   },
   "swoPatch": {
-    "S": "3"
+    "S": "1"
   },
   "swoRiskClass": {
     "S": "1"
@@ -105,9 +106,9 @@
     "S": "ok"
   },
   "tags": {
-    "S": "[{\"Key\": \"Name\", \"Value\": \"AWSSRVUNITWWWS (WWWS UNIT)\"}, {\"Key\": \"swoPatch\", \"Value\": \"3\"}, {\"Key\": \"PatchGroup\", \"Value\": \"3\"}, {\"Key\": \"Billing-MagProd\", \"Value\": \"0\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}, {\"Key\": \"swoBackup\", \"Value\": \"2\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"swoResize\", \"Value\": \"0\"}]"
+    "S": "[{\"Key\": \"PatchGroup\", \"Value\": \"1\"}, {\"Key\": \"mgn.amazonaws.com-source-server\", \"Value\": \"s-3fc3342a1157c78e8\"}, {\"Key\": \"mgn.amazonaws.com-job\", \"Value\": \"mgnjob-392d3e62d6591a2a3\"}, {\"Key\": \"swoPatch\", \"Value\": \"1\"}, {\"Key\": \"swoResize\", \"Value\": \"0\"}, {\"Key\": \"Name\", \"Value\": \"aws-teltec-zabbix\"}, {\"Key\": \"swoBackup\", \"Value\": \"2\"}, {\"Key\": \"AWSApplicationMigrationServiceManaged\", \"Value\": \"mgn.amazonaws.com\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"Billing-Network\", \"Value\": \"0\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}, {\"Key\": \"AWSApplicationMigrationServiceSourceServerID\", \"Value\": \"s-3fc3342a1157c78e8\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-12T12:02:08.917Z"
+    "S": "2025-09-14T20:46:24.205Z"
   }
 }

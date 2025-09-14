@@ -1,21 +1,18 @@
 {
   "id": {
-    "S": "905418331872-us-east-1-EBSSnapshot-snap-0c9dd3b9d0afa7558"
+    "S": "905418331872-us-east-1-EBSSnapshot-snap-017360e7cfd1fb8c8"
   },
   "accountId": {
     "S": "905418331872"
   },
   "accountName": {
-    "S": "Network"
+    "S": "CustomAccount"
   },
   "createdAt": {
-    "S": "2025-09-12T04:25:00.057Z"
+    "S": "2025-09-13T04:10:10.196Z"
   },
   "encrypted": {
     "BOOL": false
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T05:47:50.043Z"
   },
   "region": {
     "S": "us-east-1"
@@ -23,11 +20,8 @@
   "resourceType": {
     "S": "EBSSnapshot"
   },
-  "resourceTypeRegionId": {
-    "S": "EBSSnapshot#us-east-1#snap-0c9dd3b9d0afa7558"
-  },
   "snapshotId": {
-    "S": "snap-0c9dd3b9d0afa7558"
+    "S": "snap-017360e7cfd1fb8c8"
   },
   "snapshotName": {
     "S": "Recovery Point created by sysops-us-east-1-abr-2-rule1"
@@ -36,15 +30,15 @@
     "S": "completed"
   },
   "tags": {
-    "S": "[{\"Key\": \"Name\", \"Value\": \"Recovery Point created by sysops-us-east-1-abr-2-rule1\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"TFModuleVersion\", \"Value\": \"3.2.4\"}, {\"Key\": \"aws:backup:source-resource\", \"Value\": \"i-0044b5c5c81bffcc0:772E36E8-ECF6-2C52-5BB7-4F58B6B1AF83\"}, {\"Key\": \"TFModule\", \"Value\": \"hc-aws-backup\"}, {\"Key\": \"SolutionName\", \"Value\": \"aws-backup\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}]"
+    "S": "[{\"Key\": \"Name\", \"Value\": \"Recovery Point created by sysops-us-east-1-abr-2-rule1\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}, {\"Key\": \"SolutionName\", \"Value\": \"aws-backup\"}, {\"Key\": \"aws:backup:source-resource\", \"Value\": \"i-0acf6ebedc2ac9406:4917A897-FAE7-0B83-C912-B3F7B38AE37E\"}, {\"Key\": \"TFModule\", \"Value\": \"hc-aws-backup\"}, {\"Key\": \"TFModuleVersion\", \"Value\": \"3.2.4\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T05:47:50.043Z"
+    "S": "2025-09-14T20:14:22.707Z"
   },
   "volumeId": {
-    "S": "vol-05da7db488ec70695"
+    "S": "vol-0c2fc45778c2d2f06"
   },
   "volumeSize": {
-    "N": "30"
+    "N": "100"
   }
 }

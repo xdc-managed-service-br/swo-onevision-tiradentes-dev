@@ -6,7 +6,7 @@
     "S": "905418331872"
   },
   "accountName": {
-    "S": "Network"
+    "S": "CustomAccount"
   },
   "awsDevice": {
     "S": "EQMI1-2rm2ukk8bk2x9"
@@ -27,7 +27,7 @@
     "S": "available"
   },
   "createdAt": {
-    "S": "2025-09-14T17:57:35.920Z"
+    "S": "2025-09-14T20:14:14.433Z"
   },
   "encryptionMode": {
     "S": "unknown"
@@ -57,7 +57,7 @@
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-14T17:57:35.920Z"
+    "S": "2025-09-14T20:14:14.433Z"
   },
   "vlan": {
     "N": "301"

@@ -1,44 +1,42 @@
 {
   "id": {
-    "S": "590183843163-ap-northeast-2-InternetGateway-igw-06515ba69fa9e1d13"
+    "S": "905418331872-us-east-1-InternetGateway-igw-0ef23824858184de5"
   },
   "accountId": {
-    "S": "590183843163"
+    "S": "905418331872"
   },
   "accountName": {
-    "S": "A4L"
+    "S": "CustomAccount"
   },
-  "attachedVpcs_0": {
-    "S": "vpc-0c7a33e2086d5bb8c"
+  "attachedVpcs": {
+    "L": [
+      {
+        "S": "vpc-0d65345bc2e8fc452"
+      }
+    ]
   },
   "attachmentCount": {
     "N": "1"
   },
   "createdAt": {
-    "S": "2025-09-13T22:44:21.153Z"
+    "S": "2025-09-14T20:46:15.464Z"
   },
   "internetGatewayId": {
-    "S": "igw-06515ba69fa9e1d13"
+    "S": "igw-0ef23824858184de5"
   },
   "internetGatewayName": {
-    "S": "N/A"
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T22:44:21.153Z"
+    "S": "igw-network"
   },
   "region": {
-    "S": "ap-northeast-2"
+    "S": "us-east-1"
   },
   "resourceType": {
     "S": "InternetGateway"
   },
-  "resourceTypeRegionId": {
-    "S": "InternetGateway#ap-northeast-2#igw-06515ba69fa9e1d13"
-  },
   "tags": {
-    "S": "[]"
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"aws:cloudformation:logical-id\", \"Value\": \"FgtInternetGateway\"}, {\"Key\": \"Name\", \"Value\": \"igw-network\"}, {\"Key\": \"aws:cloudformation:stack-name\", \"Value\": \"fgt-tgw-v2-StackCreateNewVPC-LP3RAKQRBMVJ\"}, {\"Key\": \"aws:cloudformation:stack-id\", \"Value\": \"arn:aws:cloudformation:us-east-1:905418331872:stack/fgt-tgw-v2-StackCreateNewVPC-LP3RAKQRBMVJ/faf822b0-0679-11ef-8ee0-0e67d438584f\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:44:21.153Z"
+    "S": "2025-09-14T20:46:15.464Z"
   }
 }

@@ -1,30 +1,33 @@
 {
   "id": {
-    "S": "381492155025-us-east-1-AMI-ami-000ceb69931f7d4f0"
+    "S": "058264393294-us-east-1-AMI-ami-0e41e0273dd917291"
   },
   "accountId": {
-    "S": "381492155025"
+    "S": "058264393294"
   },
   "accountName": {
-    "S": "MagisterApps Prod"
+    "S": "CustomAccount"
   },
   "createdAt": {
-    "S": "2025-09-13T04:14:56.000Z"
+    "S": "2025-09-13T04:24:30.000Z"
   },
   "description": {
     "S": "This image is created by the AWS Backup service."
   },
   "imageId": {
-    "S": "ami-000ceb69931f7d4f0"
+    "S": "ami-0e41e0273dd917291"
   },
   "imageName": {
-    "S": "AwsBackup_i-056db194e53af3242_2D1060AE-5718-B998-F55C-1EFF4C3C8E43"
+    "S": "AwsBackup_i-08583cb4aa90836a5_7EF14203-028E-BEEF-0374-7446F0BC211B"
+  },
+  "imageNameTag": {
+    "S": "Recovery Point created by sysops-us-east-1-abr-2-rule1"
   },
   "imageState": {
     "S": "available"
   },
   "platform": {
-    "S": "Windows"
+    "S": "Linux/UNIX"
   },
   "region": {
     "S": "us-east-1"
@@ -33,9 +36,9 @@
     "S": "AMI"
   },
   "tags": {
-    "S": "[{\"Key\": \"swoRiskClass\", \"Value\": \"1\"}, {\"Key\": \"Billing-MagProd\", \"Value\": \"0\"}, {\"Key\": \"TFModuleVersion\", \"Value\": \"3.2.4\"}, {\"Key\": \"Name\", \"Value\": \"Recovery Point created by sysops-us-east-1-abr-2-rule1\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"TFModule\", \"Value\": \"hc-aws-backup\"}, {\"Key\": \"PatchGroup\", \"Value\": \"3\"}, {\"Key\": \"SolutionName\", \"Value\": \"aws-backup\"}, {\"Key\": \"swoBackup\", \"Value\": \"2\"}, {\"Key\": \"aws:backup:source-resource\", \"Value\": \"i-056db194e53af3242:2D1060AE-5718-B998-F55C-1EFF4C3C8E43\"}, {\"Key\": \"swoPatch\", \"Value\": \"3\"}, {\"Key\": \"swoResize\", \"Value\": \"0\"}]"
+    "S": "[{\"Key\": \"PatchGroup\", \"Value\": \"0\"}, {\"Key\": \"TFModule\", \"Value\": \"hc-aws-backup\"}, {\"Key\": \"TFModuleVersion\", \"Value\": \"3.2.4\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"aws:backup:source-resource\", \"Value\": \"i-08583cb4aa90836a5:7EF14203-028E-BEEF-0374-7446F0BC211B\"}, {\"Key\": \"AWSApplicationMigrationServiceManaged\", \"Value\": \"mgn.amazonaws.com\"}, {\"Key\": \"AWSApplicationMigrationServiceSourceServerID\", \"Value\": \"s-386e5c228a0e42ab7\"}, {\"Key\": \"Name\", \"Value\": \"Recovery Point created by sysops-us-east-1-abr-2-rule1\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}, {\"Key\": \"Billing-Banco\", \"Value\": \"0\"}, {\"Key\": \"swoBackup\", \"Value\": \"2\"}, {\"Key\": \"swoResize\", \"Value\": \"0\"}, {\"Key\": \"swoPatch\", \"Value\": \"0\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"mgn.amazonaws.com-source-server\", \"Value\": \"s-386e5c228a0e42ab7\"}, {\"Key\": \"SolutionName\", \"Value\": \"aws-backup\"}, {\"Key\": \"mgn.amazonaws.com-job\", \"Value\": \"mgnjob-35935d2be55fa6310\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-14T17:57:26.696Z"
+    "S": "2025-09-14T20:14:14.313Z"
   }
 }
