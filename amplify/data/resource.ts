@@ -288,13 +288,6 @@ const schema = a.schema({
     resourceOwnerId: a.string(),
     transitGatewayOwnerId: a.string(),
 
-    // ===== VPC FIELDS =====
-    vpcName: a.string(),
-    enableDnsHostnames: a.boolean(),
-    enableDnsSupport: a.boolean(),
-    flowLogsEnabled: a.boolean(),
-    instanceTenancy: a.string(),
-
     // ===== VPC Endpoint FIELDS =====
     vpcEndpointId: a.string(),
     vpcEndpointName: a.string(),
@@ -305,6 +298,13 @@ const schema = a.schema({
     routeTableIds: a.string().array(),
     subnetIds: a.string().array(),
     securityGroupIds: a.string().array(),
+
+    // ===== VPC FIELDS =====
+    vpcName: a.string(),
+    enableDnsHostnames: a.boolean(),
+    enableDnsSupport: a.boolean(),
+    flowLogsEnabled: a.boolean(),
+    instanceTenancy: a.string(),
 
     // ===== VPN Connection FIELDS =====
     vpnConnectionId: a.string(),
