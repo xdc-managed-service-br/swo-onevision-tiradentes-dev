@@ -1,21 +1,18 @@
 {
   "id": {
-    "S": "590183843163-us-east-1-VPCEndpoint-vpce-0d19afad150c62c57"
+    "S": "905418331872-us-east-1-VPCEndpoint-vpce-09379791ad1639a1b"
   },
   "accountId": {
-    "S": "590183843163"
+    "S": "905418331872"
   },
   "accountName": {
-    "S": "A4L"
+    "S": "CustomAccount"
   },
   "createdAt": {
-    "S": "2025-04-02T14:26:34.209Z"
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T22:44:38.468Z"
+    "S": "2024-04-29T22:45:15.923Z"
   },
   "policyDocument": {
-    "S": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":\"*\",\"Resource\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\"},{\"Condition\":{\"StringNotEquals\":{\"aws:PrincipalAccount\":\"590183843163\"}},\"Action\":\"*\",\"Resource\":\"*\",\"Effect\":\"Deny\",\"Principal\":\"*\"}]}"
+    "S": "{\n  \"Statement\": [\n    {\n      \"Action\": \"*\", \n      \"Effect\": \"Allow\", \n      \"Principal\": \"*\", \n      \"Resource\": \"*\"\n    }\n  ]\n}"
   },
   "privateDnsEnabled": {
     "BOOL": true
@@ -26,32 +23,40 @@
   "resourceType": {
     "S": "VPCEndpoint"
   },
-  "resourceTypeRegionId": {
-    "S": "VPCEndpoint#us-east-1#vpce-0d19afad150c62c57"
+  "routeTableIds": {
+    "L": []
   },
-  "securityGroupIds_0": {
-    "S": "sg-04f3e4ebfbd0ba85d"
+  "securityGroupIds": {
+    "L": [
+      {
+        "S": "sg-02ed08517b3fb3bb8"
+      }
+    ]
   },
   "serviceName": {
-    "S": "com.amazonaws.us-east-1.guardduty-data"
+    "S": "com.amazonaws.us-east-1.execute-api"
   },
   "state": {
     "S": "available"
   },
-  "subnetIds_0": {
-    "S": "subnet-05716cf807dabb3ce"
-  },
-  "subnetIds_1": {
-    "S": "subnet-0b55bf2b1e004552d"
+  "subnetIds": {
+    "L": [
+      {
+        "S": "subnet-02eb9de9206315fec"
+      },
+      {
+        "S": "subnet-0c5eb4ae3651fbcd6"
+      }
+    ]
   },
   "tags": {
-    "S": "[{\"Key\": \"GuardDutyManaged\", \"Value\": \"true\"}]"
+    "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:44:38.468Z"
+    "S": "2025-09-14T21:34:06.950Z"
   },
   "vpcEndpointId": {
-    "S": "vpce-0d19afad150c62c57"
+    "S": "vpce-09379791ad1639a1b"
   },
   "vpcEndpointName": {
     "S": "N/A"
@@ -60,6 +65,6 @@
     "S": "Interface"
   },
   "vpcId": {
-    "S": "vpc-0bcb253437b9db896"
+    "S": "vpc-0d65345bc2e8fc452"
   }
 }

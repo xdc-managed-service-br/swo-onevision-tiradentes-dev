@@ -419,17 +419,7 @@ def flatten_metric(item: dict, metric: dict, parent_key: str = "") -> dict:
 
 
 def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: float) -> int:
-    """
-    Save calculated metrics as DynamoDB items.
     
-    Args:
-        tables: List of DynamoDB table objects
-        metrics: Dictionary of calculated metrics
-        processing_duration: Total processing time in seconds
-    
-    Returns:
-        Number of items saved
-    """
     from collectors.base import batch_write_to_dynamodb, format_aws_datetime
     
     timestamp = datetime.now(timezone.utc)
@@ -453,7 +443,18 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
         'createdAt': iso_timestamp,
         'updatedAt': iso_timestamp
     }
-    global_item_current = flatten_metric(global_item_current, metrics['global'])
+    global_item_current.update({
+        'accountDistribution': json.dumps(metrics['global'].get('accountDistribution', [])),
+        'regionDistribution': json.dumps(metrics['global'].get('regionDistribution', [])),
+        'recentResources': json.dumps(metrics['global'].get('recentResources', [])),
+    })
+    global_flat = flatten_metric({}, {
+        'totalResources': metrics['global'].get('totalResources', 0),
+        'resourceCounts': metrics['global'].get('resourceCounts', {}),
+        'regionsCollected': metrics['global'].get('regionsCollected', 0),
+        'resourceRegionsFound': metrics['global'].get('resourceRegionsFound', 0),
+    })
+    global_item_current.update(global_flat)
     items_to_save.append(global_item_current)
 
     # Historical global metrics (for trend analysis)

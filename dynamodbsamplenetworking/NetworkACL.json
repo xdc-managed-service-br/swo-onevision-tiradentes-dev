@@ -1,27 +1,28 @@
 {
   "id": {
-    "S": "058264393294-eu-north-1-NetworkACL-acl-0e23421e03c41e62c"
+    "S": "905418331872-us-east-1-NetworkACL-acl-0a567bf486b888e2d"
   },
   "accountId": {
-    "S": "058264393294"
+    "S": "905418331872"
   },
   "accountName": {
-    "S": "Banco de Dados"
+    "S": "CustomAccount"
   },
-  "associatedSubnets_0": {
-    "S": "subnet-094c4a9d4dacb6e7c"
-  },
-  "associatedSubnets_1": {
-    "S": "subnet-085825577fd74c563"
-  },
-  "associatedSubnets_2": {
-    "S": "subnet-007bc99f0ddc7e0b9"
+  "associatedSubnets": {
+    "L": [
+      {
+        "S": "subnet-0ca5dff11537c96a1"
+      },
+      {
+        "S": "subnet-08b32cf30d637712d"
+      }
+    ]
   },
   "associationCount": {
-    "N": "3"
+    "N": "2"
   },
   "createdAt": {
-    "S": "2025-09-13T22:32:42.892Z"
+    "S": "2025-09-14T21:34:06.625Z"
   },
   "customDenyRuleCount": {
     "N": "0"
@@ -35,31 +36,25 @@
   "isDefault": {
     "BOOL": true
   },
-  "lastUpdated": {
-    "S": "2025-09-13T22:32:42.892Z"
-  },
   "networkAclId": {
-    "S": "acl-0e23421e03c41e62c"
+    "S": "acl-0a567bf486b888e2d"
   },
   "networkAclName": {
     "S": "N/A"
   },
   "region": {
-    "S": "eu-north-1"
+    "S": "us-east-1"
   },
   "resourceType": {
     "S": "NetworkACL"
   },
-  "resourceTypeRegionId": {
-    "S": "NetworkACL#eu-north-1#acl-0e23421e03c41e62c"
-  },
   "tags": {
-    "S": "[]"
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:32:42.892Z"
+    "S": "2025-09-14T21:34:06.625Z"
   },
   "vpcId": {
-    "S": "vpc-05c901c7fb10d99e0"
+    "S": "vpc-0d65345bc2e8fc452"
   }
 }

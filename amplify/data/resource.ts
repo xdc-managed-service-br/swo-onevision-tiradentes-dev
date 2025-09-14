@@ -20,13 +20,24 @@ const schema = a.schema({
     volumeId: a.string(),   // EBS Volume and Snapshot
     encrypted: a.boolean(), // EBS Volume and Snapshot
     instanceId: a.string(), // EC2 Instance and Elastic IP
+    securityGroups: a.integer(), // Security Metric and Load Balancer
+    vpcId: a.string(), // VPC, Load Balancer and Network ACL
+    associationCount: a.integer(), // Network ACL and Route Table
+    associatedSubnets: a.string().array(), // Network ACL and Route Table
+    description: a.string(), // AMI and Security Group
+    ingressRuleCount: a.integer(), // Security Group and Network ACL
+    egressRuleCount: a.integer(), // Security Group and Network ACL
+    state: a.string(), // Load Balancer and Subnet
+    transitGatewayId: a.string(), // VPN, Transit Gateway Attachment and Transit Gateway
+    cidrBlock: a.string(), // VPC and Subnet
+    isDefault: a.boolean(), // VPC and Network ACL
+    type: a.string(), // Load Balancer and VPN
 
     // ===== AMI FIELDS =====
     imageId: a.string(),
     imageName: a.string(),
     imageNameTag: a.string(),
     imageState: a.string(),
-    description: a.string(),
     platform: a.string(),
 
     // ===== EC2 Instance FIELDS =====
@@ -128,12 +139,13 @@ const schema = a.schema({
     dnsName: a.string(),
     canonicalHostedZoneId: a.string(),
     scheme: a.string(),
-    state: a.string(),
-    type: a.string(),
-    vpcId: a.string(),
     ipAddressType: a.string(),
-    securityGroups: a.string().array(),
     targetGroups: a.string().array(),
+
+    // ===== Network ACL FIELDS =====
+    networkAclId: a.string(),
+    networkAclName: a.string(),
+    customDenyRuleCount: a.integer(),
 
     // ===== Metric Cost FIELDS =====
     isMetric: a.boolean(),
@@ -159,6 +171,149 @@ const schema = a.schema({
     ssmAgent_notConnected: a.integer(),
     ssmAgent_notInstalled: a.integer(),
     ssmAgent_percentageConnected: a.integer(),
+
+    // ===== Metric RDS FIELDS =====
+    available: a.integer(),
+    engines_aurora_mysql: a.integer(),
+    multiAZ: a.integer(),
+    percentageMultiAZ: a.integer(),
+    performanceInsights: a.integer(),
+    percentageWithPerfInsights: a.integer(),
+
+    // ===== Metric Security FIELDS =====
+    exposedSecurityGroups: a.integer(),
+    percentageExposed: a.integer(),
+
+    // ===== Metric Storage FIELDS =====
+    amiSnapshots: a.integer(),
+    ebsSnapshots: a.integer(),
+    ebsVolumes: a.integer(),
+    s3Buckets: a.integer(),
+    s3WithLifecycle: a.integer(),
+
+    // ===== Metric Global Summary FIELDS =====
+    collectionDuration: a.float(),
+    resourcesProcessed: a.integer(),
+    totalResources: a.integer(),
+    resourceRegionsFound: a.integer(),
+    regionsCollected: a.integer(),
+    accountDistribution: a.json(),
+    regionDistribution: a.json(),
+    recentResources: a.json(),
+
+    // Resource counts by type
+    resourceCounts_AMI: a.integer(),
+    resourceCounts_AutoScalingGroup: a.integer(),
+    resourceCounts_DirectConnectConnection: a.integer(),
+    resourceCounts_DirectConnectVirtualInterface: a.integer(),
+    resourceCounts_EBSSnapshot: a.integer(),
+    resourceCounts_EBSVolume: a.integer(),
+    resourceCounts_EC2Instance: a.integer(),
+    resourceCounts_ElasticIP: a.integer(),
+    resourceCounts_InternetGateway: a.integer(),
+    resourceCounts_LoadBalancer: a.integer(),
+    resourceCounts_NetworkACL: a.integer(),
+    resourceCounts_RDSClusterSnapshot: a.integer(),
+    resourceCounts_RDSInstance: a.integer(),
+    resourceCounts_RouteTable: a.integer(),
+    resourceCounts_S3Bucket: a.integer(),
+    resourceCounts_SecurityGroup: a.integer(),
+    resourceCounts_Subnet: a.integer(),
+    resourceCounts_TransitGateway: a.integer(),
+    resourceCounts_TransitGatewayAttachment: a.integer(),
+    resourceCounts_VPC: a.integer(),
+    resourceCounts_VPCEndpoint: a.integer(),
+    resourceCounts_VPNConnection: a.integer(),
+    
+    // ===== RDS Cluster Snapshot FIELDS =====
+    snapshotArn: a.string(),
+    snapshotType: a.string(),
+    clusterId: a.string(),
+    engine: a.string(),
+    status: a.string(),
+    allocatedStorage: a.integer(),
+
+    // ===== RDS Instance FIELDS =====
+    dbInstanceArn: a.string(),
+    dbInstanceId: a.string(),
+    dbInstanceName: a.string(),
+    engineVersion: a.string(),
+    instanceClass: a.string(),
+    storageType: a.string(),
+
+    // ===== Route Table FIELDS =====
+    routeTableId: a.string(),
+    routeTableName: a.string(),
+    routeCount: a.integer(),
+    hasInternetRoute: a.boolean(),
+    hasNatRoute: a.boolean(),
+    hasVpcPeeringRoute: a.boolean(),
+    isMain: a.boolean(),
+
+    // ===== S3 Bucket FIELDS =====
+    bucketName: a.string(),
+    bucketNameTag: a.string(),
+    hasLifecycleRules: a.boolean(),
+    objectCount: a.integer(),
+    storageByes: a.string(),
+
+    // ===== Security Group FIELDS =====
+    groupId: a.string(),
+    groupName: a.string(),
+    groupNameTag: a.string(),
+
+    // ===== Subnet FIELDS =====
+    subnetId: a.string(),
+    subnetName: a.string(),
+    availabilityZone: a.string(),
+    availabilityZoneId: a.string(),
+    availableIpAddressCount: a.integer(),
+
+    // ===== Transit Gateway FIELDS =====
+    transitGatewayName: a.string(),
+    amazonSideAsn: a.integer(),
+    defaultRouteTableAssociation: a.string(),
+    defaultRouteTablePropagation: a.string(),
+    dnsSupport: a.string(),
+    multicastSupport: a.string(),
+    vpnEcmpSupport: a.string(),
+    ownerId: a.string(),
+
+    // ===== Transit Gateway Attachment FIELDS =====
+    transitGatewayAttachmentId: a.string(),
+    attachmentName: a.string(),
+    attachedResourceId: a.string(),
+    attachedResourceType: a.string(),
+    association: a.json(),
+    resourceOwnerId: a.string(),
+    transitGatewayOwnerId: a.string(),
+
+    // ===== VPC FIELDS =====
+    vpcName: a.string(),
+    enableDnsHostnames: a.boolean(),
+    enableDnsSupport: a.boolean(),
+    flowLogsEnabled: a.boolean(),
+    instanceTenancy: a.string(),
+
+    // ===== VPC Endpoint FIELDS =====
+    vpcEndpointId: a.string(),
+    vpcEndpointName: a.string(),
+    vpcEndpointType: a.string(),
+    serviceName: a.string(),
+    policyDocument: a.json(),
+    privateDnsEnabled: a.boolean(),
+    routeTableIds: a.string().array(),
+    subnetIds: a.string().array(),
+    securityGroupIds: a.string().array(),
+
+    // ===== VPN Connection FIELDS =====
+    vpnConnectionId: a.string(),
+    vpnConnectionName: a.string(),
+    vpnGatewayId: a.string(),
+    customerGatewayId: a.string(),
+    category: a.string(),
+    tunnelCount: a.integer(),
+    tunnelsUp: a.integer(),
   })
   .authorization(allow => [
     allow.authenticated().to(['read']),

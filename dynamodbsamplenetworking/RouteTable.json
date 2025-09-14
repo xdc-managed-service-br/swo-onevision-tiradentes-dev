@@ -1,21 +1,24 @@
 {
   "id": {
-    "S": "339712896448-ap-northeast-1-RouteTable-rtb-03d45ccdfd8dc5547"
+    "S": "767398083881-us-east-1-RouteTable-rtb-00e7526296b9f56bb"
   },
   "accountId": {
-    "S": "339712896448"
+    "S": "767398083881"
   },
   "accountName": {
-    "S": "Audit"
+    "S": "CustomAccount"
+  },
+  "associatedSubnets": {
+    "L": []
   },
   "associationCount": {
     "N": "1"
   },
   "createdAt": {
-    "S": "2025-09-13T22:04:43.927Z"
+    "S": "2025-09-14T21:34:05.465Z"
   },
   "hasInternetRoute": {
-    "BOOL": true
+    "BOOL": false
   },
   "hasNatRoute": {
     "BOOL": false
@@ -26,34 +29,28 @@
   "isMain": {
     "BOOL": true
   },
-  "lastUpdated": {
-    "S": "2025-09-13T22:04:43.927Z"
-  },
   "region": {
-    "S": "ap-northeast-1"
+    "S": "us-east-1"
   },
   "resourceType": {
     "S": "RouteTable"
   },
-  "resourceTypeRegionId": {
-    "S": "RouteTable#ap-northeast-1#rtb-03d45ccdfd8dc5547"
-  },
   "routeCount": {
-    "N": "2"
+    "N": "1"
   },
   "routeTableId": {
-    "S": "rtb-03d45ccdfd8dc5547"
+    "S": "rtb-00e7526296b9f56bb"
   },
   "routeTableName": {
     "S": "N/A"
   },
   "tags": {
-    "S": "[]"
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:04:43.927Z"
+    "S": "2025-09-14T21:34:05.465Z"
   },
   "vpcId": {
-    "S": "vpc-02d7308e96487a25e"
+    "S": "vpc-0786ad7814bc76978"
   }
 }

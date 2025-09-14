@@ -1,65 +1,50 @@
 {
   "id": {
-    "S": "786960299620-ap-south-1-Subnet-subnet-02c76af1ff3f6d1d3"
+    "S": "905418331872-us-east-1-Subnet-subnet-00c5806d4c17a4388"
   },
   "accountId": {
-    "S": "786960299620"
+    "S": "905418331872"
   },
   "accountName": {
-    "S": "RM Desenvolvimento"
-  },
-  "assignIpv6AddressOnCreation": {
-    "BOOL": false
+    "S": "CustomAccount"
   },
   "availabilityZone": {
-    "S": "ap-south-1a"
+    "S": "us-east-1a"
   },
   "availabilityZoneId": {
-    "S": "aps1-az1"
+    "S": "use1-az4"
   },
   "availableIpAddressCount": {
-    "N": "4091"
+    "N": "240"
   },
   "cidrBlock": {
-    "S": "172.31.32.0/20"
+    "S": "172.24.81.0/24"
   },
   "createdAt": {
-    "S": "2025-09-13T22:07:14.417Z"
-  },
-  "defaultForAz": {
-    "BOOL": true
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T22:07:14.417Z"
-  },
-  "mapPublicIpOnLaunch": {
-    "BOOL": true
+    "S": "2025-09-14T21:34:05.652Z"
   },
   "region": {
-    "S": "ap-south-1"
+    "S": "us-east-1"
   },
   "resourceType": {
     "S": "Subnet"
-  },
-  "resourceTypeRegionId": {
-    "S": "Subnet#ap-south-1#subnet-02c76af1ff3f6d1d3"
   },
   "state": {
     "S": "available"
   },
   "subnetId": {
-    "S": "subnet-02c76af1ff3f6d1d3"
+    "S": "subnet-00c5806d4c17a4388"
   },
   "subnetName": {
-    "S": "N/A"
+    "S": "subnet-monitoramento-private-az1"
   },
   "tags": {
-    "S": "[]"
+    "S": "[{\"Key\": \"Name\", \"Value\": \"subnet-monitoramento-private-az1\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:07:14.417Z"
+    "S": "2025-09-14T21:34:05.652Z"
   },
   "vpcId": {
-    "S": "vpc-0b688cfa0ae3a19cc"
+    "S": "vpc-04d9fa441c24373b3"
   }
 }

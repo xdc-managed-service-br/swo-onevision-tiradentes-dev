@@ -9,25 +9,22 @@
     "S": "Storage Metrics"
   },
   "amiSnapshots": {
-    "N": "3050"
+    "N": "840"
   },
   "createdAt": {
-    "S": "2025-09-13T20:13:25.521Z"
+    "S": "2025-09-14T21:16:29.093Z"
   },
   "ebsSnapshots": {
-    "N": "4644"
+    "N": "1478"
   },
   "ebsVolumes": {
-    "N": "192"
+    "N": "78"
   },
   "isMetric": {
     "BOOL": true
   },
-  "lastUpdated": {
-    "S": "2025-09-13T20:13:25.521Z"
-  },
   "metricDate": {
-    "S": "2025-09-13"
+    "S": "2025-09-14"
   },
   "metricType": {
     "S": "STORAGE_METRICS"
@@ -39,12 +36,12 @@
     "S": "METRIC_STORAGE"
   },
   "s3Buckets": {
-    "N": "202"
+    "N": "36"
   },
   "s3WithLifecycle": {
-    "N": "75"
+    "N": "18"
   },
   "updatedAt": {
-    "S": "2025-09-13T20:13:25.521Z"
+    "S": "2025-09-14T21:16:29.093Z"
   }
 }

@@ -1,54 +1,48 @@
 {
   "id": {
-    "S": "767397734112-us-east-1-RDSInstance-database-1-instance-1"
+    "S": "905418331872-us-east-1-RDSInstance-database-aws-zabbix-homolog-instance-1"
   },
   "accountId": {
-    "S": "767397734112"
+    "S": "905418331872"
   },
   "accountName": {
-    "S": "Arquiteturas e Sistemas"
+    "S": "CustomAccount"
   },
   "allocatedStorage": {
     "N": "1"
   },
   "createdAt": {
-    "S": "2024-05-12T00:11:45.739Z"
+    "S": "2024-05-02T20:28:42.278Z"
   },
   "dbInstanceArn": {
-    "S": "arn:aws:rds:us-east-1:767397734112:db:database-1-instance-1"
+    "S": "arn:aws:rds:us-east-1:905418331872:db:database-aws-zabbix-homolog-instance-1"
   },
   "dbInstanceId": {
-    "S": "database-1-instance-1"
+    "S": "database-aws-zabbix-homolog-instance-1"
   },
   "dbInstanceName": {
     "S": "N/A"
   },
   "engine": {
-    "S": "aurora-postgresql"
+    "S": "aurora-mysql"
   },
   "engineVersion": {
-    "S": "15.10"
+    "S": "8.0.mysql_aurora.3.08.2"
   },
   "instanceClass": {
-    "S": "db.serverless"
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T20:10:40.145Z"
+    "S": "db.t3.medium"
   },
   "multiAZ": {
     "BOOL": false
   },
   "performanceInsightsEnabled": {
-    "BOOL": true
+    "BOOL": false
   },
   "region": {
     "S": "us-east-1"
   },
   "resourceType": {
     "S": "RDSInstance"
-  },
-  "resourceTypeRegionId": {
-    "S": "RDSInstance#us-east-1#database-1-instance-1"
   },
   "status": {
     "S": "available"
@@ -57,9 +51,9 @@
     "S": "aurora"
   },
   "tags": {
-    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"Billing-ASIS\", \"Value\": \"0\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}]"
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"Billing-Network\", \"Value\": \"0\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T20:10:40.145Z"
+    "S": "2025-09-14T21:34:05.047Z"
   }
 }

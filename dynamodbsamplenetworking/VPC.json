@@ -1,18 +1,18 @@
 {
   "id": {
-    "S": "339712896448-us-east-2-VPC-vpc-049588c1dbbb98316"
+    "S": "767398083881-us-east-1-VPC-vpc-0786ad7814bc76978"
   },
   "accountId": {
-    "S": "339712896448"
+    "S": "767398083881"
   },
   "accountName": {
-    "S": "Audit"
+    "S": "CustomAccount"
   },
   "cidrBlock": {
-    "S": "172.31.0.0/16"
+    "S": "172.24.32.0/22"
   },
   "createdAt": {
-    "S": "2025-09-13T22:22:24.656Z"
+    "S": "2025-09-14T21:34:03.540Z"
   },
   "enableDnsHostnames": {
     "BOOL": false
@@ -27,33 +27,27 @@
     "S": "default"
   },
   "isDefault": {
-    "BOOL": true
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T22:22:24.656Z"
+    "BOOL": false
   },
   "region": {
-    "S": "us-east-2"
+    "S": "us-east-1"
   },
   "resourceType": {
     "S": "VPC"
-  },
-  "resourceTypeRegionId": {
-    "S": "VPC#us-east-2#vpc-049588c1dbbb98316"
   },
   "state": {
     "S": "available"
   },
   "tags": {
-    "S": "[]"
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"Name\", \"Value\": \"vpc-infra-unit\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:22:24.656Z"
+    "S": "2025-09-14T21:34:03.540Z"
   },
   "vpcId": {
-    "S": "vpc-049588c1dbbb98316"
+    "S": "vpc-0786ad7814bc76978"
   },
   "vpcName": {
-    "S": "N/A"
+    "S": "vpc-infra-unit"
   }
 }

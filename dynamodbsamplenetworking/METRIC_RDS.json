@@ -9,25 +9,19 @@
     "S": "RDS Metrics"
   },
   "available": {
-    "N": "10"
+    "N": "2"
   },
   "createdAt": {
-    "S": "2025-09-13T20:13:25.521Z"
+    "S": "2025-09-14T21:16:29.093Z"
   },
   "engines_aurora-mysql": {
-    "N": "4"
-  },
-  "engines_aurora-postgresql": {
-    "N": "6"
+    "N": "2"
   },
   "isMetric": {
     "BOOL": true
   },
-  "lastUpdated": {
-    "S": "2025-09-13T20:13:25.521Z"
-  },
   "metricDate": {
-    "S": "2025-09-13"
+    "S": "2025-09-14"
   },
   "metricType": {
     "S": "RDS_METRICS"
@@ -39,10 +33,10 @@
     "N": "0"
   },
   "percentageWithPerfInsights": {
-    "N": "70"
+    "N": "0"
   },
   "performanceInsights": {
-    "N": "7"
+    "N": "0"
   },
   "region": {
     "S": "global"
@@ -51,9 +45,9 @@
     "S": "METRIC_RDS"
   },
   "total": {
-    "N": "10"
+    "N": "2"
   },
   "updatedAt": {
-    "S": "2025-09-13T20:13:25.521Z"
+    "S": "2025-09-14T21:16:29.093Z"
   }
 }

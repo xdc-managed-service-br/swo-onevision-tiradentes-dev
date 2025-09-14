@@ -2,95 +2,8 @@
   "id": {
     "S": "METRICS-GLOBAL-CURRENT"
   },
-  "accountDistribution_0_accountId": {
-    "S": "767398083881"
-  },
-  "accountDistribution_0_accountName": {
-    "S": "Infra"
-  },
-  "accountDistribution_0_count": {
-    "N": "1495"
-  },
-  "accountDistribution_1_accountId": {
-    "S": "767397734112"
-  },
-  "accountDistribution_1_accountName": {
-    "S": "Arquiteturas e Sistemas"
-  },
-  "accountDistribution_1_count": {
-    "N": "1363"
-  },
-  "accountDistribution_2_accountId": {
-    "S": "381492155025"
-  },
-  "accountDistribution_2_accountName": {
-    "S": "MagisterApps Prod"
-  },
-  "accountDistribution_2_count": {
-    "N": "1349"
-  },
-  "accountDistribution_3_accountId": {
-    "S": "905418331872"
-  },
-  "accountDistribution_3_accountName": {
-    "S": "Network"
-  },
-  "accountDistribution_3_count": {
-    "N": "1234"
-  },
-  "accountDistribution_4_accountId": {
-    "S": "767397916042"
-  },
-  "accountDistribution_4_accountName": {
-    "S": "Operacional"
-  },
-  "accountDistribution_4_count": {
-    "N": "1059"
-  },
-  "accountDistribution_5_accountId": {
-    "S": "992382742081"
-  },
-  "accountDistribution_5_accountName": {
-    "S": "BackOffice"
-  },
-  "accountDistribution_5_count": {
-    "N": "734"
-  },
-  "accountDistribution_6_accountId": {
-    "S": "654654547936"
-  },
-  "accountDistribution_6_accountName": {
-    "S": "ITP"
-  },
-  "accountDistribution_6_count": {
-    "N": "592"
-  },
-  "accountDistribution_7_accountId": {
-    "S": "058264289687"
-  },
-  "accountDistribution_7_accountName": {
-    "S": "Terminal Service"
-  },
-  "accountDistribution_7_count": {
-    "N": "458"
-  },
-  "accountDistribution_8_accountId": {
-    "S": "654654498954"
-  },
-  "accountDistribution_8_accountName": {
-    "S": "Ficou Facil"
-  },
-  "accountDistribution_8_count": {
-    "N": "434"
-  },
-  "accountDistribution_9_accountId": {
-    "S": "211125526410"
-  },
-  "accountDistribution_9_accountName": {
-    "S": "TOTVS - Legado"
-  },
-  "accountDistribution_9_count": {
-    "N": "424"
+  "accountDistribution": {
+    "S": "[{\"accountId\": \"767398083881\", \"accountName\": \"CustomAccount\", \"count\": 1370}, {\"accountId\": \"905418331872\", \"accountName\": \"CustomAccount\", \"count\": 1106}, {\"accountId\": \"058264393294\", \"accountName\": \"CustomAccount\", \"count\": 180}, {\"accountId\": \"533267337185\", \"accountName\": \"CustomAccount\", \"count\": 25}]"
   },
   "accountId": {
     "S": "GLOBAL"
@@ -99,208 +12,34 @@
     "S": "Global Metrics"
   },
   "collectionDuration": {
-    "N": "208.461339"
+    "N": "44.858"
   },
   "createdAt": {
-    "S": "2025-09-13T20:13:25.521Z"
+    "S": "2025-09-14T21:34:43.777Z"
   },
   "isMetric": {
     "BOOL": true
   },
-  "lastUpdated": {
-    "S": "2025-09-13T20:13:25.521Z"
-  },
   "metricDate": {
-    "S": "2025-09-13"
+    "S": "2025-09-14"
   },
   "metricType": {
     "S": "GLOBAL_SUMMARY"
   },
-  "recentResources_0_createdAt": {
-    "S": "2025-09-13T20:13:22.920Z"
-  },
-  "recentResources_0_identifier": {
-    "S": "058264289687-us-east-1-TransitGatewayAttachment-tgw-attach-08a203cdf601097f5"
-  },
-  "recentResources_0_region": {
-    "S": "us-east-1"
-  },
-  "recentResources_0_resourceType": {
-    "S": "TransitGatewayAttachment"
-  },
-  "recentResources_1_createdAt": {
-    "S": "2025-09-13T20:13:22.757Z"
-  },
-  "recentResources_1_identifier": {
-    "S": "058264289687-us-east-1-TransitGateway-tgw-0a20534250c42cbbb"
-  },
-  "recentResources_1_region": {
-    "S": "us-east-1"
-  },
-  "recentResources_1_resourceType": {
-    "S": "TransitGateway"
-  },
-  "recentResources_2_createdAt": {
-    "S": "2025-09-13T20:13:22.231Z"
-  },
-  "recentResources_2_identifier": {
-    "S": "058264289687-us-east-1-VPCEndpoint-vpce-06b2bc9c4b42add71"
-  },
-  "recentResources_2_region": {
-    "S": "us-east-1"
-  },
-  "recentResources_2_resourceType": {
-    "S": "VPCEndpoint"
-  },
-  "recentResources_3_createdAt": {
-    "S": "2025-09-13T20:13:22.231Z"
-  },
-  "recentResources_3_identifier": {
-    "S": "058264289687-us-east-1-VPCEndpoint-vpce-0a62c7ab1f94ab40a"
-  },
-  "recentResources_3_region": {
-    "S": "us-east-1"
-  },
-  "recentResources_3_resourceType": {
-    "S": "VPCEndpoint"
-  },
-  "recentResources_4_createdAt": {
-    "S": "2025-09-13T20:13:22.042Z"
-  },
-  "recentResources_4_identifier": {
-    "S": "058264289687-us-east-1-NetworkACL-acl-0581a8281b8d575b0"
-  },
-  "recentResources_4_region": {
-    "S": "us-east-1"
-  },
-  "recentResources_4_resourceType": {
-    "S": "NetworkACL"
-  },
-  "recentResources_5_createdAt": {
-    "S": "2025-09-13T20:13:21.848Z"
-  },
-  "recentResources_5_identifier": {
-    "S": "058264289687-us-east-1-RouteTable-rtb-0c8225f7780ad0ea1"
-  },
-  "recentResources_5_region": {
-    "S": "us-east-1"
-  },
-  "recentResources_5_resourceType": {
-    "S": "RouteTable"
-  },
-  "recentResources_6_createdAt": {
-    "S": "2025-09-13T20:13:21.848Z"
-  },
-  "recentResources_6_identifier": {
-    "S": "058264289687-us-east-1-RouteTable-rtb-0cb110bd0df70cd79"
-  },
-  "recentResources_6_region": {
-    "S": "us-east-1"
-  },
-  "recentResources_6_resourceType": {
-    "S": "RouteTable"
-  },
-  "recentResources_7_createdAt": {
-    "S": "2025-09-13T20:13:21.848Z"
-  },
-  "recentResources_7_identifier": {
-    "S": "058264289687-us-east-1-RouteTable-rtb-0cba3e644c1ce8d5f"
-  },
-  "recentResources_7_region": {
-    "S": "us-east-1"
-  },
-  "recentResources_7_resourceType": {
-    "S": "RouteTable"
-  },
-  "recentResources_8_createdAt": {
-    "S": "2025-09-13T20:13:21.848Z"
-  },
-  "recentResources_8_identifier": {
-    "S": "058264289687-us-east-1-RouteTable-rtb-05d0ff98acffb11a4"
-  },
-  "recentResources_8_region": {
-    "S": "us-east-1"
-  },
-  "recentResources_8_resourceType": {
-    "S": "RouteTable"
-  },
-  "recentResources_9_createdAt": {
-    "S": "2025-09-13T20:13:21.847Z"
-  },
-  "recentResources_9_identifier": {
-    "S": "058264289687-us-east-1-RouteTable-rtb-08ed490fff3118807"
-  },
-  "recentResources_9_region": {
-    "S": "us-east-1"
-  },
-  "recentResources_9_resourceType": {
-    "S": "RouteTable"
+  "recentResources": {
+    "S": "[{\"resourceType\": \"DirectConnectVirtualInterface\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:11.559Z\", \"identifier\": \"905418331872-us-east-1-DirectConnectVirtualInterface-dxvif-fh6ecnf3\"}, {\"resourceType\": \"DirectConnectConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:11.031Z\", \"identifier\": \"905418331872-us-east-1-DirectConnectConnection-dxcon-fh5mqy42\"}, {\"resourceType\": \"VPNConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:07.593Z\", \"identifier\": \"905418331872-us-east-1-VPNConnection-vpn-0e5ab7950e87fb08c\"}, {\"resourceType\": \"VPNConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:07.592Z\", \"identifier\": \"905418331872-us-east-1-VPNConnection-vpn-0ec51f21a36a93a93\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.625Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-0f909b34ecfbfe24a\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.625Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-0a567bf486b888e2d\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.625Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-04fa0dd7114da2307\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.427Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-0de4a3fa7ca060bec\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.427Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-087424ba5978a0d2e\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.427Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-006c1f0572535a269\"}]"
   },
   "region": {
     "S": "global"
   },
-  "regionDistribution_0_count": {
-    "N": "8846"
+  "regionDistribution": {
+    "S": "[{\"region\": \"us-east-1\", \"count\": 2680}, {\"region\": \"sa-east-1\", \"count\": 1}]"
   },
-  "regionDistribution_0_region": {
-    "S": "us-east-1"
-  },
-  "regionDistribution_1_count": {
-    "N": "180"
-  },
-  "regionDistribution_1_region": {
-    "S": "ap-northeast-2"
-  },
-  "regionDistribution_2_count": {
-    "N": "180"
-  },
-  "regionDistribution_2_region": {
-    "S": "us-west-2"
-  },
-  "regionDistribution_3_count": {
-    "N": "163"
-  },
-  "regionDistribution_3_region": {
-    "S": "sa-east-1"
-  },
-  "regionDistribution_4_count": {
-    "N": "161"
-  },
-  "regionDistribution_4_region": {
-    "S": "us-east-2"
-  },
-  "regionDistribution_5_count": {
-    "N": "160"
-  },
-  "regionDistribution_5_region": {
-    "S": "ca-central-1"
-  },
-  "regionDistribution_6_count": {
-    "N": "160"
-  },
-  "regionDistribution_6_region": {
-    "S": "eu-west-1"
-  },
-  "regionDistribution_7_count": {
-    "N": "160"
-  },
-  "regionDistribution_7_region": {
-    "S": "eu-central-1"
-  },
-  "regionDistribution_8_count": {
-    "N": "160"
-  },
-  "regionDistribution_8_region": {
-    "S": "eu-north-1"
-  },
-  "regionDistribution_9_count": {
-    "N": "160"
-  },
-  "regionDistribution_9_region": {
-    "S": "ap-northeast-3"
+  "regionsCollected": {
+    "N": "0"
   },
   "resourceCounts_AMI": {
-    "N": "3050"
+    "N": "840"
   },
   "resourceCounts_AutoScalingGroup": {
     "N": "4"
@@ -312,66 +51,72 @@
     "N": "1"
   },
   "resourceCounts_EBSSnapshot": {
-    "N": "4644"
+    "N": "1478"
   },
   "resourceCounts_EBSVolume": {
-    "N": "192"
+    "N": "78"
   },
   "resourceCounts_EC2Instance": {
-    "N": "123"
+    "N": "38"
   },
   "resourceCounts_ElasticIP": {
     "N": "2"
   },
   "resourceCounts_InternetGateway": {
-    "N": "325"
+    "N": "1"
   },
   "resourceCounts_LoadBalancer": {
     "N": "2"
   },
   "resourceCounts_NetworkACL": {
-    "N": "348"
+    "N": "9"
+  },
+  "resourceCounts_RDSClusterSnapshot": {
+    "N": "1"
   },
   "resourceCounts_RDSInstance": {
-    "N": "10"
+    "N": "2"
   },
   "resourceCounts_RouteTable": {
-    "N": "431"
+    "N": "39"
   },
   "resourceCounts_S3Bucket": {
-    "N": "202"
+    "N": "36"
   },
   "resourceCounts_SecurityGroup": {
-    "N": "547"
+    "N": "60"
   },
   "resourceCounts_Subnet": {
-    "N": "1097"
+    "N": "32"
   },
   "resourceCounts_TransitGateway": {
-    "N": "20"
+    "N": "4"
   },
   "resourceCounts_TransitGatewayAttachment": {
-    "N": "44"
+    "N": "31"
   },
   "resourceCounts_VPC": {
-    "N": "346"
+    "N": "8"
   },
   "resourceCounts_VPCEndpoint": {
-    "N": "39"
+    "N": "12"
   },
   "resourceCounts_VPNConnection": {
     "N": "2"
   },
+  "resourceRegionsFound": {
+    "N": "2"
+  },
   "resourcesProcessed": {
-    "N": "11430"
+    "N": "2681"
   },
   "resourceType": {
     "S": "METRIC_SUMMARY"
   },
   "totalResources": {
-    "N": "11430"
+    "N": "2681"
   },
   "updatedAt": {
-    "S": "2025-09-13T20:13:25.521Z"
+    "S": "2025-09-14T21:34:43.777Z"
   }
 }

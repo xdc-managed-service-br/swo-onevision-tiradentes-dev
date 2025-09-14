@@ -1,45 +1,33 @@
 {
   "id": {
-    "S": "211125526410-us-east-1-SecurityGroup-sg-04ad7ede782b32f35"
+    "S": "905418331872-us-east-1-SecurityGroup-sg-0f6d7fd08b2be39c5"
   },
   "accountId": {
-    "S": "211125526410"
+    "S": "905418331872"
   },
   "accountName": {
-    "S": "TOTVS - Legado"
-  },
-  "allIngressPortsExposed": {
-    "BOOL": false
+    "S": "CustomAccount"
   },
   "createdAt": {
-    "S": "2025-09-13T22:07:48.311Z"
+    "S": "2025-09-14T21:34:05.430Z"
   },
   "description": {
-    "S": "Conexao dos banco de dados Oracle com outros servidores"
+    "S": "Fortinet FortiManager (BYOL) Centralized Security Management-7.2.5-AutogenByAWSMP--1 created 2024-05-22T19:37:55.766Z"
   },
   "egressRuleCount": {
     "N": "1"
   },
   "groupId": {
-    "S": "sg-04ad7ede782b32f35"
+    "S": "sg-0f6d7fd08b2be39c5"
   },
   "groupName": {
-    "S": "SG-bancodedados-oracle-servidores"
+    "S": "Fortinet FortiManager (BYOL) Centralized Security Management-7.2.5-AutogenByAWSMP--1"
   },
   "groupNameTag": {
     "S": "N/A"
   },
-  "hasExposedEgressPorts": {
-    "BOOL": false
-  },
-  "hasExposedIngressPorts": {
-    "BOOL": false
-  },
   "ingressRuleCount": {
-    "N": "1"
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T22:07:48.311Z"
+    "N": "15"
   },
   "region": {
     "S": "us-east-1"
@@ -47,16 +35,13 @@
   "resourceType": {
     "S": "SecurityGroup"
   },
-  "resourceTypeRegionId": {
-    "S": "SecurityGroup#us-east-1#sg-04ad7ede782b32f35"
-  },
   "tags": {
-    "S": "[]"
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:07:48.311Z"
+    "S": "2025-09-14T21:34:05.430Z"
   },
   "vpcId": {
-    "S": "vpc-0cc4dd5e16f0d3fb5"
+    "S": "vpc-04d9fa441c24373b3"
   }
 }

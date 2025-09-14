@@ -1,12 +1,12 @@
 {
   "id": {
-    "S": "654654498954-us-east-1-TransitGateway-tgw-0a20534250c42cbbb"
+    "S": "905418331872-us-east-1-TransitGateway-tgw-0a20534250c42cbbb"
   },
   "accountId": {
-    "S": "654654498954"
+    "S": "905418331872"
   },
   "accountName": {
-    "S": "Ficou Facil"
+    "S": "CustomAccount"
   },
   "amazonSideAsn": {
     "N": "64512"
@@ -26,9 +26,6 @@
   "dnsSupport": {
     "S": "enable"
   },
-  "lastUpdated": {
-    "S": "2025-09-13T22:05:49.940Z"
-  },
   "multicastSupport": {
     "S": "disable"
   },
@@ -40,9 +37,6 @@
   },
   "resourceType": {
     "S": "TransitGateway"
-  },
-  "resourceTypeRegionId": {
-    "S": "TransitGateway#us-east-1#tgw-0a20534250c42cbbb"
   },
   "state": {
     "S": "available"
@@ -57,7 +51,7 @@
     "S": "tgw-network"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:05:49.940Z"
+    "S": "2025-09-14T21:34:07.750Z"
   },
   "vpnEcmpSupport": {
     "S": "enable"

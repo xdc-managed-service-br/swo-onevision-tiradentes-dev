@@ -6,28 +6,22 @@
     "S": "905418331872"
   },
   "accountName": {
-    "S": "Network"
+    "S": "CustomAccount"
   },
   "category": {
     "S": "VPN"
   },
   "createdAt": {
-    "S": "2025-09-13T22:46:49.418Z"
+    "S": "2025-09-14T21:34:07.592Z"
   },
   "customerGatewayId": {
     "S": "cgw-09d886c01728f2f6b"
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T22:46:49.418Z"
   },
   "region": {
     "S": "us-east-1"
   },
   "resourceType": {
     "S": "VPNConnection"
-  },
-  "resourceTypeRegionId": {
-    "S": "VPNConnection#us-east-1#vpn-0ec51f21a36a93a93"
   },
   "state": {
     "S": "available"
@@ -48,7 +42,7 @@
     "S": "ipsec.1"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:46:49.418Z"
+    "S": "2025-09-14T21:34:07.592Z"
   },
   "vpnConnectionId": {
     "S": "vpn-0ec51f21a36a93a93"

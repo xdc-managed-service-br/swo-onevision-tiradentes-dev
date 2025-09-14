@@ -1,18 +1,15 @@
 {
   "id": {
-    "S": "590183843163-us-east-1-TransitGatewayAttachment-tgw-attach-055c7474ace08b767"
+    "S": "905418331872-us-east-1-TransitGatewayAttachment-tgw-attach-055c7474ace08b767"
   },
   "accountId": {
-    "S": "590183843163"
+    "S": "905418331872"
   },
   "accountName": {
-    "S": "A4L"
+    "S": "CustomAccount"
   },
-  "association_State": {
-    "S": "associated"
-  },
-  "association_TransitGatewayRouteTableId": {
-    "S": "tgw-rtb-0e324bafb7c72d9d7"
+  "association": {
+    "S": "{\"TransitGatewayRouteTableId\": \"tgw-rtb-0e324bafb7c72d9d7\", \"State\": \"associated\"}"
   },
   "attachedResourceId": {
     "S": "vpc-0bcb253437b9db896"
@@ -26,9 +23,6 @@
   "createdAt": {
     "S": "2024-04-03T13:29:15.000Z"
   },
-  "lastUpdated": {
-    "S": "2025-09-13T22:32:32.005Z"
-  },
   "region": {
     "S": "us-east-1"
   },
@@ -37,9 +31,6 @@
   },
   "resourceType": {
     "S": "TransitGatewayAttachment"
-  },
-  "resourceTypeRegionId": {
-    "S": "TransitGatewayAttachment#us-east-1#tgw-attach-055c7474ace08b767"
   },
   "state": {
     "S": "available"
@@ -57,6 +48,6 @@
     "S": "905418331872"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:32:32.005Z"
+    "S": "2025-09-14T21:34:08.055Z"
   }
 }

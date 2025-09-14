@@ -1,30 +1,27 @@
 {
   "id": {
-    "S": "767397734112-us-east-1-S3Bucket-arquivos-ficoufacil-dev"
+    "S": "905418331872-us-east-1-S3Bucket-fortigate-autoscale-tiradentes"
   },
   "accountId": {
-    "S": "767397734112"
+    "S": "905418331872"
   },
   "accountName": {
-    "S": "Arquiteturas e Sistemas"
+    "S": "CustomAccount"
   },
   "bucketName": {
-    "S": "arquivos-ficoufacil-dev"
+    "S": "fortigate-autoscale-tiradentes"
   },
   "bucketNameTag": {
     "S": "N/A"
   },
   "createdAt": {
-    "S": "2024-06-18T13:11:14.000Z"
+    "S": "2024-04-05T12:49:06.000Z"
   },
   "hasLifecycleRules": {
     "BOOL": false
   },
-  "lastUpdated": {
-    "S": "2025-09-13T20:37:41.141Z"
-  },
   "objectCount": {
-    "N": "58537"
+    "N": "27"
   },
   "region": {
     "S": "us-east-1"
@@ -32,16 +29,13 @@
   "resourceType": {
     "S": "S3Bucket"
   },
-  "resourceTypeRegionId": {
-    "S": "S3Bucket#us-east-1#arquivos-ficoufacil-dev"
-  },
   "storageBytes": {
-    "S": "25.36 GB"
+    "S": "1.35 MB"
   },
   "tags": {
     "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T20:37:41.141Z"
+    "S": "2025-09-14T21:34:01.878Z"
   }
 }
