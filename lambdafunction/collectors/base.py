@@ -1,3 +1,4 @@
+import os
 # collectors/base.py
 import boto3
 import logging
@@ -8,6 +9,7 @@ from botocore.config import Config
 from botocore.exceptions import ClientError
 from decimal import Decimal, InvalidOperation
 import math
+import concurrent.futures
 
 try:
     from dateutil import parser
@@ -35,7 +37,8 @@ DEFAULT_REGIONS = [
 ]
 
 def _to_dynamodb_compatible(value):
-    """Converte floats para Decimal e saneia NaN/Inf; processa recursivamente dict/list."""
+    """Converte floats para Decimal e saneia NaN/Inf; processa recursivamente dict/list.
+    Floats are rounded to 3 decimal places before conversion to Decimal to reduce precision issues."""
     if value is None:
         return None
 
@@ -49,7 +52,8 @@ def _to_dynamodb_compatible(value):
             # Remova o campo problemático retornando None
             return None
         try:
-            return Decimal(str(value))
+            rounded = round(value, 3)
+            return Decimal(str(rounded))
         except (InvalidOperation, ValueError):
             return None  # se der ruim, descartamos o campo
 
@@ -71,7 +75,6 @@ def _to_dynamodb_compatible(value):
                 cleaned[k] = cv
         return cleaned
 
-    # Fallback: serializa como string
     return str(value)
 
 def format_aws_datetime(timestamp):
@@ -108,32 +111,34 @@ def format_aws_datetime(timestamp):
 
 
 def get_all_organization_accounts():
-    """Retrieve all active accounts from AWS Organizations excluding management account."""
+    """Retrieve all active accounts from AWS Organizations excluding management account, or use DISCOVER_ACCOUNT env var."""
+    discover_account = os.environ.get("DISCOVER_ACCOUNT")
+    if discover_account is not None and discover_account != "*":
+        # User-supplied account list, comma-separated
+        account_ids = [a.strip() for a in discover_account.split(",") if a.strip()]
+        return [(acct_id, "CustomAccount") for acct_id in account_ids]
+    # If DISCOVER_ACCOUNT == "*", continue with Organizations logic
     logger.info("Retrieving accounts from AWS Organizations")
     org_client = boto3.client('organizations', config=BOTO3_CONFIG)
-    
     try:
         org_response = org_client.describe_organization()
         management_account_id = org_response['Organization']['MasterAccountId']
         logger.info(f"Mgmt account: {management_account_id} (excluded)")
-    except Exception as e: 
+    except Exception as e:
         logger.error(f"Describe org error: {e}", exc_info=True)
         raise
-    
     accounts = []
     paginator = org_client.get_paginator('list_accounts')
-    
     try:
         for page in paginator.paginate():
             for account in page.get('Accounts', []):
                 if account.get('Status') == 'ACTIVE' and account.get('Id') != management_account_id:
                     accounts.append((account['Id'], account.get('Name', 'Unnamed Account')))
-        
         logger.info(f"Found {len(accounts)} active accounts.")
-        if not accounts: 
+        if not accounts:
             logger.warning("No active accounts found.")
         return accounts
-    except Exception as e: 
+    except Exception as e:
         logger.error(f"List accounts error: {e}", exc_info=True)
         raise
 
@@ -143,7 +148,7 @@ def get_dynamodb_table(table_name):
     try:
         logger.info(f"Creating DynamoDB Table object for: {table_name}")
         dynamodb = boto3.resource('dynamodb', config=BOTO3_CONFIG)
-        table = dynamodb.Table(table_name)
+        table = dynamodb.Table(table_name) # type: ignore
         return table
     except Exception as e:
         logger.error(f"Failed to get DynamoDB Table object for {table_name}: {e}", exc_info=True)
@@ -152,7 +157,7 @@ def get_dynamodb_table(table_name):
 
 def batch_write_to_dynamodb(table_objects, items):
     """Writes items to multiple DynamoDB tables using BatchWriteItem."""
-    if not items or not table_objects: 
+    if not items or not table_objects:
         logger.warning("batch_write called with no items or tables.")
         return 0
 
@@ -214,7 +219,7 @@ def batch_write_to_dynamodb(table_objects, items):
                         break  # Batch successful
 
                     # Some items failed, prepare for retry
-                    logger.warning(f"{len(unprocessed_items)} unprocessed items for {table_name}. Retrying (attempt {retries + 1}/{max_retries})...")
+                    logger.debug(f"{len(unprocessed_items)} unprocessed items for {table_name}. Retrying (attempt {retries + 1}/{max_retries})...")
                     request_items = {table_name: unprocessed_items}
                     current_batch_size = len(unprocessed_items)
                     retries += 1
@@ -224,18 +229,22 @@ def batch_write_to_dynamodb(table_objects, items):
 
                 except ClientError as e:
                     error_code = e.response.get("Error", {}).get("Code")
-                    if error_code == "ProvisionedThroughputExceededException":
-                        logger.warning(f"Throughput exceeded writing to {table_name}. Retrying (attempt {retries + 1}/{max_retries})...")
-                    elif error_code == "InternalServerError":
-                        logger.warning(f"Internal server error writing to {table_name}. Retrying (attempt {retries + 1}/{max_retries})...")
+                    # Retryable error codes
+                    if error_code in [
+                        "ProvisionedThroughputExceededException",
+                        "InternalServerError",
+                        "ThrottlingException",
+                        "RequestLimitExceeded",
+                        "TransactionConflictException"
+                    ]:
+                        logger.warning(f"{error_code} writing to {table_name}. Retrying (attempt {retries + 1}/{max_retries})...")
+                        retries += 1
+                        sleep_time = backoff_base * (2 ** retries) + (random.random() * backoff_base)
+                        time.sleep(sleep_time)
                     else:
                         logger.error(f"Non-retryable ClientError during batch write to {table_name} (attempt {retries + 1}): {e}. Failing this batch part.")
                         retries = max_retries
                         break
-
-                    retries += 1
-                    sleep_time = backoff_base * (2 ** retries) + (random.random() * backoff_base)
-                    time.sleep(sleep_time)
 
                 except Exception as e:
                     logger.error(f"Unexpected error during batch write to {table_name} (attempt {retries + 1}): {e}", exc_info=True)
@@ -258,7 +267,13 @@ def batch_write_to_dynamodb(table_objects, items):
 
 
 def get_available_regions(credentials):
-    """Get all available AWS regions enabled for the account using provided credentials."""
+    """Get all available AWS regions enabled for the account using provided credentials, or use DISCOVER_REGION env var."""
+    discover_region = os.environ.get("DISCOVER_REGION")
+    if discover_region is not None and discover_region != "*":
+        # User-supplied region list, comma-separated
+        region_names = [r.strip() for r in discover_region.split(",") if r.strip()]
+        return region_names
+    # If DISCOVER_REGION == "*", continue with EC2 describe_regions
     logger.info("Fetching available regions for the account...")
     try:
         ec2 = boto3.client(
@@ -273,7 +288,6 @@ def get_available_regions(credentials):
         response = ec2.describe_regions(AllRegions=False)
         regions = [region['RegionName'] for region in response.get('Regions', [])]
         logger.info(f"Found {len(regions)} enabled regions: {', '.join(regions)}")
-        
         if not regions:
             logger.warning("No enabled regions found. Falling back to default region list.")
             return DEFAULT_REGIONS
@@ -354,3 +368,37 @@ class ResourceCollector:
         except Exception as e:
             logger.error(f"Failed to save items for {self.__class__.__name__} in region {self.region} / account {self.account_id}: {e}", exc_info=True)
             return 0
+    @staticmethod
+    def parallel_collect_and_save(collectors):
+        """Run collect and save for a list of collectors in parallel using ThreadPoolExecutor."""
+        if not collectors:
+            return []
+        results = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            future_to_collector = {
+                executor.submit(
+                    lambda c: {
+                        "collector": c.__class__.__name__,
+                        "collected_items": c.collect() or [],
+                        "items_saved": c.save() or 0
+                    },
+                    collector
+                ): collector
+                for collector in collectors
+            }
+            for future in concurrent.futures.as_completed(future_to_collector):
+                collector = future_to_collector[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    logger.error(
+                        f"Collector {collector.__class__.__name__} in region {getattr(collector, 'region', 'unknown')} failed: {exc}",
+                        exc_info=True
+                    )
+                    result = {
+                        "collector": collector.__class__.__name__,
+                        "collected_items": [],
+                        "items_saved": 0
+                    }
+                results.append(result)
+        return results

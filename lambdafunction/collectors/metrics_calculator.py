@@ -26,6 +26,9 @@ class MetricsAccumulator:
         self.account_counts = defaultdict(int)
         self.region_counts = defaultdict(int)
         self.account_names = {}  # account_id -> account_name mapping
+
+        # Track collected regions
+        self.regions_collected = set()
         
         # EC2 specific counters
         self.ec2_states = defaultdict(int)
@@ -64,6 +67,13 @@ class MetricsAccumulator:
         
         # Recent resources tracking
         self.recent_resources = []  # Keep last 10 created/updated resources
+    def add_collected_region(self, region: str):
+        """
+        Mark a region as collected.
+        Args:
+            region: Region string to add.
+        """
+        self.regions_collected.add(region)
         
     def add_resource(self, item: Dict[str, Any]):
         """
@@ -290,7 +300,9 @@ class MetricsAccumulator:
             'resourceCounts': dict(self.resource_counts),
             'accountDistribution': account_dist,
             'regionDistribution': region_dist,
-            'recentResources': self.recent_resources[:10]
+            'recentResources': self.recent_resources[:10],
+            'regionsCollected': len(self.regions_collected),
+            'resourceRegionsFound': len(self.region_counts),
         }
         
         # EC2 Health metrics

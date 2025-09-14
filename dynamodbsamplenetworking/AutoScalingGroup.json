@@ -1,6 +1,6 @@
 {
   "id": {
-    "S": "905418331872-us-east-1-AutoScalingGroup-fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group"
+    "S": "905418331872-us-east-1-AutoScalingGroup-fgt-tgw-v2-f8438a00-fortigate-byol-auto-scaling-group"
   },
   "accountId": {
     "S": "905418331872"
@@ -9,28 +9,28 @@
     "S": "Network"
   },
   "autoScalingGroupARN": {
-    "S": "arn:aws:autoscaling:us-east-1:905418331872:autoScalingGroup:a554c877-5998-4ce2-9efc-34f16a1f0453:autoScalingGroupName/fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group"
+    "S": "arn:aws:autoscaling:us-east-1:905418331872:autoScalingGroup:9111137d-f3d4-42dd-a311-d60502c9658e:autoScalingGroupName/fgt-tgw-v2-f8438a00-fortigate-byol-auto-scaling-group"
   },
   "autoScalingGroupName": {
-    "S": "fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group"
+    "S": "fgt-tgw-v2-f8438a00-fortigate-byol-auto-scaling-group"
   },
   "autoScalingGroupNameTag": {
-    "S": "fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group"
+    "S": "fgt-tgw-v2-f8438a00-fortigate-byol-auto-scaling-group"
   },
-  "AvailabilityZones_0": {
+  "availabilityZones_0": {
     "S": "us-east-1a"
   },
-  "AvailabilityZones_1": {
+  "availabilityZones_1": {
     "S": "us-east-1b"
   },
   "createdAt": {
-    "S": "2024-04-29T22:47:52.389Z"
+    "S": "2024-04-29T22:47:52.327Z"
   },
   "currentSize": {
-    "N": "0"
+    "N": "2"
   },
   "desiredCapacity": {
-    "N": "0"
+    "N": "2"
   },
   "healthCheckGracePeriod": {
     "N": "300"
@@ -39,25 +39,28 @@
     "S": "EC2"
   },
   "healthyInstances": {
-    "N": "0"
+    "N": "2"
   },
-  "lastUpdated": {
-    "S": "2025-09-13T22:07:16.837Z"
+  "instanceIds_0": {
+    "S": "i-0044b5c5c81bffcc0"
   },
-  "LaunchTemplate_LaunchTemplateId": {
-    "S": "lt-04d41236c21774442"
+  "instanceIds_1": {
+    "S": "i-04531cc1f7a640f6a"
   },
-  "LaunchTemplate_LaunchTemplateName": {
-    "S": "fgt-tgw-v2-f8438a00-fortigate-payg-autoscale-launch-template"
+  "launchTemplate_LaunchTemplateId": {
+    "S": "lt-0b823593cbe7981dd"
   },
-  "LaunchTemplate_Version": {
-    "S": "1"
+  "launchTemplate_LaunchTemplateName": {
+    "S": "fgt-tgw-v2-f8438a00-fortigate-byol-autoscale-launch-template"
+  },
+  "launchTemplate_Version": {
+    "S": "2"
   },
   "maxSize": {
-    "N": "6"
+    "N": "2"
   },
   "minSize": {
-    "N": "0"
+    "N": "1"
   },
   "region": {
     "S": "us-east-1"
@@ -65,17 +68,14 @@
   "resourceType": {
     "S": "AutoScalingGroup"
   },
-  "resourceTypeRegionId": {
-    "S": "AutoScalingGroup#us-east-1#fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group"
-  },
   "serviceLinkedRoleARN": {
     "S": "arn:aws:iam::905418331872:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
   },
   "tags": {
-    "S": "[{\"Key\": \"Name\", \"Value\": \"fgt-tgw-v2-f8438a00-fortigate-payg-auto-scaling-group\"}, {\"Key\": \"ResourceGroup\", \"Value\": \"fgt-tgw-v2-f8438a00\"}, {\"Key\": \"aws:cloudformation:logical-id\", \"Value\": \"FgtAutoScalingGroupPayg\"}, {\"Key\": \"aws:cloudformation:stack-id\", \"Value\": \"arn:aws:cloudformation:us-east-1:905418331872:stack/fgt-tgw-v2-StackMainWorkload-11GY4W9FWEDHP-StackCreateFortiGateAutoScalingGroup-19NMPFFULHYR4/7cb3f540-067a-11ef-b705-0affd220fe87\"}, {\"Key\": \"aws:cloudformation:stack-name\", \"Value\": \"fgt-tgw-v2-StackMainWorkload-11GY4W9FWEDHP-StackCreateFortiGateAutoScalingGroup-19NMPFFULHYR4\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
+    "S": "[{\"Key\": \"Name\", \"Value\": \"fgt-tgw-v2-f8438a00-fortigate-byol-auto-scaling-group\"}, {\"Key\": \"ResourceGroup\", \"Value\": \"fgt-tgw-v2-f8438a00\"}, {\"Key\": \"aws:cloudformation:logical-id\", \"Value\": \"FgtAutoScalingGroupByol\"}, {\"Key\": \"aws:cloudformation:stack-id\", \"Value\": \"arn:aws:cloudformation:us-east-1:905418331872:stack/fgt-tgw-v2-StackMainWorkload-11GY4W9FWEDHP-StackCreateFortiGateAutoScalingGroup-19NMPFFULHYR4/7cb3f540-067a-11ef-b705-0affd220fe87\"}, {\"Key\": \"aws:cloudformation:stack-name\", \"Value\": \"fgt-tgw-v2-StackMainWorkload-11GY4W9FWEDHP-StackCreateFortiGateAutoScalingGroup-19NMPFFULHYR4\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:07:16.837Z"
+    "S": "2025-09-14T17:57:35.223Z"
   },
   "vpcZoneIdentifier": {
     "S": "subnet-02eb9de9206315fec,subnet-0c5eb4ae3651fbcd6"

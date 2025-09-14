@@ -27,16 +27,13 @@
     "S": "available"
   },
   "createdAt": {
-    "S": "2025-09-13T22:07:17.548Z"
+    "S": "2025-09-14T17:57:35.920Z"
   },
   "encryptionMode": {
     "S": "unknown"
   },
   "hasLogicalRedundancy": {
     "S": "no"
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T22:07:17.548Z"
   },
   "location": {
     "S": "EQMI1"
@@ -56,14 +53,11 @@
   "resourceType": {
     "S": "DirectConnectConnection"
   },
-  "resourceTypeRegionId": {
-    "S": "DirectConnectConnection#us-east-1#dxcon-fh5mqy42"
-  },
   "tags": {
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-13T22:07:17.548Z"
+    "S": "2025-09-14T17:57:35.920Z"
   },
   "vlan": {
     "N": "301"

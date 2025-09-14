@@ -7,6 +7,9 @@ from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from botocore.exceptions import ClientError
 
+# Import ResourceCollector for parallel regional collection
+from collectors.base import ResourceCollector
+
 # Import from collectors module
 from collectors.base import (
     get_dynamodb_table, 
@@ -32,42 +35,35 @@ global_metrics_accumulator = MetricsAccumulator()
 
 
 def process_region(account_id, account_name, region, credentials, tables, metrics_accumulator=None):
-    """Processes a single region for an account, running all regional collectors."""
+    """Processes a single region for an account, running all regional collectors in parallel."""
     start_time = datetime.now(timezone.utc)
     logger.info(f"Processing region {region} for account {account_id} ({account_name})")
     region_total_items_saved = 0
-    
+
     # List of regional collector classes to run
     regional_collectors = [EC2Collector, RDSCollector, NetworkingCollector]
 
-    all_collected_items = []  # Accumulate items from all collectors in this region
+    # Instantiate collectors for this specific region/account/creds
+    collector_instances = [
+        collector_class(account_id, account_name, region, credentials, tables)
+        for collector_class in regional_collectors
+    ]
 
-    for collector_class in regional_collectors:
-        collector_name = collector_class.__name__
-        try:
-            logger.info(f"Running collector {collector_name} in region {region}...")
-            # Instantiate collector for this specific region/account/creds
-            collector_instance = collector_class(account_id, account_name, region, credentials, tables)
-            # Collect returns the list of items added by this collector instance
-            collected_items = collector_instance.collect()
+    # Use ResourceCollector.parallel_collect_and_save to collect and save in parallel
+    try:
+        results = ResourceCollector.parallel_collect_and_save(collector_instances)
+    except Exception as e:
+        logger.error(f"Error in parallel regional collectors for region {region}: {str(e)}", exc_info=True)
+        results = []
 
-            if collected_items:
-                logger.debug(f"{collector_name} collected {len(collected_items)} items in region {region}.")
-                all_collected_items.extend(collected_items)
-                try:
-                    region_items_saved = collector_instance.save()
-                    region_total_items_saved += region_items_saved
-                except Exception as e:
-                    logger.error(f"Error saving items with {collector_name} for region {region}: {str(e)}", exc_info=True)
-            else:
-                logger.info(f"No resources found by {collector_name} in region {region}")
+    # Accumulate metrics for all collected items
+    all_collected_items = []
+    for result in results:
+        collected_items = result.get("collected_items", [])
+        items_saved = result.get("items_saved", 0)
+        region_total_items_saved += items_saved
+        all_collected_items.extend(collected_items if collected_items else [])
 
-        except NotImplementedError:
-            logger.error(f"Collector {collector_name} does not implement collect(). Skipping.")
-        except Exception as e:
-            logger.error(f"Error in collector {collector_name} for region {region}: {str(e)}", exc_info=True)
-
-    # Accumulate metrics before saving
     if metrics_accumulator and all_collected_items:
         logger.debug(f"Accumulating metrics for {len(all_collected_items)} items from region {region}")
         for item in all_collected_items:
@@ -75,8 +71,6 @@ def process_region(account_id, account_name, region, credentials, tables, metric
                 metrics_accumulator.add_resource(item)
             except Exception as e:
                 logger.warning(f"Error accumulating metrics for item: {e}")
-
-    # No need to save all_collected_items here, as each collector saves its own items above.
 
     total_time = (datetime.now(timezone.utc) - start_time).total_seconds()
     logger.info(f"Region {region} processed in {total_time:.2f}s. Saved approx {region_total_items_saved} resources.")
@@ -141,7 +135,7 @@ def process_account(account_id, account_name, tables, metrics_accumulator=None):
         sorted_regions = sorted(regions)
 
         # 4. Process Regions Concurrently
-        logger.info(f"Processing {len(sorted_regions)} regions for account {account_name} using up to {MAX_WORKERS} workers...")
+        logger.info( f"Processing {len(sorted_regions)} regions for account {account_name} " f"using up to {min(MAX_WORKERS, len(sorted_regions))} workers...")
         region_results = {}
         
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:

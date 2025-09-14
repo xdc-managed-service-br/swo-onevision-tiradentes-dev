@@ -1,30 +1,27 @@
 {
   "id": {
-    "S": "767397734112-us-east-1-AMI-ami-005dd8a9ac4678696"
+    "S": "381492155025-us-east-1-AMI-ami-000ceb69931f7d4f0"
   },
   "accountId": {
-    "S": "767397734112"
+    "S": "381492155025"
   },
   "accountName": {
-    "S": "Arquiteturas e Sistemas"
+    "S": "MagisterApps Prod"
   },
   "createdAt": {
-    "S": "2024-07-24T11:25:19.000Z"
+    "S": "2025-09-13T04:14:56.000Z"
   },
   "description": {
-    "S": ""
+    "S": "This image is created by the AWS Backup service."
   },
   "imageId": {
-    "S": "ami-005dd8a9ac4678696"
+    "S": "ami-000ceb69931f7d4f0"
   },
   "imageName": {
-    "S": "testeDecript1"
+    "S": "AwsBackup_i-056db194e53af3242_2D1060AE-5718-B998-F55C-1EFF4C3C8E43"
   },
   "imageState": {
     "S": "available"
-  },
-  "lastUpdated": {
-    "S": "2025-09-13T19:22:39.575Z"
   },
   "platform": {
     "S": "Windows"
@@ -35,13 +32,10 @@
   "resourceType": {
     "S": "AMI"
   },
-  "resourceTypeRegionId": {
-    "S": "AMI#us-east-1#ami-005dd8a9ac4678696"
-  },
   "tags": {
-    "S": "[]"
+    "S": "[{\"Key\": \"swoRiskClass\", \"Value\": \"1\"}, {\"Key\": \"Billing-MagProd\", \"Value\": \"0\"}, {\"Key\": \"TFModuleVersion\", \"Value\": \"3.2.4\"}, {\"Key\": \"Name\", \"Value\": \"Recovery Point created by sysops-us-east-1-abr-2-rule1\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"TFModule\", \"Value\": \"hc-aws-backup\"}, {\"Key\": \"PatchGroup\", \"Value\": \"3\"}, {\"Key\": \"SolutionName\", \"Value\": \"aws-backup\"}, {\"Key\": \"swoBackup\", \"Value\": \"2\"}, {\"Key\": \"aws:backup:source-resource\", \"Value\": \"i-056db194e53af3242:2D1060AE-5718-B998-F55C-1EFF4C3C8E43\"}, {\"Key\": \"swoPatch\", \"Value\": \"3\"}, {\"Key\": \"swoResize\", \"Value\": \"0\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-13T19:22:39.575Z"
+    "S": "2025-09-14T17:57:26.696Z"
   }
 }
