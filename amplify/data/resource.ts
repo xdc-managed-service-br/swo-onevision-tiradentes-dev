@@ -350,23 +350,16 @@ const schema = a.schema({
     allow.publicApiKey().to(['create', 'update'])
   ])
   .secondaryIndexes(index => [
-    // Índice por tipo de recurso
-    index('resourceType')
-      .queryField('listByResourceType')
-      .sortKeys(['lastUpdated']),
-    // Índice por conta
-    index('accountId')
-      .queryField('listByAccountId')
-      .sortKeys(['resourceType', 'lastUpdated']),
-    // Índice por região
-    index('region')
-      .queryField('listByRegion')
-      .sortKeys(['resourceType', 'lastUpdated']),
-    // Índice composto para consultas específicas
-    index('resourceTypeRegionId')
-      .queryField('listByResourceTypeRegion')
-      .sortKeys(['lastUpdated'])
-  ])
+  // Índice por tipo de recurso → ordenado pela data de criação
+  index('resourceType')
+    .queryField('listByResourceType')
+    .sortKeys(['createdAt']),
+
+  // Índice por conta → agrupado por tipo de recurso
+  index('accountId')
+    .queryField('listByAccountId')
+    .sortKeys(['resourceType'])
+    ])
 });
 
 export type Schema = ClientSchema<typeof schema>;
