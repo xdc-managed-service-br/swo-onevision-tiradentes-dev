@@ -12,7 +12,7 @@ import outputs from '../../amplify_outputs.json';
   selector: 'app-root',
   standalone: true,
   templateUrl: './app.component.html',
-  styleUrl: './shared/styles/onevision-base.css',
+  styleUrls: ['./shared/styles/onevision-base.css'],
   imports: [
     RouterOutlet, 
     RouterLink, 
@@ -65,22 +65,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.checkScreenSize();
     }, 100);
   }
-  // Inicializa tema (LS -> sistema -> dark)
-  private initTheme(): void {
-    const saved = localStorage.getItem('ov-theme') as 'light' | 'dark' | null;
-    const savedSource = localStorage.getItem('ov-theme-source') as 'system' | 'user' | null;
-    this.themeSource = savedSource || 'system';
-
-    this.mql = window.matchMedia('(prefers-color-scheme: light)');
-    if (this.themeSource === 'user' && saved) {
-      this.applyTheme(saved);
-    } else {
-      this.applyTheme(this.mql.matches ? 'light' : 'dark');
-    }
-
-    // Reage à mudança do sistema (se usuário não “forçou”)
-    this.mql.addEventListener('change', this.handleSystemThemeChange);
-  }
 
   private handleSystemThemeChange = (e: MediaQueryListEvent) => {
     if (this.themeSource === 'system') {
@@ -88,20 +72,42 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   };
 
-  // Aplica no <html data-theme="light"> (dark = remove atributo)
   private applyTheme(theme: 'light' | 'dark'): void {
-    this.theme = theme;
+    const t = (theme || 'dark').toLowerCase() as 'light' | 'dark';
+    this.theme = t;
+
     const root = document.documentElement;
-    if (theme === 'light') root.setAttribute('data-theme', 'light');
-    else root.removeAttribute('data-theme');
+    root.setAttribute('data-theme', t);          // <- "light" ou "dark"
+
+    // remove variações antigas
+    root.classList.remove(
+      'theme-light','theme-dark',
+      'theme-Light','theme-Dark','theme-LIGHT','theme-DARK'
+    );
+    root.classList.add(`theme-${t}`);            // <- "theme-light" ou "theme-dark"
   }
 
-  // Alterna e persiste como “user”
+  private initTheme(): void {
+    const saved = (localStorage.getItem('ov-theme') || '').toLowerCase() as 'light' | 'dark' | '';
+    const savedSource = (localStorage.getItem('ov-theme-source') || 'system') as 'system' | 'user';
+    this.themeSource = savedSource;
+
+    this.mql = window.matchMedia('(prefers-color-scheme: light)');
+
+    if (this.themeSource === 'user' && (saved === 'light' || saved === 'dark')) {
+      this.applyTheme(saved);
+    } else {
+      this.applyTheme(this.mql.matches ? 'light' : 'dark');
+    }
+
+    this.mql.addEventListener('change', this.handleSystemThemeChange);
+  }
+
   toggleTheme(): void {
     this.themeSource = 'user';
     const next = this.theme === 'light' ? 'dark' : 'light';
     this.applyTheme(next);
-    localStorage.setItem('ov-theme', next);
+    localStorage.setItem('ov-theme', next);          // sempre minúsculo
     localStorage.setItem('ov-theme-source', 'user');
   }
   ngOnDestroy() {

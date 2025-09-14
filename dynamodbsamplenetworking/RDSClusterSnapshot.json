@@ -1,0 +1,59 @@
+{
+  "id": {
+    "S": "654654498954-us-east-1-RDSClusterSnapshot-snap-2025-05-22-22-57"
+  },
+  "accountId": {
+    "S": "654654498954"
+  },
+  "accountName": {
+    "S": "Ficou Facil"
+  },
+  "allocatedStorage": {
+    "N": "8"
+  },
+  "clusterId": {
+    "S": "database-1"
+  },
+  "createdAt": {
+    "S": "2025-05-23T02:01:03.043Z"
+  },
+  "encrypted": {
+    "BOOL": true
+  },
+  "engine": {
+    "S": "aurora-postgresql"
+  },
+  "lastUpdated": {
+    "S": "2025-09-13T22:45:23.119Z"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "RDSClusterSnapshot"
+  },
+  "resourceTypeRegionId": {
+    "S": "RDSClusterSnapshot#us-east-1#snap-2025-05-22-22-57"
+  },
+  "snapshotArn": {
+    "S": "arn:aws:rds:us-east-1:654654498954:cluster-snapshot:snap-2025-05-22-22-57"
+  },
+  "snapshotId": {
+    "S": "snap-2025-05-22-22-57"
+  },
+  "snapshotName": {
+    "S": "N/A"
+  },
+  "snapshotType": {
+    "S": "manual"
+  },
+  "status": {
+    "S": "available"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"Billing-FicouFacil\", \"Value\": \"0\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"swoBackup\", \"Value\": \"1\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}]"
+  },
+  "updatedAt": {
+    "S": "2025-09-13T22:45:23.119Z"
+  }
+}
