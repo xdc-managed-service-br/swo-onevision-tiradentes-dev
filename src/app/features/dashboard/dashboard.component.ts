@@ -99,9 +99,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private processMetrics(metrics: AWSMetric[]): void {
     console.debug('[Dashboard] processMetrics(): in', { count: metrics?.length });
-    // Separate metrics by type
-    this.globalSummary = metrics.find(m => m.resourceType === 'METRIC_SUMMARY') as MetricGlobalSummary;
-    this.ec2Health = metrics.find(m => m.resourceType === 'METRIC_EC2_HEALTH') as MetricEC2Health;
+    const pickLatest = <T extends any>(items: T[], getDate: (x: any) => number) => {
+      return (items || []).reduce((best: any, cur: any) => {
+        const d = getDate(cur);
+        const bd = best ? getDate(best) : -1;
+        return d > bd ? cur : best;
+      }, null);
+    };
+
+    const allSummaries = metrics.filter(m => m.resourceType === 'METRIC_SUMMARY') as MetricGlobalSummary[];
+    const allEC2Health = metrics.filter(m => m.resourceType === 'METRIC_EC2_HEALTH') as MetricEC2Health[];
+
+    const ts = (x: any) => {
+      const v = x?.lastUpdated || x?.metricDate || x?.updatedAt || x?.createdAt;
+      return v ? new Date(v).getTime() : 0;
+    };
+
+    this.globalSummary = pickLatest(allSummaries, ts) || (allSummaries[0] ?? null);
+    this.ec2Health = pickLatest(allEC2Health, ts) || (allEC2Health[0] ?? null);
     this.costOptimization = metrics.find(m => m.resourceType === 'METRIC_COST') as MetricCostOptimization;
     this.security = metrics.find(m => m.resourceType === 'METRIC_SECURITY') as MetricSecurity;
     this.rds = metrics.find(m => m.resourceType === 'METRIC_RDS') as MetricRDS;
@@ -109,6 +124,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     console.info('[Dashboard] metrics resolved', {
       hasSummary: !!this.globalSummary,
+      summariesFound: allSummaries.length,
+      selectedSummaryId: this.globalSummary?.id,
+      ec2HealthFound: allEC2Health.length,
+      selectedEc2Id: this.ec2Health?.id,
       summaryKeys: this.globalSummary ? Object.keys(this.globalSummary) : null,
       totalResources: this.globalSummary?.totalResources,
       resourceCounts: this.globalSummary ? {
@@ -118,7 +137,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         VPC: this.globalSummary.resourceCounts_VPC,
         SG: this.globalSummary.resourceCounts_SecurityGroup,
       } : null,
-      ec2Health: this.ec2Health,
+      ec2Health: {
+        total: this.ec2Health?.total,
+        running: this.ec2Health?.byState_running,
+        stopped: this.ec2Health?.byState_stopped,
+      },
       cost: this.costOptimization,
       security: this.security,
       rds: this.rds,

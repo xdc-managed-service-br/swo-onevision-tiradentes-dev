@@ -279,7 +279,8 @@ export class ResourceService {
       try {
         console.debug('[ResourceService] loadMetricsWithPagination(): listing with beginsWith METRIC_ ...', { nextToken });
         const response: { data: any[]; nextToken?: string | null | undefined } = await client.models.AWSResource.list({
-          filter: { resourceType: { beginsWith: 'METRIC_' } },
+          // Accept any resourceType that begins with 'METRIC' (underscore or hyphen variations still match)
+          filter: { resourceType: { beginsWith: 'METRIC' } },
           limit: 100,
           nextToken,
         });
@@ -300,10 +301,10 @@ export class ResourceService {
         try {
           const alternative = await client.models.AWSResource.list({ limit: 1000, nextToken });
           console.debug('[ResourceService] fallback list all result', { size: alternative?.data?.length });
-          // Accept both METRIC_ and METRIC- just in case
+          // Accept any that starts with 'METRIC' (covers both '_' and '-')
           const metricItems = (alternative.data || []).filter((item: any) => {
             const t = item?.resourceType ?? '';
-            return typeof t === 'string' && (t.startsWith('METRIC_') || t.startsWith('METRIC-') || t.startsWith('METRIC'));
+            return typeof t === 'string' && t.startsWith('METRIC');
           });
           const processed = metricItems.map((item: any) => this.processMetricData(item));
           all = [...all, ...processed];
@@ -531,6 +532,59 @@ export class ResourceService {
       }
     }
 
+    // Generic flatten + normalize: lift nested blocks like byState, ssmAgent, cloudwatchAgent, healthStatus
+    const sources = [metric, payload];
+    const dynGet = (v: any) => {
+      if (v && typeof v === 'object') {
+        if ('N' in v) return this.toNumber(v.N);
+        if ('S' in v) return v.S;
+        if ('BOOL' in v) return !!v.BOOL;
+      }
+      return v;
+    };
+    const putIfUndef = (k: string, v: any) => {
+      if (processed[k] === undefined && v !== undefined) processed[k] = v;
+    };
+    for (const src of sources) {
+      if (!src || typeof src !== 'object') continue;
+      // Direct keys with hyphen/dot → underscore
+      Object.keys(src).forEach((k) => {
+        const v = dynGet(src[k]);
+        const kn = String(k).replace(/[\-.]/g, '_');
+        putIfUndef(kn, v);
+      });
+      // Nested blocks
+      const bs = (src as any).byState;
+      if (bs && typeof bs === 'object') {
+        putIfUndef('byState_running', this.toNumber(dynGet(bs.running)));
+        putIfUndef('byState_stopped', this.toNumber(dynGet(bs.stopped)));
+      }
+      const hs = (src as any).healthStatus;
+      if (hs && typeof hs === 'object') {
+        putIfUndef('healthStatus_Healthy', this.toNumber(dynGet(hs.Healthy)));
+        putIfUndef('healthStatus_Stopped', this.toNumber(dynGet(hs.Stopped)));
+      }
+      const cw = (src as any).cloudwatchAgent;
+      if (cw && typeof cw === 'object') {
+        putIfUndef('cloudwatchAgent_bothEnabled', this.toNumber(dynGet(cw.bothEnabled)));
+        putIfUndef('cloudwatchAgent_diskMonitoring', this.toNumber(dynGet(cw.diskMonitoring)));
+        putIfUndef('cloudwatchAgent_memoryMonitoring', this.toNumber(dynGet(cw.memoryMonitoring)));
+        putIfUndef('cloudwatchAgent_noneEnabled', this.toNumber(dynGet(cw.noneEnabled)));
+        putIfUndef('cloudwatchAgent_percentageWithDisk', this.toNumber(dynGet(cw.percentageWithDisk)));
+        putIfUndef('cloudwatchAgent_percentageWithMemory', this.toNumber(dynGet(cw.percentageWithMemory)));
+      }
+      const ssm = (src as any).ssmAgent;
+      if (ssm && typeof ssm === 'object') {
+        putIfUndef('ssmAgent_connected', this.toNumber(dynGet(ssm.connected)));
+        putIfUndef('ssmAgent_notConnected', this.toNumber(dynGet(ssm.notConnected)));
+        putIfUndef('ssmAgent_notInstalled', this.toNumber(dynGet(ssm.notInstalled)));
+        putIfUndef('ssmAgent_percentageConnected', this.toNumber(dynGet(ssm.percentageConnected)));
+      }
+    }
+
+    // Final numeric coercion after normalization
+    coerceNumericFields(processed);
+
     // Fallbacks for totals: prefer explicit totalResources → resourcesProcessed
     processed.totalResources = this.toNumber(processed.totalResources);
     if (!processed.totalResources) {
@@ -550,6 +604,36 @@ export class ResourceService {
         try { processed[key] = JSON.parse(v); } catch { /* keep as-is */ }
       }
     });
+
+    // Additional normalization for EC2 health metrics
+    if (processed.resourceType === 'METRIC_EC2_HEALTH') {
+      const p: any = processed;
+      const payload: any = typeof (metric as any)?.data === 'string'
+        ? (() => { try { return JSON.parse((metric as any).data); } catch { return undefined; } })()
+        : (metric as any)?.data;
+
+      const candidates: Array<number | undefined> = [];
+      candidates.push(this.toNumber(p.byState_running));
+      if (payload?.byState) candidates.push(this.toNumber(payload.byState.running));
+      if (!candidates[0] && (p.total != null || payload?.total != null)) {
+        const total = this.toNumber(p.total ?? payload?.total);
+        const stopped = this.toNumber(p.byState_stopped ?? payload?.byState?.stopped);
+        if (total) candidates.push(Math.max(total - stopped, 0));
+      }
+      const running = candidates.find((v) => typeof v === 'number' && !isNaN(v) && v > 0);
+      if (running !== undefined) {
+        p.byState_running = running;
+      }
+      // Ensure all ec2 health numeric fields are numbers
+      ['byState_running','byState_stopped','total','healthStatus_Healthy','healthStatus_Stopped','ssmAgent_connected','ssmAgent_notConnected','ssmAgent_notInstalled','ssmAgent_percentageConnected','cloudwatchAgent_bothEnabled','cloudwatchAgent_diskMonitoring','cloudwatchAgent_memoryMonitoring','cloudwatchAgent_noneEnabled','cloudwatchAgent_percentageWithDisk','cloudwatchAgent_percentageWithMemory']
+        .forEach((k) => { if (p[k] !== undefined) p[k] = this.toNumber(p[k]); });
+      console.info('[ResourceService] METRIC_EC2_HEALTH normalized', {
+        id: p.id,
+        total: p.total,
+        running: p.byState_running,
+        stopped: p.byState_stopped
+      });
+    }
 
     if (processed.resourceType === 'METRIC_SUMMARY') {
       console.info('[ResourceService] METRIC_SUMMARY processed', {
