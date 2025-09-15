@@ -136,8 +136,8 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.resources = data.map(resource => {
-            const privateIpArray = TagFormatter.parseIpList(resource.instancePrivateIps ?? resource.privateIps);
-            const publicIpArray = TagFormatter.parseIpList(resource.instancePublicIps ?? resource.publicIps);
+            const privateIpArray = TagFormatter.parseIpList(resource.instancePrivateIps ?? resource.instancePrivateIps);
+            const publicIpArray = TagFormatter.parseIpList(resource.instancePublicIps ?? resource.instancePublicIps);
             return {
               ...resource,
               privateIpArray,

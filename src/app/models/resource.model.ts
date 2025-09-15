@@ -1,5 +1,7 @@
 // src/app/models/resource.model.ts
 
+import { Schema } from "../../../amplify/data/resource";
+
 // ========================================
 // METRICS INTERFACES
 // ========================================
@@ -207,7 +209,7 @@ export interface EBSVolume extends BaseResource {
 
 // EC2 Instance
 export interface EC2Instance extends BaseResource {
-  instanceName?: string;
+  instanceName?: string | null;
   instanceType: string;
   instanceState: string;
   platformDetails?: string;
@@ -453,6 +455,10 @@ export interface ResourceComment {
   text: string;
   createdAt: string;
 }
+
+export type AWSResourceModel = Schema['AWSResource']['type'];
+export type AWSMetricModel = Pick<AWSResourceModel, 'isMetric' | 'metricDate' | 'potentialMonthlySavings' | 'unassociatedElasticIPs' | 'unattachedEBSVolumes' | 'total' | 'byState_running' | 'byState_stopped' | 'healthStatus_Healthy' | 'healthStatus_Stopped' | 'cloudwatchAgent_bothEnabled' | 'cloudwatchAgent_diskMonitoring' | 'cloudwatchAgent_memoryMonitoring' | 'cloudwatchAgent_noneEnabled' | 'cloudwatchAgent_percentageWithDisk' | 'cloudwatchAgent_percentageWithMemory' | 'ssmAgent_connected' | 'ssmAgent_notConnected' | 'ssmAgent_notInstalled' | 'ssmAgent_percentageConnected' | 'available' | 'engines_aurora_mysql' | 'multiAZ' | 'percentageMultiAZ' | 'performanceInsights' | 'percentageWithPerfInsights' | 'exposedSecurityGroups' | 'percentageExposed' | 'amiSnapshots' | 'ebsSnapshots' | 'ebsVolumes' | 's3Buckets' | 's3WithLifecycle' | 'totalResources' | 'resourceRegionsFound' | 'regionsCollected' | 'accountDistribution' | 'regionDistribution' | 'recentResources' | 'resourceCounts_AMI' | 'resourceCounts_AutoScalingGroup' | 'resourceCounts_DirectConnectConnection' | 'resourceCounts_DirectConnectVirtualInterface' | 'resourceCounts_EBSSnapshot' | 'resourceCounts_EBSVolume' | 'resourceCounts_EC2Instance' | 'resourceCounts_ElasticIP' | 'resourceCounts_InternetGateway' | 'resourceCounts_LoadBalancer' | 'resourceCounts_NetworkACL' | 'resourceCounts_RDSClusterSnapshot' | 'resourceCounts_RDSInstance' | 'resourceCounts_RouteTable' | 'resourceCounts_S3Bucket' | 'resourceCounts_SecurityGroup' | 'resourceCounts_Subnet' | 'resourceCounts_TransitGateway' | 'resourceCounts_TransitGatewayAttachment' | 'resourceCounts_VPC' | 'resourceCounts_VPCEndpoint' | 'resourceCounts_VPNConnection'>;
+
 
 export type AWSResource =
   | AMI

@@ -7,6 +7,7 @@ import { Observable, from, of, BehaviorSubject } from 'rxjs';
 import { map, catchError, tap, shareReplay } from 'rxjs/operators';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../../amplify/data/resource';
+import type { AWSResourceModel, AWSMetricModel } from '../../models/resource.model';
 
 const client = generateClient<Schema>();
 
@@ -22,12 +23,12 @@ export class ResourceService {
   // Public API
   // =====================================================
 
-  getAllResources(): Observable<any[]> {
+  getAllResources(): Observable<AWSResourceModel[]> {
     this.resourcesLoading.next(true);
 
     if (this.resourcesCache.has('all')) {
       this.resourcesLoading.next(false);
-      return of(this.resourcesCache.get('all') || []);
+      return of(this.resourcesCache.get('all') as AWSResourceModel[] || []);
     }
 
     return from(this.loadAllResourcesWithPagination()).pipe(
@@ -44,7 +45,7 @@ export class ResourceService {
     );
   }
 
-  getResourcesByType(resourceType: string): Observable<any[]> {
+  getResourcesByType(resourceType: string): Observable<AWSResourceModel[]> {
     console.log(`[ResourceService] load by type: ${resourceType}`);
     if (resourceType.startsWith('METRIC')) {
       console.warn(`Attempted to load metric type ${resourceType} as resource. Returning empty.`);
@@ -55,7 +56,7 @@ export class ResourceService {
     const cacheKey = `type:${resourceType}`;
     if (this.resourcesCache.has(cacheKey)) {
       this.resourcesLoading.next(false);
-      return of(this.resourcesCache.get(cacheKey) || []);
+      return of(this.resourcesCache.get(cacheKey) as AWSResourceModel[] || []);
     }
 
     return from(this.loadResourcesByTypeWithPagination(resourceType)).pipe(
@@ -73,11 +74,11 @@ export class ResourceService {
     );
   }
 
-  getResourcesByRegion(region: string): Observable<any[]> {
+  getResourcesByRegion(region: string): Observable<AWSResourceModel[]> {
     this.resourcesLoading.next(true);
 
     if (this.resourcesCache.has('all')) {
-      const filtered = (this.resourcesCache.get('all') || []).filter((r) => r.region === region);
+      const filtered = (this.resourcesCache.get('all') as AWSResourceModel[] || []).filter((r) => r.region === region);
       this.resourcesLoading.next(false);
       return of(filtered);
     }
@@ -105,7 +106,7 @@ export class ResourceService {
           if (item.id?.startsWith('METRICS-')) return false;
           return true;
         });
-        return filtered.map((item: any) => this.processResourceData(item));
+        return filtered.map((item: any) => this.processResourceData(item)) as AWSResourceModel[];
       }),
       tap((resources) => {
         this.resourcesCache.set(`region:${region}`, resources);
@@ -119,11 +120,11 @@ export class ResourceService {
     );
   }
 
-  getResourcesByAccount(accountId: string): Observable<any[]> {
+  getResourcesByAccount(accountId: string): Observable<AWSResourceModel[]> {
     this.resourcesLoading.next(true);
 
     if (this.resourcesCache.has('all')) {
-      const filtered = (this.resourcesCache.get('all') || []).filter((r) => r.accountId === accountId);
+      const filtered = (this.resourcesCache.get('all') as AWSResourceModel[] || []).filter((r) => r.accountId === accountId);
       this.resourcesLoading.next(false);
       return of(filtered);
     }
@@ -141,13 +142,13 @@ export class ResourceService {
     );
   }
 
-  getMetricsOnly(): Observable<any[]> {
+  getMetricsOnly(): Observable<AWSMetricModel[]> {
     this.resourcesLoading.next(true);
 
     const cacheKey = 'metrics';
     if (this.resourcesCache.has(cacheKey)) {
       this.resourcesLoading.next(false);
-      return of(this.resourcesCache.get(cacheKey) || []);
+      return of(this.resourcesCache.get(cacheKey) as AWSMetricModel[] || []);
     }
 
     return from(this.loadMetricsWithPagination()).pipe(
@@ -174,8 +175,8 @@ export class ResourceService {
   // Private helpers
   // =====================================================
 
-  private async loadAllResourcesWithPagination(): Promise<any[]> {
-    let all: any[] = [];
+  private async loadAllResourcesWithPagination(): Promise<AWSResourceModel[]> {
+    let all: AWSResourceModel[] = [];
     let nextToken: string | null | undefined = null;
 
     do {
@@ -213,8 +214,8 @@ export class ResourceService {
     return all;
   }
 
-  private async loadResourcesByTypeWithPagination(resourceType: string): Promise<any[]> {
-    let all: any[] = [];
+  private async loadResourcesByTypeWithPagination(resourceType: string): Promise<AWSResourceModel[]> {
+    let all: AWSResourceModel[] = [];
     let nextToken: string | null | undefined = null;
 
     do {
@@ -245,8 +246,8 @@ export class ResourceService {
     return all;
   }
 
-  private async loadResourcesByAccountWithPagination(accountId: string): Promise<any[]> {
-    let all: any[] = [];
+  private async loadResourcesByAccountWithPagination(accountId: string): Promise<AWSResourceModel[]> {
+    let all: AWSResourceModel[] = [];
     let nextToken: string | null | undefined = null;
 
     do {
@@ -277,8 +278,8 @@ export class ResourceService {
     return all;
   }
 
-  private async loadMetricsWithPagination(): Promise<any[]> {
-    let all: any[] = [];
+  private async loadMetricsWithPagination(): Promise<AWSMetricModel[]> {
+    let all: AWSMetricModel[] = [];
     let nextToken: string | null | undefined = null;
 
     do {
@@ -318,35 +319,58 @@ export class ResourceService {
     return all;
   }
 
-  // Shape resource items as needed without changing unrelated fields
-  private processResourceData(resource: any): any {
-    const processed = { ...resource };
+    // Shape resource items as needed without changing unrelated fields
+  private processResourceData(resource: any): AWSResourceModel {
+    const processed: any = { ...resource };
 
-    // Example: fix null launchTime for EC2Instance using other timestamps
     if (processed.resourceType === 'EC2Instance') {
-      if (processed.launchTime === null) {
-        if (processed.lastUpdated) processed.launchTime = processed.lastUpdated;
+      // 1) Nullables → undefined (para casar com a sua interface)
+      const strFields = [
+        'instanceName', 'instanceType', 'instanceState', 'platformDetails',
+        'amiName', 'iamRole', 'patchGroup', 'healthStatus',
+        'systemStatus', 'instanceStatus', 'ebsStatus',
+        'ssmStatus', 'ssmPingStatus', 'ssmVersion',
+        'swoMonitor', 'swoPatch', 'swoBackup', 'swoRiskClass', 'instanceId'
+      ];
+      for (const f of strFields) {
+        if (processed[f] === null) processed[f] = undefined;
+      }
+
+      // 2) Campos obrigatórios da sua interface que podem vir vazios do schema
+      if (!processed.instanceType) processed.instanceType = 'unknown'; // evita o erro de "string" obrigatório
+
+      // 3) Arrays sempre definidos
+      if (!Array.isArray(processed.instancePrivateIps)) {
+        processed.instancePrivateIps = Array.isArray(processed.privateIpArray) ? processed.privateIpArray : [];
+      }
+      if (!Array.isArray(processed.instancePublicIps)) {
+        processed.instancePublicIps = Array.isArray(processed.publicIpArray) ? processed.publicIpArray : [];
+      }
+
+      // 4) Booleans coerentes
+      processed.cwAgentMemoryDetected = !!processed.cwAgentMemoryDetected;
+      processed.cwAgentDiskDetected   = !!processed.cwAgentDiskDetected;
+
+      // 5) launchTime fallback (usar updatedAt, não lastUpdated)
+      if (processed.launchTime == null) {
+        if (processed.updatedAt) processed.launchTime = processed.updatedAt;
         else if (processed.createdAt) processed.launchTime = processed.createdAt;
       }
     }
 
-    return processed;
+    return processed as AWSResourceModel;
   }
 
   /**
    * STRICT schema-aligned metric processing.
    * Only fields present in your Amplify schema / Angular interfaces are coerced.
    */
-  private processMetricData(metric: any): any {
+  private processMetricData(metric: any): AWSMetricModel {
     const processed: any = { ...metric };
 
     // --- Global Summary ---
     const globalSummaryNumeric = [
-      'collectionDuration',
-      'resourcesProcessed',
       'totalResources',
-      'resourceRegionsFound',
-      'regionsCollected',
     ];
 
     // --- Resource Counts ---
@@ -434,15 +458,12 @@ export class ResourceService {
       }
     });
 
-    // Fallback for totalResources
-    if (!processed.totalResources || processed.totalResources === 0) {
-      const rp = this.toNumber(processed.resourcesProcessed);
-      if (rp > 0) processed.totalResources = rp;
-    }
+    // Fallback for totalResources: Always coerce to number, fallback to 0 if missing
+    processed.totalResources = this.toNumber(processed.totalResources);
 
-    // Normalize lastUpdated for UI badges
-    if (!processed.lastUpdated) {
-      processed.lastUpdated = processed.updatedAt || processed.metricDate || processed.createdAt || null;
+    // Normalize updatedAt for UI badges
+    if (!processed.updatedAt) {
+      processed.updatedAt = processed.metricDate || processed.createdAt || null;
     }
 
     // Parse JSON-like strings if necessary
@@ -453,7 +474,7 @@ export class ResourceService {
       }
     });
 
-    return processed;
+    return processed as AWSMetricModel;
   }
 
   // DynamoDB AttributeValue → number coercion

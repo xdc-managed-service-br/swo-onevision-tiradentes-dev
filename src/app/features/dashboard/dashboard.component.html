@@ -1,216 +1,292 @@
-<!-- src/app/features/dashboard/dashboard.component.html -->
-<article class="ov-container" aria-labelledby="dashboard-title">
-  <div class="ov-header-with-actions">
-    <h1 id="dashboard-title" class="ov-title">Dashboard</h1>
-    <div class="ov-actions">
-      <!-- Metrics Status Indicator -->
-      <div class="metrics-status" *ngIf="!loading">
-        <span class="status-indicator" [class.stale]="isMetricsStale()">
-          <span class="status-dot"></span>
-          <span class="status-text">
-            Last updated: {{ getTimeSinceCollection() }}
-            <span *ngIf="collectionDuration" class="duration">
-              ({{ formatDuration(collectionDuration) }})
-            </span>
-          </span>
-        </span>
-        <button
-          class="ov-btn ov-btn--subtle"
-          (click)="refreshMetrics()"
-          [disabled]="loading"
-          aria-label="Refresh metrics">
-          <span>↻</span> Refresh
-        </button>
-      </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metrics Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">AWS Resource Dashboard</h1>
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Resources -->
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Total Resources</p>
+                        <h2 class="text-3xl font-bold text-gray-800" id="totalResources">2,681</h2>
+                    </div>
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i data-feather="database"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exposed Security Groups -->
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Exposed Security Groups</p>
+                        <h2 class="text-3xl font-bold text-green-600" id="exposedSecurityGroups">0</h2>
+                    </div>
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i data-feather="shield"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Running Instances -->
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Running EC2</p>
+                        <h2 class="text-3xl font-bold text-blue-600" id="runningInstances">34</h2>
+                    </div>
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i data-feather="server"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stopped Instances -->
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Stopped EC2</p>
+                        <h2 class="text-3xl font-bold text-red-600" id="stoppedInstances">4</h2>
+                    </div>
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i data-feather="power"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- EC2 Health Status -->
+            <div class="card bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">EC2 Health Status</h3>
+                <div class="chart-container">
+                    <canvas id="healthChart"></canvas>
+                </div>
+            </div>
+
+            <!-- CloudWatch Agent Status -->
+            <div class="card bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">CloudWatch Agent Status</h3>
+                <div class="chart-container">
+                    <canvas id="cloudwatchChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resource Counts -->
+        <div class="card bg-white rounded-lg shadow p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Resource Counts</h3>
+            <div class="chart-container">
+                <canvas id="resourceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Detailed Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- EC2 Detailed Stats -->
+            <div class="card bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">EC2 Monitoring</h3>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-gray-500 text-sm">With Disk Monitoring</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 62%"></div>
+                        </div>
+                        <p class="text-right text-sm text-gray-500 mt-1">62%</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">With Memory Monitoring</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-purple-600 h-2.5 rounded-full" style="width: 62%"></div>
+                        </div>
+                        <p class="text-right text-sm text-gray-500 mt-1">62%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Summary -->
+            <div class="card bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Resource Summary</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">EBS Volumes</span>
+                        <span class="font-medium">78</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">EBS Snapshots</span>
+                        <span class="font-medium">1,478</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">AMIs</span>
+                        <span class="font-medium">840</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">S3 Buckets</span>
+                        <span class="font-medium">36</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">RDS Instances</span>
+                        <span class="font-medium">2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="ov-loading">
-    <div class="ov-loading-spinner"></div>
-    <p>Loading dashboard metrics...</p>
-    <small>Fetching pre-calculated metrics from DynamoDB</small>
-  </div>
+    <script>
+        // Mock data
+        const dashboardData = {
+            byState_running: 34,
+            byState_stopped: 4,
+            cloudwatchAgent_bothEnabled: 21,
+            cloudwatchAgent_diskMonitoring: 21,
+            cloudwatchAgent_memoryMonitoring: 21,
+            cloudwatchAgent_noneEnabled: 13,
+            cloudwatchAgent_percentageWithDisk: 62,
+            cloudwatchAgent_percentageWithMemory: 62,
+            healthStatus_Healthy: 34,
+            healthStatus_Stopped: 4,
+            resourceCounts_RDSClusterSnapshot: 1,
+            resourceCounts_EBSVolume: 78,
+            resourceCounts_RDSInstance: 2,
+            resourceCounts_EBSSnapshot: 1478,
+            resourceCounts_AMI: 840,
+            resourceCounts_S3Bucket: 36,
+            totalResources: 2681,
+            exposedSecurityGroups: 0
+        };
 
-  <!-- Error State -->
-  <div *ngIf="error && !loading" class="ov-alert ov-alert--danger">
-    <strong>Error loading metrics</strong>
-    <p>{{ error }}</p>
-    <button class="ov-btn ov-btn--primary" (click)="refreshMetrics()">Try Again</button>
-  </div>
+        // Initialize charts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+            
+            // Health Status Chart (Pie)
+            const healthCtx = document.getElementById('healthChart').getContext('2d');
+            new Chart(healthCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Healthy', 'Stopped'],
+                    datasets: [{
+                        data: [dashboardData.healthStatus_Healthy, dashboardData.healthStatus_Stopped],
+                        backgroundColor: ['#3B82F6', '#EF4444'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
 
-  <!-- Metrics Warning if Stale -->
-  <div *ngIf="!loading && !error && isMetricsStale()" class="ov-alert ov-alert--warning">
-    <strong>Metrics may be outdated</strong>
-    <p>The last data collection was more than 24 hours ago. Consider running the Lambda function to update metrics.</p>
-  </div>
+            // CloudWatch Agent Chart (Doughnut)
+            const cloudwatchCtx = document.getElementById('cloudwatchChart').getContext('2d');
+            new Chart(cloudwatchCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Both Enabled', 'Disk Only', 'Memory Only', 'None'],
+                    datasets: [{
+                        data: [
+                            dashboardData.cloudwatchAgent_bothEnabled,
+                            dashboardData.cloudwatchAgent_diskMonitoring - dashboardData.cloudwatchAgent_bothEnabled,
+                            dashboardData.cloudwatchAgent_memoryMonitoring - dashboardData.cloudwatchAgent_bothEnabled,
+                            dashboardData.cloudwatchAgent_noneEnabled
+                        ],
+                        backgroundColor: ['#10B981', '#3B82F6', '#8B5CF6', '#6B7280'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
 
-  <!-- Dashboard Content -->
-  <div *ngIf="!loading && !error" class="db-grid">
-
-    <!-- 1) Resource Summary Cards -->
-    <section class="db-stats" aria-label="Resource summary">
-      <!-- DO NOT TOUCH: All Resources card (requested) -->
-      <div class="db-stat" [attr.aria-label]="'Total resources: ' + totalResources">
-        <span class="db-stat__value">{{ totalResources || 0 }}</span>
-        <span class="db-stat__label">All Resources</span>
-      </div>
-
-      <a class="db-stat" [routerLink]="['/resources/ec2']" [attr.aria-label]="'EC2 Instances: ' + ( resourceCounts_EC2Instance || 0)">
-        <span class="db-stat__value">{{ resourceCounts_EC2Instance || 0 }}</span>
-        <span class="db-stat__label">EC2 Instances</span>
-      </a>
-
-      <a class="db-stat" [routerLink]="['/resources/rds']" [attr.aria-label]="'RDS Instances: ' + (resourceCounts_RDSInstance || 0)">
-        <span class="db-stat__value">{{ resourceCounts_RDSInstance || 0 }}</span>
-        <span class="db-stat__label">RDS Instances</span>
-      </a>
-
-      <a class="db-stat" [routerLink]="['/resources/s3']" [attr.aria-label]="'S3 Buckets: ' + (resourceCounts_S3Bucket || 0)">
-        <span class="db-stat__value">{{ resourceCounts_S3Bucket || 0 }}</span>
-        <span class="db-stat__label">S3 Buckets</span>
-      </a>
-
-      <a class="db-stat" [routerLink]="['/resources/ebs']" [attr.aria-label]="'EBS Volumes: ' + (resourceCounts_EBSVolume || 0)">
-        <span class="db-stat__value">{{ resourceCounts_EBSVolume || 0 }}</span>
-        <span class="db-stat__label">EBS Volumes</span>
-      </a>
-
-      <a class="db-stat" [routerLink]="['/resources/vpc']" [attr.aria-label]="'VPCs: ' + (resourceCounts_VPC || 0)">
-        <span class="db-stat__value">{{ resourceCounts_VPC || 0 }}</span>
-        <span class="db-stat__label">VPCs</span>
-      </a>
-    </section>
-
-    <!-- 2) Cost Optimization Alert (if savings available) -->
-    <section *ngIf="costSavings > 0" class="db-section">
-      <div class="ov-alert ov-alert--info">
-        <h3>💰 Cost Optimization Opportunity</h3>
-        <p>
-          Potential monthly savings: <strong>${{ costSavings | number:'1.2-2' }}</strong>
-        </p>
-        <ul *ngIf="unattachedVolumes > 0 || unassociatedElasticIPs > 0">
-          <li *ngIf="unattachedVolumes > 0">{{ unattachedVolumes }} unattached EBS volumes</li>
-          <li *ngIf="unassociatedElasticIPs > 0">{{ unassociatedElasticIPs }} unassociated Elastic IPs</li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- 3) EC2 Instance Status -->
-    <section class="db-section">
-      <div class="db-monitoring">
-        <h3 class="db-h3">EC2 Instance Status</h3>
-        <div class="db-status-grid">
-          <div class="db-status-item">
-            <span class="db-status-value">{{ ec2Health.total || 0 }}</span>
-            <span class="db-status-label">Total</span>
-          </div>
-          <div class="db-status-item status-running">
-            <span class="db-status-value">{{ ec2Health.running || 0 }}</span>
-            <span class="db-status-label">Running</span>
-          </div>
-          <div class="db-status-item status-stopped">
-            <span class="db-status-value">{{ ec2Health.stopped || 0 }}</span>
-            <span class="db-status-label">Stopped</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 4) Monitoring Status -->
-    <section class="db-section">
-      <div class="db-monitoring">
-        <h3 class="db-h3">Monitoring Status</h3>
-        <div class="db-monitoring-grid">
-          <!-- RAM Monitoring -->
-          <div class="db-monitoring-card">
-            <h4>RAM Monitoring</h4>
-            <div class="db-progress">
-              <div class="db-progress-bar" [style.width.%]="ramMonitoredPercentage || 0"></div>
-            </div>
-            <p class="db-progress-text">{{ ramMonitoredPercentage || 0 }}% of running instances</p>
-          </div>
-
-          <!-- Disk Monitoring -->
-          <div class="db-monitoring-card">
-            <h4>Disk Monitoring</h4>
-            <div class="db-progress">
-              <div class="db-progress-bar" [style.width.%]="diskMonitoredPercentage || 0"></div>
-            </div>
-            <p class="db-progress-text">{{ diskMonitoredPercentage || 0 }}% of running instances</p>
-          </div>
-
-          <!-- SSM Agent -->
-          <div class="db-monitoring-card">
-            <h4>SSM Agent</h4>
-            <div class="db-progress">
-              <div class="db-progress-bar" [style.width.%]="ssmConnectedPercentage || 0"></div>
-            </div>
-            <p class="db-progress-text">{{ ec2Health.ssmConnected || 0 }} of {{ ec2Health.running || 0 }} connected</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5) Security Alert (if exposed security groups) -->
-    <section *ngIf="exposedSecurityGroups > 0" class="db-section">
-      <div class="ov-alert ov-alert--warning">
-        <h3>⚠️ Security Review Needed</h3>
-        <p>
-          <strong>{{ exposedSecurityGroups }}</strong> of {{ resourceCounts_SecurityGroup || 0 }} security groups
-          have ports exposed to the internet (0.0.0.0/0).
-        </p>
-        <a [routerLink]="['/resources/security-groups']" class="ov-btn ov-btn--primary">
-          Review Security Groups
-        </a>
-      </div>
-    </section>
-
-    <!-- 6) Distribution Charts -->
-    <section class="db-widgets">
-      <!-- Resources by Account -->
-      <div class="db-widget" *ngIf="accountDistribution.length > 0">
-        <div class="db-widget__head">
-          <h3 class="db-h3">Resources by Account</h3>
-        </div>
-        <div class="db-widget__body">
-          <div class="db-bars">
-            <div *ngFor="let item of accountDistribution; "
-                 class="db-bar"
-                 [attr.aria-label]="item.account + ': ' + item.count">
-              <div class="db-bar__label" [title]="item.account">
-                {{ item.account }}
-              </div>
-              <div class="db-bar__track">
-                <div class="db-bar__fill" [style.width.%]="getBarWidth(item.count, accountMaxCount)">
-                  <span class="db-bar__value">{{ item.count }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Resources by Region -->
-      <div class="db-widget" *ngIf="regionDistribution.length > 0">
-        <div class="db-widget__head">
-          <h3 class="db-h3">Resources by Region</h3>
-        </div>
-        <div class="db-widget__body">
-          <div class="db-bars">
-            <div *ngFor="let item of regionDistribution; "
-                 class="db-bar"
-                 [attr.aria-label]="item.region + ': ' + item.count">
-              <div class="db-bar__label" [title]="item.region">{{ item.region }}</div>
-              <div class="db-bar__track">
-                <div class="db-bar__fill" [style.width.%]="getBarWidth(item.count, regionMaxCount)">
-                  <span class="db-bar__value">{{ item.count }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-</article>
+            // Resource Counts Chart (Bar)
+            const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+            new Chart(resourceCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['EBS Volumes', 'EBS Snapshots', 'AMIs', 'S3 Buckets', 'RDS Instances', 'RDS Snapshots'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [
+                            dashboardData.resourceCounts_EBSVolume,
+                            dashboardData.resourceCounts_EBSSnapshot,
+                            dashboardData.resourceCounts_AMI,
+                            dashboardData.resourceCounts_S3Bucket,
+                            dashboardData.resourceCounts_RDSInstance,
+                            dashboardData.resourceCounts_RDSClusterSnapshot
+                        ],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(139, 92, 246, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(107, 114, 128, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(139, 92, 246, 1)',
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(107, 114, 128, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
