@@ -1,138 +1,125 @@
 // src/app/features/dashboard/dashboard.component.ts
+// Version: schema-key counts as top-level fields (no nested resourceCounts object)
+
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { Subject, forkJoin } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { ResourceHealthComponent } from './resource-health/resource-health.component';
-import { SharedModule } from '../../shared/shared.module';
-import { InstanceStatusWidgetComponent } from './instance-status-widget/instance-status-widget.component';
-import { MonitoringWidgetComponent } from './monitoring-widget/monitoring-widget.component';
-import { MetricsService, DashboardMetrics } from '../../core/services/metrics.service';
+import { Subject, of } from 'rxjs';
+import { takeUntil, finalize, catchError } from 'rxjs/operators';
+import { ResourceService } from '../../core/services/resource.service';
 import { ErrorService } from '../../core/services/error.service';
 
-// Interfaces
-interface ResourceCounts {
-  total: number;
-  ec2: number;
-  rds: number;
-  s3: number;
-  ebs: number;
-  ebsSnapshots: number;
-  amiSnapshots: number;
-}
-
-interface MonitoringStatus {
-  ramMonitoredPercentage: number;
-  diskMonitoredPercentage: number;
-}
-
-interface InstanceStatus {
-  total: number;
-  running: number;
-  stopped: number;
-  pending: number;
-  terminated: number;
-}
-
-interface SSMStatus {
-  connectedPercentage: number;
-  connected: number;
-  total: number;
-}
-
-interface DistributionItem {
-  account?: string;
-  accountId?: string;
-  accountName?: string;
-  region?: string;
-  count: number;
-}
-
-interface RecentResource {
-  resourceType: string;
-  region: string;
-  lastUpdated: string;
-  identifier: string;
-}
+import {
+  MetricGlobalSummary,
+  MetricEC2Health,
+  MetricCostOptimization,
+  MetricSecurity,
+  MetricRDS,
+  MetricStorage,
+  AWSMetric
+} from '../../models/resource.model';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    ResourceHealthComponent,
-    InstanceStatusWidgetComponent,
-    MonitoringWidgetComponent,
-    SharedModule,
-  ],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['../../shared/styles/onevision-base.css'],
+  styleUrls: ['./dashboard.component.css', '../../shared/styles/onevision-base.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  // Estado de carregamento
+  // Loading state
   loading = true;
-  metricsStale = false;
-  lastCollectionTime: string | null = null;
-  collectionDuration: number | null = null;
-  
-  // Subject para cleanup das subscriptions
-  private destroy$ = new Subject<void>();
+  error: string | null = null;
 
-  // Dados do dashboard
-  resourceCounts: ResourceCounts = {
+  // Global summary
+  totalResources = 0;
+  resourcesProcessed = 0;
+  lastUpdated = '';
+  collectionDuration = 0;
+
+  // === Resource counts — flat keys to match the interface ===
+  resourceCounts_AMI = 0;
+  resourceCounts_AutoScalingGroup = 0;
+  resourceCounts_DirectConnectConnection = 0;
+  resourceCounts_DirectConnectVirtualInterface = 0;
+  resourceCounts_EBSSnapshot = 0;
+  resourceCounts_EBSVolume = 0;
+  resourceCounts_EC2Instance = 0;
+  resourceCounts_ElasticIP = 0;
+  resourceCounts_InternetGateway = 0;
+  resourceCounts_LoadBalancer = 0;
+  resourceCounts_NetworkACL = 0;
+  resourceCounts_RDSClusterSnapshot = 0;
+  resourceCounts_RDSInstance = 0;
+  resourceCounts_RouteTable = 0;
+  resourceCounts_S3Bucket = 0;
+  resourceCounts_SecurityGroup = 0;
+  resourceCounts_Subnet = 0;
+  resourceCounts_TransitGateway = 0;
+  resourceCounts_TransitGatewayAttachment = 0;
+  resourceCounts_VPC = 0;
+  resourceCounts_VPCEndpoint = 0;
+  resourceCounts_VPNConnection = 0;
+
+  // EC2 Health metrics
+  ec2Health = {
     total: 0,
-    ec2: 0,
-    rds: 0,
-    s3: 0,
-    ebs: 0,
-    ebsSnapshots: 0,
-    amiSnapshots: 0,
+    running: 0,
+    stopped: 0,
+    healthy: 0,
+    memoryMonitoring: 0,
+    diskMonitoring: 0,
+    bothMonitoring: 0,
+    noneMonitoring: 0,
+    percentageWithMemory: 0,
+    percentageWithDisk: 0,
+    ssmConnected: 0,
+    ssmNotConnected: 0,
+    percentageSSMConnected: 0
   };
 
-  monitoringStatus: MonitoringStatus = { 
-    ramMonitoredPercentage: 0,
-    diskMonitoredPercentage: 0 
-  };
-
-  instanceStatus: InstanceStatus = { 
-    total: 0, 
-    running: 0, 
-    stopped: 0, 
-    pending: 0, 
-    terminated: 0 
-  };
-
-  ssmStatus: SSMStatus = { 
-    connectedPercentage: 0,
-    connected: 0,
-    total: 0
-  };
-
-  accountDistribution: DistributionItem[] = [];
-  regionDistribution: DistributionItem[] = [];
-  recentResources: RecentResource[] = [];
-  accountMaxCount = 1;
-  regionMaxCount = 1;
-
-  // Cost optimization insights
+  // Cost optimization
   costSavings = 0;
   unattachedVolumes = 0;
-  unassociatedEIPs = 0;
+  unassociatedElasticIPs = 0;
 
-  // Security insights
+  // Security
   exposedSecurityGroups = 0;
-  totalSecurityGroups = 0;
+  percentageExposed = 0;
+
+  // RDS metrics
+  rdsMetrics = {
+    total: 0,
+    available: 0,
+    multiAZ: 0,
+    percentageMultiAZ: 0,
+    performanceInsights: 0,
+    percentageWithPerfInsights: 0
+  };
+
+  // Storage metrics
+  storageMetrics = {
+    amiSnapshots: 0,
+    ebsSnapshots: 0,
+    ebsVolumes: 0,
+    s3Buckets: 0,
+    s3WithLifecycle: 0
+  };
+
+  // Distributions & recent
+  accountDistribution: { account: string; accountName?: string; count: number }[] = [];
+  regionDistribution: { region: string; count: number }[] = [];
+  recentResources: any[] = [];
+
+  private destroy$ = new Subject<void>();
 
   constructor(
-    private metricsService: MetricsService,
+    private resourceService: ResourceService,
     private errorService: ErrorService
   ) {}
 
   ngOnInit(): void {
-    console.log('Dashboard - Iniciando carregamento das métricas otimizadas...');
-    this.loadDashboardMetrics();
+    this.loadMetrics();
   }
 
   ngOnDestroy(): void {
@@ -140,282 +127,214 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Load pre-calculated metrics from DynamoDB
-   * This is much faster than loading all resources
-   */
-  private loadDashboardMetrics(): void {
+  private loadMetrics(): void {
     this.loading = true;
-    
-    this.metricsService.getDashboardMetrics()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (metrics: DashboardMetrics) => {
-          console.log('Dashboard - Métricas carregadas com sucesso');
-          
-          // Process global metrics
-          this.processGlobalMetrics(metrics);
-          
-          // Process EC2 specific metrics
-          if (metrics.ec2Health) {
-            this.processEC2Metrics(metrics.ec2Health);
-          }
-          
-          // Process cost optimization metrics
-          if (metrics.cost) {
-            this.processCostMetrics(metrics.cost);
-          }
-          
-          // Process security metrics
-          if (metrics.security) {
-            this.processSecurityMetrics(metrics.security);
-          }
-          
-          // Check if metrics are stale (older than 24 hours)
-          this.lastCollectionTime = metrics.lastUpdated;
-          this.collectionDuration = metrics.collectionDuration || null;
-          this.metricsStale = this.metricsService.areMetricsStale(metrics.lastUpdated, 24);
-          
-          this.loading = false;
-          console.log('Dashboard - Processamento completo. Tempo de carga < 1s');
-        },
-        error: (error) => {
-          console.error('Dashboard - Erro ao carregar métricas:', error);
-          this.errorService.handleError({
-            message: 'Failed to load dashboard metrics',
-            details: error
-          });
-          this.loading = false;
-        }
+    this.error = null;
+
+    this.resourceService
+      .getMetricsOnly()
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((err) => {
+          console.error('[Dashboard] Error loading metrics:', err);
+          this.error = 'Failed to load dashboard metrics. Please try again later.';
+          this.errorService.handleError({ message: 'Failed to load dashboard metrics', details: err });
+          return of([]);
+        }),
+        finalize(() => (this.loading = false))
+      )
+      .subscribe((metrics: AWSMetric[]) => {
+        // Debug: verify METRIC_SUMMARY presence and key counts
+        const summary = metrics.find(m => m.resourceType === 'METRIC_SUMMARY') as MetricGlobalSummary | undefined;
+        console.log('DBG summary counts:', {
+          present: !!summary,
+          ec2: summary?.resourceCounts_EC2Instance,
+          s3: summary?.resourceCounts_S3Bucket,
+          vpc: summary?.resourceCounts_VPC,
+          rds: summary?.resourceCounts_RDSInstance,
+          ebs: summary?.resourceCounts_EBSVolume,
+          sg: summary?.resourceCounts_SecurityGroup,
+          totalResources: summary?.totalResources,
+        });
+
+        this.processMetrics(metrics);
       });
   }
 
-  /**
-   * Process global metrics
-   */
-  private processGlobalMetrics(metrics: DashboardMetrics): void {
-    const global = metrics.global;
-    
-    // Resource counts
-    this.resourceCounts = {
-      total: global.totalResources,
-      ec2: global.resourceCounts['EC2Instance'] || 0,
-      rds: global.resourceCounts['RDSInstance'] || 0,
-      s3: global.resourceCounts['S3Bucket'] || 0,
-      ebs: global.resourceCounts['EBSVolume'] || 0,
-      ebsSnapshots: global.resourceCounts['EBSSnapshot'] || 0,
-      amiSnapshots: global.resourceCounts['AMI'] || 0
-    };
-    
-    // Account distribution
-    this.accountDistribution = global.accountDistribution.map(item => ({
-      account: item.accountName,
-      accountId: item.accountId,
-      accountName: item.accountName,
-      count: item.count
-    }));
-    this.accountMaxCount = Math.max(...this.accountDistribution.map(i => i.count), 1);
-    
-    // Region distribution
-    this.regionDistribution = global.regionDistribution.map(item => ({
-      region: item.region,
-      count: item.count
-    }));
-    this.regionMaxCount = Math.max(...this.regionDistribution.map(i => i.count), 1);
-    
-    // Recent resources
-    this.recentResources = global.recentResources || [];
-    
-    console.log('Dashboard - Métricas globais processadas:', {
-      total: this.resourceCounts.total,
-      accounts: this.accountDistribution.length,
-      regions: this.regionDistribution.length
-    });
-  }
+  private processMetrics(metrics: AWSMetric[]): void {
+    if (!Array.isArray(metrics)) return;
 
-  /**
-   * Process EC2 health metrics
-   */
-  private processEC2Metrics(ec2Metrics: any): void {
-    // Instance status
-    this.instanceStatus = {
-      total: ec2Metrics.total,
-      running: ec2Metrics.byState?.running || 0,
-      stopped: ec2Metrics.byState?.stopped || 0,
-      pending: ec2Metrics.byState?.pending || 0,
-      terminated: ec2Metrics.byState?.terminated || 0
-    };
-    
-    // CloudWatch monitoring
-    const cwAgent = ec2Metrics.cloudwatchAgent;
-    if (cwAgent) {
-      this.monitoringStatus = {
-        ramMonitoredPercentage: cwAgent.percentageWithMemory || 0,
-        diskMonitoredPercentage: cwAgent.percentageWithDisk || 0
-      };
+    for (const metric of metrics) {
+      switch (metric.resourceType) {
+        case 'METRIC_SUMMARY':
+          this.processGlobalSummary(metric as MetricGlobalSummary);
+          break;
+        case 'METRIC_EC2_HEALTH':
+          this.processEC2Health(metric as MetricEC2Health);
+          break;
+        case 'METRIC_COST':
+          this.processCostOptimization(metric as MetricCostOptimization);
+          break;
+        case 'METRIC_SECURITY':
+          this.processSecurityMetrics(metric as MetricSecurity);
+          break;
+        case 'METRIC_RDS':
+          this.processRDSMetrics(metric as MetricRDS);
+          break;
+        case 'METRIC_STORAGE':
+          this.processStorageMetrics(metric as MetricStorage);
+          break;
+      }
     }
-    
-    // SSM status
-    const ssmAgent = ec2Metrics.ssmAgent;
-    if (ssmAgent) {
-      this.ssmStatus = {
-        connectedPercentage: ssmAgent.percentageConnected || 0,
-        connected: ssmAgent.connected || 0,
-        total: this.instanceStatus.running
-      };
+  }
+
+  private processGlobalSummary(summary: MetricGlobalSummary): void {
+    // Main fields
+    this.totalResources = summary.totalResources ?? 0;
+    this.lastUpdated = summary.lastUpdated ?? summary.metricDate ?? new Date().toISOString();
+
+    // === Resource counts (map 1:1 to keys) ===
+    this.resourceCounts_AMI = summary.resourceCounts_AMI ?? 0;
+    this.resourceCounts_AutoScalingGroup = summary.resourceCounts_AutoScalingGroup ?? 0;
+    this.resourceCounts_DirectConnectConnection = summary.resourceCounts_DirectConnectConnection ?? 0;
+    this.resourceCounts_DirectConnectVirtualInterface = summary.resourceCounts_DirectConnectVirtualInterface ?? 0;
+    this.resourceCounts_EBSSnapshot = summary.resourceCounts_EBSSnapshot ?? 0;
+    this.resourceCounts_EBSVolume = summary.resourceCounts_EBSVolume ?? 0;
+    this.resourceCounts_EC2Instance = summary.resourceCounts_EC2Instance ?? 0;
+    this.resourceCounts_ElasticIP = summary.resourceCounts_ElasticIP ?? 0;
+    this.resourceCounts_InternetGateway = summary.resourceCounts_InternetGateway ?? 0;
+    this.resourceCounts_LoadBalancer = summary.resourceCounts_LoadBalancer ?? 0;
+    this.resourceCounts_NetworkACL = summary.resourceCounts_NetworkACL ?? 0;
+    this.resourceCounts_RDSClusterSnapshot = summary.resourceCounts_RDSClusterSnapshot ?? 0;
+    this.resourceCounts_RDSInstance = summary.resourceCounts_RDSInstance ?? 0;
+    this.resourceCounts_RouteTable = summary.resourceCounts_RouteTable ?? 0;
+    this.resourceCounts_S3Bucket = summary.resourceCounts_S3Bucket ?? 0;
+    this.resourceCounts_SecurityGroup = summary.resourceCounts_SecurityGroup ?? 0;
+    this.resourceCounts_Subnet = summary.resourceCounts_Subnet ?? 0;
+    this.resourceCounts_TransitGateway = summary.resourceCounts_TransitGateway ?? 0;
+    this.resourceCounts_TransitGatewayAttachment = summary.resourceCounts_TransitGatewayAttachment ?? 0;
+    this.resourceCounts_VPC = summary.resourceCounts_VPC ?? 0;
+    this.resourceCounts_VPCEndpoint = summary.resourceCounts_VPCEndpoint ?? 0;
+    this.resourceCounts_VPNConnection = summary.resourceCounts_VPNConnection ?? 0;
+
+    // Distributions / recent (already parsed in service; but guard if strings)
+    let acc: any = (summary as any).accountDistribution;
+    if (typeof acc === 'string') {
+      try { acc = JSON.parse(acc); } catch { acc = []; }
     }
-    
-    console.log('Dashboard - Métricas EC2 processadas:', {
-      total: this.instanceStatus.total,
-      running: this.instanceStatus.running,
-      cwMemory: this.monitoringStatus.ramMonitoredPercentage + '%',
-      ssmConnected: this.ssmStatus.connectedPercentage + '%'
-    });
-  }
+    this.accountDistribution = Array.isArray(acc)
+      ? acc.map((a: any) => ('accountId' in a ? { account: a.accountId, accountName: a.accountName, count: a.count } : a))
+      : [];
 
-  /**
-   * Process cost optimization metrics
-   */
-  private processCostMetrics(costMetrics: any): void {
-    this.unattachedVolumes = costMetrics.unattachedEBSVolumes || 0;
-    this.unassociatedEIPs = costMetrics.unassociatedElasticIPs || 0;
-    this.costSavings = costMetrics.potentialMonthlySavings || 0;
-    
-    console.log('Dashboard - Métricas de custo processadas:', {
-      savings: `$${this.costSavings}`,
-      unattachedVolumes: this.unattachedVolumes,
-      unassociatedEIPs: this.unassociatedEIPs
-    });
-  }
-
-  /**
-   * Process security metrics
-   */
-  private processSecurityMetrics(securityMetrics: any): void {
-    this.totalSecurityGroups = securityMetrics.securityGroups || 0;
-    this.exposedSecurityGroups = securityMetrics.exposedSecurityGroups || 0;
-    
-    console.log('Dashboard - Métricas de segurança processadas:', {
-      total: this.totalSecurityGroups,
-      exposed: this.exposedSecurityGroups
-    });
-  }
-
-  /**
-   * Force refresh metrics
-   */
-  refreshMetrics(): void {
-    console.log('Dashboard - Forçando atualização das métricas...');
-    this.loading = true;
-    
-    this.metricsService.refreshMetrics()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (metrics) => {
-          this.processGlobalMetrics(metrics);
-          if (metrics.ec2Health) this.processEC2Metrics(metrics.ec2Health);
-          if (metrics.cost) this.processCostMetrics(metrics.cost);
-          if (metrics.security) this.processSecurityMetrics(metrics.security);
-          
-          this.lastCollectionTime = metrics.lastUpdated;
-          this.metricsStale = false;
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Error refreshing metrics:', error);
-          this.loading = false;
-        }
-      });
-  }
-
-  // ========== MÉTODOS AUXILIARES PARA O TEMPLATE ==========
-
-  /**
-   * Calcula a largura percentual das barras de distribuição
-   */
-  getBarWidth(count: number, max?: number): number {
-    if (typeof max === 'number' && isFinite(max) && max > 0) {
-      return Math.round((count / max) * 100);
+    let reg: any = (summary as any).regionDistribution;
+    if (typeof reg === 'string') {
+      try { reg = JSON.parse(reg); } catch { reg = []; }
     }
-    
-    // Fallback to global max
-    const allCounts = [
-      ...this.accountDistribution.map(item => item.count),
-      ...this.regionDistribution.map(item => item.count)
-    ];
-    const globalMax = Math.max(...allCounts, 1);
-    return Math.round((count / globalMax) * 100);
+    this.regionDistribution = Array.isArray(reg) ? reg : [];
+
+    this.recentResources = Array.isArray((summary as any).recentResources)
+      ? (summary as any).recentResources
+      : [];
   }
 
-  /**
-   * Retorna um identificador amigável para cada tipo de recurso
-   */
-  getResourceIdentifier(resource: RecentResource): string {
-    return resource.identifier || 'Unnamed Resource';
+  private processEC2Health(health: MetricEC2Health): void {
+    this.ec2Health.total = health.total ?? 0;
+    this.ec2Health.running = health.byState_running ?? 0;
+    this.ec2Health.stopped = health.byState_stopped ?? 0;
+    this.ec2Health.healthy = health.healthStatus_Healthy ?? 0;
+
+    // CloudWatch Agent
+    this.ec2Health.memoryMonitoring = health.cloudwatchAgent_memoryMonitoring ?? 0;
+    this.ec2Health.diskMonitoring = health.cloudwatchAgent_diskMonitoring ?? 0;
+    this.ec2Health.bothMonitoring = health.cloudwatchAgent_bothEnabled ?? 0;
+    this.ec2Health.noneMonitoring = health.cloudwatchAgent_noneEnabled ?? 0;
+    this.ec2Health.percentageWithMemory = health.cloudwatchAgent_percentageWithMemory ?? 0;
+    this.ec2Health.percentageWithDisk = health.cloudwatchAgent_percentageWithDisk ?? 0;
+
+    // SSM Agent
+    this.ec2Health.ssmConnected = health.ssmAgent_connected ?? 0;
+    this.ec2Health.ssmNotConnected = health.ssmAgent_notConnected ?? 0;
+    this.ec2Health.percentageSSMConnected = health.ssmAgent_percentageConnected ?? 0;
   }
 
-  /**
-   * Format date for display
-   */
-  formatDate(dateString?: string): string {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleString();
+  private processCostOptimization(cost: MetricCostOptimization): void {
+    this.costSavings = cost.potentialMonthlySavings ?? 0;
+    this.unattachedVolumes = cost.unattachedEBSVolumes ?? 0;
+    this.unassociatedElasticIPs = cost.unassociatedElasticIPs ?? 0;
   }
 
-  /**
-   * Get time since last collection
-   */
+  private processSecurityMetrics(security: MetricSecurity): void {
+    this.exposedSecurityGroups = security.exposedSecurityGroups ?? 0;
+    this.percentageExposed = security.percentageExposed ?? 0;
+  }
+
+  private processRDSMetrics(rds: MetricRDS): void {
+    this.rdsMetrics.total = rds.total ?? 0;
+    this.rdsMetrics.available = rds.available ?? 0;
+    this.rdsMetrics.multiAZ = rds.multiAZ ?? 0;
+    this.rdsMetrics.percentageMultiAZ = rds.percentageMultiAZ ?? 0;
+    this.rdsMetrics.performanceInsights = rds.performanceInsights ?? 0;
+    this.rdsMetrics.percentageWithPerfInsights = rds.percentageWithPerfInsights ?? 0;
+  }
+
+  private processStorageMetrics(storage: MetricStorage): void {
+    this.storageMetrics.amiSnapshots = storage.amiSnapshots ?? 0;
+    this.storageMetrics.ebsSnapshots = storage.ebsSnapshots ?? 0;
+    this.storageMetrics.ebsVolumes = storage.ebsVolumes ?? 0;
+    this.storageMetrics.s3Buckets = storage.s3Buckets ?? 0;
+    this.storageMetrics.s3WithLifecycle = storage.s3WithLifecycle ?? 0;
+  }
+
+  // Template helpers
   getTimeSinceCollection(): string {
-    if (!this.lastCollectionTime) return 'Unknown';
-    
-    const lastUpdate = new Date(this.lastCollectionTime);
-    const now = new Date();
-    const hours = Math.floor((now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60));
-    
+    if (!this.lastUpdated) return 'Unknown';
+    const last = new Date(this.lastUpdated);
+    const diffMs = Date.now() - last.getTime();
+    const hours = Math.floor(diffMs / 36e5);
     if (hours < 1) return 'Less than 1 hour ago';
     if (hours === 1) return '1 hour ago';
     if (hours < 24) return `${hours} hours ago`;
-    
     const days = Math.floor(hours / 24);
-    if (days === 1) return '1 day ago';
-    return `${days} days ago`;
+    return days === 1 ? '1 day ago' : `${days} days ago`;
   }
 
-  /**
-   * Format collection duration
-   */
-  formatDuration(seconds?: number | null): string {
-    if (!seconds) return 'N/A';
-    
+  formatDuration(seconds: number): string {
+    if (seconds === null || seconds === undefined) return '';
     if (seconds < 60) return `${Math.round(seconds)}s`;
-    
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.round(seconds % 60);
-    
-    if (minutes < 60) {
-      return remainingSeconds > 0 
-        ? `${minutes}m ${remainingSeconds}s` 
-        : `${minutes}m`;
-    }
-    
+    if (minutes < 60) return remainingSeconds ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
     return `${hours}h ${remainingMinutes}m`;
   }
 
-  /**
-   * Track by function for ngFor optimization
-   */
-  trackByResourceId(index: number, resource: RecentResource): string {
-    return `${resource.resourceType}-${resource.identifier}-${index}`;
+  isMetricsStale(): boolean {
+    if (!this.lastUpdated) return true;
+    const diffHours = (Date.now() - new Date(this.lastUpdated).getTime()) / 36e5;
+    return diffHours > 24;
   }
-  
-  trackByAccount(index: number, item: DistributionItem): string {
-    return item.accountId || item.account || `account-${index}`;
+
+  refreshMetrics(): void {
+    // Bust cache to force fresh fetch from backend
+    try { this.resourceService.clearCache(); } catch {}
+    this.loadMetrics();
   }
-  
-  trackByRegion(index: number, item: DistributionItem): string {
-    return item.region || `region-${index}`;
+
+  getBarWidth(count: number, maxCount: number): number {
+    if (!maxCount) return 0;
+    return Math.round((count / maxCount) * 100);
   }
+
+  get accountMaxCount(): number {
+    return Math.max(...this.accountDistribution.map(a => a.count), 1);
+  }
+
+  get regionMaxCount(): number {
+    return Math.max(...this.regionDistribution.map(r => r.count), 1);
+  }
+
+  get ramMonitoredPercentage(): number { return this.ec2Health.percentageWithMemory; }
+  get diskMonitoredPercentage(): number { return this.ec2Health.percentageWithDisk; }
+  get ssmConnectedPercentage(): number { return this.ec2Health.percentageSSMConnected; }
 }

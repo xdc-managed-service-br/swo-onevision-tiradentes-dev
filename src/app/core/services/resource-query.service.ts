@@ -35,7 +35,6 @@ export class ResourceQueryService {
   queryResources(options: QueryOptions): Observable<QueryResult> {
     this.loadingSubject.next(true);
     
-    // Build filter object based on options
     const filter: any = {};
     
     if (options.resourceType) {
@@ -50,7 +49,6 @@ export class ResourceQueryService {
       filter.accountId = { eq: options.accountId };
     }
     
-    // Add custom filters if provided
     if (options.filters) {
       Object.entries(options.filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {

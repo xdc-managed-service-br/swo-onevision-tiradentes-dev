@@ -3,9 +3,10 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
-  // Home da área
+  // Home
   { path: '', loadComponent: () => import('./components/resources/resources.component').then(m => m.ResourcesComponent) },
-
+  // Dashboard
+  { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent) },
   // Compute
   { path: 'ec2',            loadComponent: () => import('./components/ec2-resources/ec2-resources.component').then(m => m.EC2ResourcesComponent) },
   { path: 'ami-snapshots',  loadComponent: () => import('./components/ami-snapshots/ami-snapshots.component').then(m => m.AMISnapshotsComponent) },

@@ -5,7 +5,7 @@
     <div class="ov-actions">
       <!-- Metrics Status Indicator -->
       <div class="metrics-status" *ngIf="!loading">
-        <span class="status-indicator" [class.stale]="metricsStale">
+        <span class="status-indicator" [class.stale]="isMetricsStale()">
           <span class="status-dot"></span>
           <span class="status-text">
             Last updated: {{ getTimeSinceCollection() }}
@@ -14,8 +14,8 @@
             </span>
           </span>
         </span>
-        <button 
-          class="ov-btn ov-btn--subtle" 
+        <button
+          class="ov-btn ov-btn--subtle"
           (click)="refreshMetrics()"
           [disabled]="loading"
           aria-label="Refresh metrics">
@@ -28,54 +28,57 @@
   <!-- Loading State -->
   <div *ngIf="loading" class="ov-loading">
     <div class="ov-loading-spinner"></div>
-    <p>Loading optimized metrics...</p>
-    <small>This should take less than a second</small>
+    <p>Loading dashboard metrics...</p>
+    <small>Fetching pre-calculated metrics from DynamoDB</small>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="ov-alert ov-alert--danger">
+    <strong>Error loading metrics</strong>
+    <p>{{ error }}</p>
+    <button class="ov-btn ov-btn--primary" (click)="refreshMetrics()">Try Again</button>
   </div>
 
   <!-- Metrics Warning if Stale -->
-  <div *ngIf="!loading && metricsStale" class="ov-alert ov-alert--warning">
+  <div *ngIf="!loading && !error && isMetricsStale()" class="ov-alert ov-alert--warning">
     <strong>Metrics may be outdated</strong>
     <p>The last data collection was more than 24 hours ago. Consider running the Lambda function to update metrics.</p>
   </div>
 
   <!-- Dashboard Content -->
-  <div *ngIf="!loading" class="db-grid">
+  <div *ngIf="!loading && !error" class="db-grid">
 
     <!-- 1) Resource Summary Cards -->
     <section class="db-stats" aria-label="Resource summary">
-      <a class="db-stat is-total" [routerLink]="['/resources']" [attr.aria-label]="'Total resources: ' + resourceCounts.total">
-        <span class="db-stat__value">{{ resourceCounts.total | number }}</span>
-        <span class="db-stat__label">Total Resources</span>
-      </a>
+      <!-- DO NOT TOUCH: All Resources card (requested) -->
+      <div class="db-stat" [attr.aria-label]="'Total resources: ' + totalResources">
+        <span class="db-stat__value">{{ totalResources || 0 }}</span>
+        <span class="db-stat__label">All Resources</span>
+      </div>
 
-      <a class="db-stat" [routerLink]="['/resources/ec2']" [attr.aria-label]="'EC2 Instances: ' + resourceCounts.ec2">
-        <span class="db-stat__value">{{ resourceCounts.ec2 | number }}</span>
+      <a class="db-stat" [routerLink]="['/resources/ec2']" [attr.aria-label]="'EC2 Instances: ' + ( resourceCounts_EC2Instance || 0)">
+        <span class="db-stat__value">{{ resourceCounts_EC2Instance || 0 }}</span>
         <span class="db-stat__label">EC2 Instances</span>
       </a>
 
-      <a class="db-stat" [routerLink]="['/resources/rds']" [attr.aria-label]="'RDS Instances: ' + resourceCounts.rds">
-        <span class="db-stat__value">{{ resourceCounts.rds | number }}</span>
+      <a class="db-stat" [routerLink]="['/resources/rds']" [attr.aria-label]="'RDS Instances: ' + (resourceCounts_RDSInstance || 0)">
+        <span class="db-stat__value">{{ resourceCounts_RDSInstance || 0 }}</span>
         <span class="db-stat__label">RDS Instances</span>
       </a>
 
-      <a class="db-stat" [routerLink]="['/resources/s3']" [attr.aria-label]="'S3 Buckets: ' + resourceCounts.s3">
-        <span class="db-stat__value">{{ resourceCounts.s3 | number }}</span>
+      <a class="db-stat" [routerLink]="['/resources/s3']" [attr.aria-label]="'S3 Buckets: ' + (resourceCounts_S3Bucket || 0)">
+        <span class="db-stat__value">{{ resourceCounts_S3Bucket || 0 }}</span>
         <span class="db-stat__label">S3 Buckets</span>
       </a>
 
-      <a class="db-stat" [routerLink]="['/resources/ebs']" [attr.aria-label]="'EBS Volumes: ' + resourceCounts.ebs">
-        <span class="db-stat__value">{{ resourceCounts.ebs | number }}</span>
+      <a class="db-stat" [routerLink]="['/resources/ebs']" [attr.aria-label]="'EBS Volumes: ' + (resourceCounts_EBSVolume || 0)">
+        <span class="db-stat__value">{{ resourceCounts_EBSVolume || 0 }}</span>
         <span class="db-stat__label">EBS Volumes</span>
       </a>
 
-      <a class="db-stat" [routerLink]="['/resources/ebs-snapshots']" [attr.aria-label]="'EBS Snapshots: ' + resourceCounts.ebsSnapshots">
-        <span class="db-stat__value">{{ resourceCounts.ebsSnapshots | number }}</span>
-        <span class="db-stat__label">EBS Snapshots</span>
-      </a>
-
-      <a class="db-stat" [routerLink]="['/resources/ami-snapshots']" [attr.aria-label]="'AMI Snapshots: ' + resourceCounts.amiSnapshots">
-        <span class="db-stat__value">{{ resourceCounts.amiSnapshots | number }}</span>
-        <span class="db-stat__label">AMI Snapshots</span>
+      <a class="db-stat" [routerLink]="['/resources/vpc']" [attr.aria-label]="'VPCs: ' + (resourceCounts_VPC || 0)">
+        <span class="db-stat__value">{{ resourceCounts_VPC || 0 }}</span>
+        <span class="db-stat__label">VPCs</span>
       </a>
     </section>
 
@@ -86,66 +89,65 @@
         <p>
           Potential monthly savings: <strong>${{ costSavings | number:'1.2-2' }}</strong>
         </p>
-        <ul>
-          <li *ngIf="unattachedVolumes > 0">
-            {{ unattachedVolumes }} unattached EBS volumes
-          </li>
-          <li *ngIf="unassociatedEIPs > 0">
-            {{ unassociatedEIPs }} unassociated Elastic IPs
-          </li>
+        <ul *ngIf="unattachedVolumes > 0 || unassociatedElasticIPs > 0">
+          <li *ngIf="unattachedVolumes > 0">{{ unattachedVolumes }} unattached EBS volumes</li>
+          <li *ngIf="unassociatedElasticIPs > 0">{{ unassociatedElasticIPs }} unassociated Elastic IPs</li>
         </ul>
       </div>
     </section>
 
-    <!-- 3) Resource Health (still uses component, but could be optimized too) -->
-    <section class="db-section">
-      <app-resource-health></app-resource-health>
-    </section>
-
-    <!-- 4) Monitoring / Status Section -->
+    <!-- 3) EC2 Instance Status -->
     <section class="db-section">
       <div class="db-monitoring">
-        <!-- CloudWatch Monitoring -->
-        <div class="db-monitoring__block">
-          <h3 class="db-h3">Resource Monitoring (CloudWatch)</h3>
-          <div class="db-monitoring__grid">
-            <app-monitoring-widget
-              title="RAM Monitoring"
-              [percentage]="monitoringStatus.ramMonitoredPercentage"
-              label="Active on Running Instances"
-              color="#4fd1c5">
-            </app-monitoring-widget>
-
-            <app-monitoring-widget
-              title="Disk Monitoring"
-              [percentage]="monitoringStatus.diskMonitoredPercentage"
-              label="Active on Running Instances"
-              color="#9f7aea">
-            </app-monitoring-widget>
+        <h3 class="db-h3">EC2 Instance Status</h3>
+        <div class="db-status-grid">
+          <div class="db-status-item">
+            <span class="db-status-value">{{ ec2Health.total || 0 }}</span>
+            <span class="db-status-label">Total</span>
+          </div>
+          <div class="db-status-item status-running">
+            <span class="db-status-value">{{ ec2Health.running || 0 }}</span>
+            <span class="db-status-label">Running</span>
+          </div>
+          <div class="db-status-item status-stopped">
+            <span class="db-status-value">{{ ec2Health.stopped || 0 }}</span>
+            <span class="db-status-label">Stopped</span>
           </div>
         </div>
+      </div>
+    </section>
 
-        <!-- Instance Status -->
-        <div class="db-monitoring__block">
-          <h3 class="db-h3">Instance Status</h3>
-          <app-instance-status-widget
-            [total]="instanceStatus.total"
-            [running]="instanceStatus.running"
-            [stopped]="instanceStatus.stopped"
-            [pending]="instanceStatus.pending"
-            [terminated]="instanceStatus.terminated">
-          </app-instance-status-widget>
-        </div>
+    <!-- 4) Monitoring Status -->
+    <section class="db-section">
+      <div class="db-monitoring">
+        <h3 class="db-h3">Monitoring Status</h3>
+        <div class="db-monitoring-grid">
+          <!-- RAM Monitoring -->
+          <div class="db-monitoring-card">
+            <h4>RAM Monitoring</h4>
+            <div class="db-progress">
+              <div class="db-progress-bar" [style.width.%]="ramMonitoredPercentage || 0"></div>
+            </div>
+            <p class="db-progress-text">{{ ramMonitoredPercentage || 0 }}% of running instances</p>
+          </div>
 
-        <!-- SSM Agent Status -->
-        <div class="db-monitoring__block">
-          <h3 class="db-h3">SSM Agent Status</h3>
-          <app-monitoring-widget
-            title="SSM Agent"
-            [percentage]="ssmStatus.connectedPercentage"
-            [label]="ssmStatus.connected + ' of ' + ssmStatus.total + ' running instances'"
-            color="#68d391">
-          </app-monitoring-widget>
+          <!-- Disk Monitoring -->
+          <div class="db-monitoring-card">
+            <h4>Disk Monitoring</h4>
+            <div class="db-progress">
+              <div class="db-progress-bar" [style.width.%]="diskMonitoredPercentage || 0"></div>
+            </div>
+            <p class="db-progress-text">{{ diskMonitoredPercentage || 0 }}% of running instances</p>
+          </div>
+
+          <!-- SSM Agent -->
+          <div class="db-monitoring-card">
+            <h4>SSM Agent</h4>
+            <div class="db-progress">
+              <div class="db-progress-bar" [style.width.%]="ssmConnectedPercentage || 0"></div>
+            </div>
+            <p class="db-progress-text">{{ ec2Health.ssmConnected || 0 }} of {{ ec2Health.running || 0 }} connected</p>
+          </div>
         </div>
       </div>
     </section>
@@ -155,7 +157,7 @@
       <div class="ov-alert ov-alert--warning">
         <h3>⚠️ Security Review Needed</h3>
         <p>
-          <strong>{{ exposedSecurityGroups }}</strong> of {{ totalSecurityGroups }} security groups 
+          <strong>{{ exposedSecurityGroups }}</strong> of {{ resourceCounts_SecurityGroup || 0 }} security groups
           have ports exposed to the internet (0.0.0.0/0).
         </p>
         <a [routerLink]="['/resources/security-groups']" class="ov-btn ov-btn--primary">
@@ -164,143 +166,51 @@
       </div>
     </section>
 
-    <!-- 6) Distribution Widgets -->
+    <!-- 6) Distribution Charts -->
     <section class="db-widgets">
-
       <!-- Resources by Account -->
-      <div class="db-widget">
+      <div class="db-widget" *ngIf="accountDistribution.length > 0">
         <div class="db-widget__head">
           <h3 class="db-h3">Resources by Account</h3>
         </div>
         <div class="db-widget__body">
-          <div *ngIf="accountDistribution.length > 0; else noAccountData" class="db-bars">
-            <div *ngFor="let item of accountDistribution; trackBy: trackByAccount" 
-                 class="db-bar" 
-                 [attr.aria-label]="item.accountName + ': ' + item.count">
-              <div class="db-bar__label" [title]="item.accountName">
-                {{ item.accountName || item.account }}
+          <div class="db-bars">
+            <div *ngFor="let item of accountDistribution; "
+                 class="db-bar"
+                 [attr.aria-label]="item.account + ': ' + item.count">
+              <div class="db-bar__label" [title]="item.account">
+                {{ item.account }}
               </div>
               <div class="db-bar__track">
                 <div class="db-bar__fill" [style.width.%]="getBarWidth(item.count, accountMaxCount)">
-                  <span class="db-bar__value">{{ item.count | number }}</span>
+                  <span class="db-bar__value">{{ item.count }}</span>
                 </div>
               </div>
             </div>
           </div>
-          <ng-template #noAccountData>
-            <div class="ov-empty">No account distribution data available</div>
-          </ng-template>
         </div>
       </div>
 
       <!-- Resources by Region -->
-      <div class="db-widget">
+      <div class="db-widget" *ngIf="regionDistribution.length > 0">
         <div class="db-widget__head">
           <h3 class="db-h3">Resources by Region</h3>
         </div>
         <div class="db-widget__body">
-          <div *ngIf="regionDistribution.length > 0; else noRegionData" class="db-bars">
-            <div *ngFor="let item of regionDistribution; trackBy: trackByRegion" 
-                 class="db-bar" 
+          <div class="db-bars">
+            <div *ngFor="let item of regionDistribution; "
+                 class="db-bar"
                  [attr.aria-label]="item.region + ': ' + item.count">
               <div class="db-bar__label" [title]="item.region">{{ item.region }}</div>
               <div class="db-bar__track">
                 <div class="db-bar__fill" [style.width.%]="getBarWidth(item.count, regionMaxCount)">
-                  <span class="db-bar__value">{{ item.count | number }}</span>
+                  <span class="db-bar__value">{{ item.count }}</span>
                 </div>
               </div>
             </div>
           </div>
-          <ng-template #noRegionData>
-            <div class="ov-empty">No region distribution data available</div>
-          </ng-template>
         </div>
       </div>
-
-      <!-- Recent Resources -->
-      <div class="db-widget">
-        <div class="db-widget__head">
-          <h3 class="db-h3">Recent Resources</h3>
-          <a class="ov-btn ov-btn--subtle" [routerLink]="['/resources']">View All</a>
-        </div>
-        <div class="db-widget__body">
-          <div *ngIf="recentResources.length > 0; else noRecentData">
-            <!-- Desktop: table -->
-            <section class="ov-tablewrap db-hide-mobile">
-              <table class="ov-table" role="table" aria-label="Recent resources">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Region</th>
-                    <th>Identifier</th>
-                    <th>Last Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let resource of recentResources; trackBy: trackByResourceId" 
-                      [routerLink]="['/resources']" 
-                      class="db-rowlink"
-                      [attr.aria-label]="'View ' + resource.resourceType + ' details'">
-                    <td>
-                      <span class="resource-type-badge">{{ resource.resourceType }}</span>
-                    </td>
-                    <td>{{ resource.region || 'global' }}</td>
-                    <td>
-                      <span class="resource-identifier" [title]="resource.identifier">
-                        {{ resource.identifier }}
-                      </span>
-                    </td>
-                    <td>
-                      <time [dateTime]="resource.lastUpdated">
-                        {{ resource.lastUpdated | date: 'short' }}
-                      </time>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </section>
-
-            <!-- Mobile: cards -->
-            <div class="ov-cards db-show-mobile">
-              <article class="ov-card" 
-                       *ngFor="let resource of recentResources; trackBy: trackByResourceId" 
-                       [routerLink]="['/resources']" 
-                       class="db-rowlink"
-                       [attr.aria-label]="'View ' + resource.resourceType + ' details'">
-                <header class="ov-card__head">
-                  <div>
-                    <div class="ov-card__title">{{ resource.resourceType }}</div>
-                    <div class="ov-card__sub">{{ resource.identifier }}</div>
-                  </div>
-                </header>
-                <div class="ov-card__grid">
-                  <div>
-                    <div class="ov-k">Region</div>
-                    <div class="ov-v">{{ resource.region || 'global' }}</div>
-                  </div>
-                  <div>
-                    <div class="ov-k">Last Updated</div>
-                    <div class="ov-v">
-                      <time [dateTime]="resource.lastUpdated">
-                        {{ resource.lastUpdated | date: 'short' }}
-                      </time>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            </div>
-          </div>
-
-          <ng-template #noRecentData>
-            <div class="ov-empty">
-              <div class="ov-empty__icon">📄</div>
-              <p class="ov-empty__text">No recent resources found</p>
-              <p class="ov-empty__sub">Resources will appear here after the next collection</p>
-            </div>
-          </ng-template>
-        </div>
-      </div>
-
     </section>
   </div>
 </article>

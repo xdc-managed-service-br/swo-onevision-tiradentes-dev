@@ -10,10 +10,6 @@ const client = generateClient<Schema>();
 })
 export class PatchRequestService {
 
-  /**
-   * Criar uma nova solicitação de patch.
-   * O requestedBy é preenchido automaticamente com o email do usuário logado.
-   */
   async createPatchRequest(instanceId: string, action: string, notes?: string) {
     const attributes = await fetchUserAttributes();
     const email = attributes.email ?? 'unknown@onevision.local';
@@ -29,10 +25,7 @@ export class PatchRequestService {
     });
   }
 
-  /**
-   * Atualizar o status de uma solicitação (ex: aprovado/executado/rejeitado).
-   * Apenas admins devem usar esse método.
-   */
+
   async updatePatchRequest(id: string, status: string, approvedBy?: string) {
     const attributes = await fetchUserAttributes();
     const approver = approvedBy ?? attributes.email ?? 'admin@onevision.local';
@@ -45,16 +38,10 @@ export class PatchRequestService {
     });
   }
 
-  /**
-   * Listar todas as solicitações de patch.
-   */
   async listPatchRequests() {
     return client.models.PatchRequest.list();
   }
 
-  /**
-   * Deletar uma solicitação de patch (apenas admins ou autor).
-   */
   async deletePatchRequest(id: string) {
     return client.models.PatchRequest.delete({ id });
   }

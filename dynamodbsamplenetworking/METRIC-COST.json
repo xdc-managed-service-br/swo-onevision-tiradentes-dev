@@ -9,16 +9,13 @@
     "S": "Cost Optimization"
   },
   "createdAt": {
-    "S": "2025-09-14T20:46:52.435Z"
+    "S": "2025-09-15T03:24:19.021Z"
   },
   "isMetric": {
     "BOOL": true
   },
   "metricDate": {
-    "S": "2025-09-14"
-  },
-  "metricType": {
-    "S": "COST_OPTIMIZATION"
+    "S": "2025-09-15"
   },
   "potentialMonthlySavings": {
     "N": "3.6"
@@ -27,7 +24,7 @@
     "S": "global"
   },
   "resourceType": {
-    "S": "METRIC_COST"
+    "S": "METRIC-COST"
   },
   "unassociatedElasticIPs": {
     "N": "1"
@@ -36,6 +33,6 @@
     "N": "0"
   },
   "updatedAt": {
-    "S": "2025-09-14T20:46:52.435Z"
+    "S": "2025-09-15T03:24:19.021Z"
   }
 }

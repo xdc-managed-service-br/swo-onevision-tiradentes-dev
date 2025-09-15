@@ -12,7 +12,7 @@
     "N": "840"
   },
   "createdAt": {
-    "S": "2025-09-14T21:16:29.093Z"
+    "S": "2025-09-15T03:24:19.021Z"
   },
   "ebsSnapshots": {
     "N": "1478"
@@ -24,16 +24,13 @@
     "BOOL": true
   },
   "metricDate": {
-    "S": "2025-09-14"
-  },
-  "metricType": {
-    "S": "STORAGE_METRICS"
+    "S": "2025-09-15"
   },
   "region": {
     "S": "global"
   },
   "resourceType": {
-    "S": "METRIC_STORAGE"
+    "S": "METRIC-STORAGE"
   },
   "s3Buckets": {
     "N": "36"
@@ -42,6 +39,6 @@
     "N": "18"
   },
   "updatedAt": {
-    "S": "2025-09-14T21:16:29.093Z"
+    "S": "2025-09-15T03:24:19.021Z"
   }
 }

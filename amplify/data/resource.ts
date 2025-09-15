@@ -21,7 +21,7 @@ const schema = a.schema({
     encrypted: a.boolean(), // EBS Volume and Snapshot
     instanceId: a.string(), // EC2 Instance and Elastic IP
     securityGroups: a.integer(), // Security Metric and Load Balancer
-    vpcId: a.string(), // VPC, Load Balancer and Network ACL
+    vpcId: a.string(), // VPC, Load Balancer, Security Group and Network ACL
     associationCount: a.integer(), // Network ACL and Route Table
     associatedSubnets: a.string().array(), // Network ACL and Route Table
     description: a.string(), // AMI and Security Group
@@ -150,7 +150,6 @@ const schema = a.schema({
     // ===== Metric Cost FIELDS =====
     isMetric: a.boolean(),
     metricDate: a.string(),
-    metricType: a.string(),
     potentialMonthlySavings: a.float(),
     unassociatedElasticIPs: a.integer(),
     unattachedEBSVolumes: a.integer(),
@@ -192,8 +191,6 @@ const schema = a.schema({
     s3WithLifecycle: a.integer(),
 
     // ===== Metric Global Summary FIELDS =====
-    collectionDuration: a.float(),
-    resourcesProcessed: a.integer(),
     totalResources: a.integer(),
     resourceRegionsFound: a.integer(),
     regionsCollected: a.integer(),
@@ -255,7 +252,7 @@ const schema = a.schema({
     bucketNameTag: a.string(),
     hasLifecycleRules: a.boolean(),
     objectCount: a.integer(),
-    storageByes: a.string(),
+    storageBytes: a.string(),
 
     // ===== Security Group FIELDS =====
     groupId: a.string(),

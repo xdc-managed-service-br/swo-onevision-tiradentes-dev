@@ -1,0 +1,113 @@
+{
+  "id": {
+    "S": "METRICS-GLOBAL-2025-09-15"
+  },
+  "accountDistribution": {
+    "S": "[{\"accountId\": \"767398083881\", \"accountName\": \"CustomAccount\", \"count\": 1370}, {\"accountId\": \"905418331872\", \"accountName\": \"CustomAccount\", \"count\": 1106}, {\"accountId\": \"058264393294\", \"accountName\": \"CustomAccount\", \"count\": 180}, {\"accountId\": \"533267337185\", \"accountName\": \"CustomAccount\", \"count\": 25}]"
+  },
+  "accountId": {
+    "S": "GLOBAL"
+  },
+  "accountName": {
+    "S": "Global Metrics"
+  },
+  "createdAt": {
+    "S": "2025-09-15T03:24:19.021Z"
+  },
+  "isMetric": {
+    "BOOL": true
+  },
+  "metricDate": {
+    "S": "2025-09-15"
+  },
+  "recentResources": {
+    "S": "[{\"resourceType\": \"DirectConnectVirtualInterface\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:40.022Z\", \"identifier\": \"905418331872-us-east-1-DirectConnectVirtualInterface-dxvif-fh6ecnf3\"}, {\"resourceType\": \"DirectConnectConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:39.447Z\", \"identifier\": \"905418331872-us-east-1-DirectConnectConnection-dxcon-fh5mqy42\"}, {\"resourceType\": \"VPNConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:35.874Z\", \"identifier\": \"905418331872-us-east-1-VPNConnection-vpn-0e5ab7950e87fb08c\"}, {\"resourceType\": \"VPNConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:35.873Z\", \"identifier\": \"905418331872-us-east-1-VPNConnection-vpn-0ec51f21a36a93a93\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.898Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-0f909b34ecfbfe24a\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.898Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-0a567bf486b888e2d\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.898Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-04fa0dd7114da2307\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.707Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-0de4a3fa7ca060bec\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.707Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-087424ba5978a0d2e\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.707Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-006c1f0572535a269\"}]"
+  },
+  "region": {
+    "S": "global"
+  },
+  "regionDistribution": {
+    "S": "[{\"region\": \"us-east-1\", \"count\": 2680}, {\"region\": \"sa-east-1\", \"count\": 1}]"
+  },
+  "regionsCollected": {
+    "N": "0"
+  },
+  "resourceCounts_AMI": {
+    "N": "840"
+  },
+  "resourceCounts_AutoScalingGroup": {
+    "N": "4"
+  },
+  "resourceCounts_DirectConnectConnection": {
+    "N": "1"
+  },
+  "resourceCounts_DirectConnectVirtualInterface": {
+    "N": "1"
+  },
+  "resourceCounts_EBSSnapshot": {
+    "N": "1478"
+  },
+  "resourceCounts_EBSVolume": {
+    "N": "78"
+  },
+  "resourceCounts_EC2Instance": {
+    "N": "38"
+  },
+  "resourceCounts_ElasticIP": {
+    "N": "2"
+  },
+  "resourceCounts_InternetGateway": {
+    "N": "1"
+  },
+  "resourceCounts_LoadBalancer": {
+    "N": "2"
+  },
+  "resourceCounts_NetworkACL": {
+    "N": "9"
+  },
+  "resourceCounts_RDSClusterSnapshot": {
+    "N": "1"
+  },
+  "resourceCounts_RDSInstance": {
+    "N": "2"
+  },
+  "resourceCounts_RouteTable": {
+    "N": "39"
+  },
+  "resourceCounts_S3Bucket": {
+    "N": "36"
+  },
+  "resourceCounts_SecurityGroup": {
+    "N": "60"
+  },
+  "resourceCounts_Subnet": {
+    "N": "32"
+  },
+  "resourceCounts_TransitGateway": {
+    "N": "4"
+  },
+  "resourceCounts_TransitGatewayAttachment": {
+    "N": "31"
+  },
+  "resourceCounts_VPC": {
+    "N": "8"
+  },
+  "resourceCounts_VPCEndpoint": {
+    "N": "12"
+  },
+  "resourceCounts_VPNConnection": {
+    "N": "2"
+  },
+  "resourceRegionsFound": {
+    "N": "2"
+  },
+  "resourceType": {
+    "S": "METRIC_SUMMARY"
+  },
+  "totalResources": {
+    "N": "2681"
+  },
+  "updatedAt": {
+    "S": "2025-09-15T03:24:19.021Z"
+  }
+}

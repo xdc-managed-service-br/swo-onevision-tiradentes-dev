@@ -12,7 +12,7 @@
     "N": "2"
   },
   "createdAt": {
-    "S": "2025-09-14T21:16:29.093Z"
+    "S": "2025-09-15T03:24:19.021Z"
   },
   "engines_aurora-mysql": {
     "N": "2"
@@ -21,10 +21,7 @@
     "BOOL": true
   },
   "metricDate": {
-    "S": "2025-09-14"
-  },
-  "metricType": {
-    "S": "RDS_METRICS"
+    "S": "2025-09-15"
   },
   "multiAZ": {
     "N": "0"
@@ -42,12 +39,12 @@
     "S": "global"
   },
   "resourceType": {
-    "S": "METRIC_RDS"
+    "S": "METRIC-RDS"
   },
   "total": {
     "N": "2"
   },
   "updatedAt": {
-    "S": "2025-09-14T21:16:29.093Z"
+    "S": "2025-09-15T03:24:19.021Z"
   }
 }

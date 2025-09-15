@@ -15,7 +15,7 @@ interface ColumnDefinition {
   transform?: (resource: any) => string;
 }
 
-type ColumnKey = keyof EC2Instance | 'privateIpArray' | 'publicIpArray';
+type ColumnKey = keyof EC2Instance | 'instancePrivateIps' | 'instancePublicIps' | 'autoStart' | 'autoShutdown' | 'saturday' | 'sunday';
 
 @Component({
   selector: 'app-ec2-resources',
@@ -70,8 +70,8 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
     { key: 'instanceState', label: 'State', sortable: true },
     { key: 'healthStatus', label: 'Health Status', sortable: true, transform: (r) => this.getHealthStatusText(r) },
     { key: 'cwAgentMemoryDetected', label: 'CW Monitoring', sortable: true, transform: (r) => r.cwAgentMemoryDetected ? 'Enabled' : 'Disabled' },
-    { key: 'privateIpArray', label: 'Private IPs', sortable: false, transform: (r) => r.privateIpArray?.join(', ') || 'N/A' },
-    { key: 'publicIpArray', label: 'Public IPs', sortable: false, transform: (r) => r.publicIpArray?.join(', ') || 'N/A' },
+    { key: 'instancePrivateIps', label: 'Private IPs', sortable: false, transform: (r) => r.instancePrivateIps?.join(', ') || 'N/A' },
+    { key: 'instancePublicIps', label: 'Public IPs', sortable: false, transform: (r) => r.instancePublicIps?.join(', ') || 'N/A' },
     { key: 'region', label: 'Region', sortable: true },
     { key: 'accountId', label: 'Account ID', sortable: true },
     { key: 'accountName', label: 'Account Name', sortable: true },
@@ -91,7 +91,6 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
     { key: 'autoShutdown', label: 'Auto Shutdown', sortable: true },
     { key: 'saturday', label: 'Saturday Schedule', sortable: true },
     { key: 'sunday', label: 'Sunday Schedule', sortable: true },
-    { key: 'lastUpdated', label: 'Last Updated', sortable: true, transform: (r) => this.formatDate(r.lastUpdated) }
   ];
 
   defaultColumns = [
@@ -379,8 +378,8 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
       key: col.key,
       label: col.label,
       transform: col.transform ?? ((r: EC2Instance) => {
-        if (col.key === 'privateIpArray') return r.privateIpArray?.join('; ') ?? '';
-        if (col.key === 'publicIpArray') return r.publicIpArray?.join('; ') ?? '';
+        if (col.key === 'instancePrivateIps') return r.instancePrivateIps?.join('; ') ?? '';
+        if (col.key === 'instancePublicIps') return r.instancePublicIps?.join('; ') ?? '';
         return (r as any)[col.key] ?? '';
       })
     }));
@@ -398,8 +397,8 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
       key: col.key,
       label: col.label,
       transform: col.transform ?? ((r: EC2Instance) => {
-        if (col.key === 'privateIpArray') return r.privateIpArray?.join('; ') ?? '';
-        if (col.key === 'publicIpArray') return r.publicIpArray?.join('; ') ?? '';
+        if (col.key === 'instancePrivateIps') return r.instancePrivateIps?.join('; ') ?? '';
+        if (col.key === 'instancePublicIps') return r.instancePublicIps?.join('; ') ?? '';
         return (r as any)[col.key] ?? '';
       })
     }));

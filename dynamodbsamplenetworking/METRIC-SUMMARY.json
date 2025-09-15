@@ -11,23 +11,17 @@
   "accountName": {
     "S": "Global Metrics"
   },
-  "collectionDuration": {
-    "N": "44.858"
-  },
   "createdAt": {
-    "S": "2025-09-14T21:34:43.777Z"
+    "S": "2025-09-15T03:24:19.021Z"
   },
   "isMetric": {
     "BOOL": true
   },
   "metricDate": {
-    "S": "2025-09-14"
-  },
-  "metricType": {
-    "S": "GLOBAL_SUMMARY"
+    "S": "2025-09-15"
   },
   "recentResources": {
-    "S": "[{\"resourceType\": \"DirectConnectVirtualInterface\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:11.559Z\", \"identifier\": \"905418331872-us-east-1-DirectConnectVirtualInterface-dxvif-fh6ecnf3\"}, {\"resourceType\": \"DirectConnectConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:11.031Z\", \"identifier\": \"905418331872-us-east-1-DirectConnectConnection-dxcon-fh5mqy42\"}, {\"resourceType\": \"VPNConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:07.593Z\", \"identifier\": \"905418331872-us-east-1-VPNConnection-vpn-0e5ab7950e87fb08c\"}, {\"resourceType\": \"VPNConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:07.592Z\", \"identifier\": \"905418331872-us-east-1-VPNConnection-vpn-0ec51f21a36a93a93\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.625Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-0f909b34ecfbfe24a\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.625Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-0a567bf486b888e2d\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.625Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-04fa0dd7114da2307\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.427Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-0de4a3fa7ca060bec\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.427Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-087424ba5978a0d2e\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-14T21:34:06.427Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-006c1f0572535a269\"}]"
+    "S": "[{\"resourceType\": \"DirectConnectVirtualInterface\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:40.022Z\", \"identifier\": \"905418331872-us-east-1-DirectConnectVirtualInterface-dxvif-fh6ecnf3\"}, {\"resourceType\": \"DirectConnectConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:39.447Z\", \"identifier\": \"905418331872-us-east-1-DirectConnectConnection-dxcon-fh5mqy42\"}, {\"resourceType\": \"VPNConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:35.874Z\", \"identifier\": \"905418331872-us-east-1-VPNConnection-vpn-0e5ab7950e87fb08c\"}, {\"resourceType\": \"VPNConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:35.873Z\", \"identifier\": \"905418331872-us-east-1-VPNConnection-vpn-0ec51f21a36a93a93\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.898Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-0f909b34ecfbfe24a\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.898Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-0a567bf486b888e2d\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.898Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-04fa0dd7114da2307\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.707Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-0de4a3fa7ca060bec\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.707Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-087424ba5978a0d2e\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.707Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-006c1f0572535a269\"}]"
   },
   "region": {
     "S": "global"
@@ -107,9 +101,6 @@
   "resourceRegionsFound": {
     "N": "2"
   },
-  "resourcesProcessed": {
-    "N": "2681"
-  },
   "resourceType": {
     "S": "METRIC_SUMMARY"
   },
@@ -117,6 +108,6 @@
     "N": "2681"
   },
   "updatedAt": {
-    "S": "2025-09-14T21:34:43.777Z"
+    "S": "2025-09-15T03:24:19.021Z"
   }
 }

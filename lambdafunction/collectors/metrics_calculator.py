@@ -76,12 +76,7 @@ class MetricsAccumulator:
         self.regions_collected.add(region)
         
     def add_resource(self, item: Dict[str, Any]):
-        """
-        Add a single resource to the accumulator.
-        
-        Args:
-            item: Resource dictionary from collectors
-        """
+
         resource_type = item.get('resourceType')
         if not resource_type:
             return
@@ -431,15 +426,12 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     # Global metrics item - current snapshot
     global_item_current = {
         'id': f'METRICS-GLOBAL-CURRENT',
-        'resourceType': 'METRIC_SUMMARY',
+        'resourceType': 'METRIC-GLOBAL-SUMMARY',
         'accountId': 'GLOBAL',
         'accountName': 'Global Metrics',
         'region': 'global',
-        'metricType': 'GLOBAL_SUMMARY',
         'metricDate': date_str,
         'isMetric': True,
-        'collectionDuration': processing_duration,
-        'resourcesProcessed': metrics['global']['totalResources'],
         'createdAt': iso_timestamp,
         'updatedAt': iso_timestamp
     }
@@ -468,11 +460,10 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     if metrics.get('ec2'):
         ec2_item_current = {
             'id': f'METRICS-EC2-CURRENT',
-            'resourceType': 'METRIC_EC2_HEALTH',
+            'resourceType': 'METRIC-EC2-HEALTH',
             'accountId': 'GLOBAL',
             'accountName': 'EC2 Health Metrics',
             'region': 'global',
-            'metricType': 'EC2_HEALTH',
             'metricDate': date_str,
             'isMetric': True,
             'createdAt': iso_timestamp,
@@ -492,11 +483,10 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     if metrics.get('rds'):
         rds_item_current = {
             'id': f'METRICS-RDS-CURRENT',
-            'resourceType': 'METRIC_RDS',
+            'resourceType': 'METRIC-RDS',
             'accountId': 'GLOBAL',
             'accountName': 'RDS Metrics',
             'region': 'global',
-            'metricType': 'RDS_METRICS',
             'metricDate': date_str,
             'isMetric': True,
             'createdAt': iso_timestamp,
@@ -509,11 +499,10 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     if metrics.get('storage'):
         storage_item_current = {
             'id': f'METRICS-STORAGE-CURRENT',
-            'resourceType': 'METRIC_STORAGE',
+            'resourceType': 'METRIC-STORAGE',
             'accountId': 'GLOBAL',
             'accountName': 'Storage Metrics',
             'region': 'global',
-            'metricType': 'STORAGE_METRICS',
             'metricDate': date_str,
             'isMetric': True,
             'createdAt': iso_timestamp,
@@ -526,11 +515,10 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     if metrics.get('cost'):
         cost_item_current = {
             'id': f'METRICS-COST-CURRENT',
-            'resourceType': 'METRIC_COST',
+            'resourceType': 'METRIC-COST',
             'accountId': 'GLOBAL',
             'accountName': 'Cost Optimization',
             'region': 'global',
-            'metricType': 'COST_OPTIMIZATION',
             'metricDate': date_str,
             'isMetric': True,
             'createdAt': iso_timestamp,
@@ -543,11 +531,10 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     if metrics.get('security'):
         security_item_current = {
             'id': f'METRICS-SECURITY-CURRENT',
-            'resourceType': 'METRIC_SECURITY',
+            'resourceType': 'METRIC-SECURITY',
             'accountId': 'GLOBAL',
             'accountName': 'Security Metrics',
             'region': 'global',
-            'metricType': 'SECURITY_METRICS',
             'metricDate': date_str,
             'isMetric': True,
             'createdAt': iso_timestamp,

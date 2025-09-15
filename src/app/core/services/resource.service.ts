@@ -1,4 +1,6 @@
 // src/app/core/services/resource.service.ts
+// Clean, schema-aligned version for Amplify Gen 2 + Angular 17
+// All code and comments in English per Renan's preference.
 
 import { Injectable } from '@angular/core';
 import { Observable, from, of, BehaviorSubject } from 'rxjs';
@@ -8,316 +10,458 @@ import type { Schema } from '../../../../amplify/data/resource';
 
 const client = generateClient<Schema>();
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ResourceService {
   private resourcesCache = new Map<string, any[]>();
   private resourcesLoading = new BehaviorSubject<boolean>(false);
-  
-  // Expose loading state as an observable
   public loading$ = this.resourcesLoading.asObservable();
-  
-  constructor() { }
-  
-  /**
-   * Get all resources from the database with proper pagination
-   * IMPORTANT: Now filters out metric items to avoid mixing with resources
-   */
+
+  constructor() {}
+
+  // =====================================================
+  // Public API
+  // =====================================================
+
   getAllResources(): Observable<any[]> {
     this.resourcesLoading.next(true);
-    
-    // Check if we have a cached result
+
     if (this.resourcesCache.has('all')) {
       this.resourcesLoading.next(false);
       return of(this.resourcesCache.get('all') || []);
     }
-    
+
     return from(this.loadAllResourcesWithPagination()).pipe(
-      tap(resources => {
-        // Cache the result
+      tap((resources) => {
         this.resourcesCache.set('all', resources);
         this.resourcesLoading.next(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Error fetching all resources:', error);
         this.resourcesLoading.next(false);
         return of([]);
       }),
-      shareReplay(1) // Share the result with all subscribers
+      shareReplay(1)
     );
   }
-  
-  /**
-   * Load all resources with pagination to handle large datasets
-   * IMPORTANT: Filters out metric items (isMetric !== true)
-   */
-  private async loadAllResourcesWithPagination(): Promise<any[]> {
-    let allResources: any[] = [];
-    let nextToken: string | null | undefined = null;
-    
-    do {
-      try {
-        const response: { data: any[]; nextToken?: string | null | undefined } = await client.models.AWSResource.list({
-          // CRITICAL: Filter out metric items to avoid mixing with resources
-          filter: {
-            or: [
-              { isMetric: { eq: false } },
-              { isMetric: { attributeExists: false } }
-            ]
-          },
-          limit: 1000, // Maximum allowed limit per request
-          nextToken: nextToken
-        });
-        
-        // Additional safety check: filter out any metric items that might slip through
-        const filteredData = response.data.filter(item => {
-          // Exclude items that are metrics
-          if (item.isMetric === true) return false;
-          if (item.resourceType?.startsWith('METRIC')) return false;
-          if (item.id?.startsWith('METRICS-')) return false;
-          return true;
-        });
-        
-        // Process each resource to fix any issues
-        const processedData = filteredData.map(item => this.processResourceData(item));
-        
-        allResources = [...allResources, ...processedData];
-        nextToken = response.nextToken;
-        
-        console.log(`Loaded batch of ${processedData.length} resources. Total: ${allResources.length}`);
-      } catch (error) {
-        console.error('Error in pagination batch:', error);
-        break; // Exit the loop on error
-      }
-    } while (nextToken);
-    
-    console.log(`Total resources loaded (excluding metrics): ${allResources.length}`);
-    return allResources;
-  }
-  
-  /**
-   * Process resource data to fix common issues
-   * @param resource The resource data to process
-   * @returns The processed resource data
-   */
-  private processResourceData(resource: any): any {
-    // Create a clone to avoid modifying the original
-    const processed = { ...resource };
-    
-    // Check if the launchTime should be fixed
-    // This happens when the data in DynamoDB doesn't match what's in the resource
-    if (processed.resourceType === 'EC2Instance') {
-      // If launchTime is null but exists elsewhere (like in additional fields), try to use that
-      if (processed.launchTime === null) {
-        // Check if we have a lastUpdated field we can use as a fallback
-        if (processed.lastUpdated) {
-          processed.launchTime = processed.lastUpdated;
-          console.log(`Fixed null launchTime for instance ${processed.instanceId} using lastUpdated`);
-        } else if (processed.createdAt) {
-          processed.launchTime = processed.createdAt;
-          console.log(`Fixed null launchTime for instance ${processed.instanceId} using createdAt`);
-        }
-      }
-    }
-    
-    return processed;
-  }
-  
-  /**
-   * Get resources by specific type with proper pagination
-   * IMPORTANT: Filters out metric items
-   */
+
   getResourcesByType(resourceType: string): Observable<any[]> {
-    console.log(`Attempting to load resources of type: ${resourceType}`);
-    
-    // Prevent loading metric types as resources
+    console.log(`[ResourceService] load by type: ${resourceType}`);
     if (resourceType.startsWith('METRIC')) {
       console.warn(`Attempted to load metric type ${resourceType} as resource. Returning empty.`);
       return of([]);
     }
-    
+
     this.resourcesLoading.next(true);
-    
-    // Check if we have a cached result
     const cacheKey = `type:${resourceType}`;
     if (this.resourcesCache.has(cacheKey)) {
       this.resourcesLoading.next(false);
       return of(this.resourcesCache.get(cacheKey) || []);
     }
-    
+
     return from(this.loadResourcesByTypeWithPagination(resourceType)).pipe(
-      tap(resources => {
-        // Cache the result
+      tap((resources) => {
         this.resourcesCache.set(cacheKey, resources);
         this.resourcesLoading.next(false);
-        console.log(`${resourceType} resources loaded:`, resources.length);
+        console.log(`[ResourceService] ${resourceType} count:`, resources.length);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error(`Error fetching ${resourceType} resources:`, error);
         this.resourcesLoading.next(false);
         return of([]);
       }),
-      shareReplay(1) // Share the result with all subscribers
+      shareReplay(1)
     );
   }
-  
-  /**
-   * Load resources by type with pagination
-   * IMPORTANT: Filters out metric items
-   */
-  private async loadResourcesByTypeWithPagination(resourceType: string): Promise<any[]> {
-    let resources: any[] = [];
-    let nextToken: string | null | undefined = null;
-    
-    do {
-      try {
-        const response: { data: any[]; nextToken?: string | null | undefined } = await client.models.AWSResource.list({
-          filter: {
-            and: [
-              { resourceType: { eq: resourceType } },
-              { or: [
-                { isMetric: { eq: false } },
-                { isMetric: { attributeExists: false } }
-              ]}
-            ]
-          },
-          limit: 1000, // Maximum allowed limit per request
-          nextToken: nextToken
-        });
-        
-        // Additional safety check
-        const filteredData = response.data.filter(item => {
-          if (item.isMetric === true) return false;
-          if (item.id?.startsWith('METRICS-')) return false;
-          return true;
-        });
-        
-        // Process each resource to fix any issues
-        const processedData = filteredData.map(item => this.processResourceData(item));
-        
-        resources = [...resources, ...processedData];
-        nextToken = response.nextToken;
-        
-        console.log(`Loaded batch of ${processedData.length} ${resourceType} resources. Total: ${resources.length}`);
-      } catch (error) {
-        console.error(`Error in ${resourceType} pagination batch:`, error);
-        break; // Exit the loop on error
-      }
-    } while (nextToken);
-    
-    return resources;
-  }
-  
-  /**
-   * Get resources by region
-   * IMPORTANT: Filters out metric items
-   */
+
   getResourcesByRegion(region: string): Observable<any[]> {
     this.resourcesLoading.next(true);
-    
-    // Check if we have all resources cached
+
     if (this.resourcesCache.has('all')) {
-      const filteredResources = (this.resourcesCache.get('all') || []).filter(r => r.region === region);
+      const filtered = (this.resourcesCache.get('all') || []).filter((r) => r.region === region);
       this.resourcesLoading.next(false);
-      return of(filteredResources);
+      return of(filtered);
     }
-    
-    // Otherwise fetch from API
-    return from(client.models.AWSResource.list({
-      filter: {
-        and: [
-          { region: { eq: region } },
-          { or: [
-            { isMetric: { eq: false } },
-            { isMetric: { attributeExists: false } }
-          ]}
-        ]
-      },
-      limit: 1000
-    })).pipe(
-      map(response => {
-        // Additional safety check
-        const filteredData = response.data.filter(item => {
+
+    return from(
+      client.models.AWSResource.list({
+        filter: {
+          and: [
+            { region: { eq: region } },
+            {
+              or: [
+                { isMetric: { eq: false } },
+                { isMetric: { attributeExists: false } },
+              ],
+            },
+          ],
+        },
+        limit: 1000,
+      })
+    ).pipe(
+      map((response: any) => {
+        const filtered = response.data.filter((item: any) => {
           if (item.isMetric === true) return false;
           if (item.resourceType?.startsWith('METRIC')) return false;
           if (item.id?.startsWith('METRICS-')) return false;
           return true;
         });
-        
-        // Process each resource to fix any issues
-        return filteredData.map(item => this.processResourceData(item));
+        return filtered.map((item: any) => this.processResourceData(item));
       }),
-      tap(resources => {
-        // Cache the result
+      tap((resources) => {
         this.resourcesCache.set(`region:${region}`, resources);
         this.resourcesLoading.next(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error(`Error fetching resources in region ${region}:`, error);
         this.resourcesLoading.next(false);
         return of([]);
       })
     );
   }
-  
-  /**
-   * Get resources by account ID
-   * IMPORTANT: Filters out metric items
-   */
+
   getResourcesByAccount(accountId: string): Observable<any[]> {
     this.resourcesLoading.next(true);
-    
-    // Check if we have all resources cached
+
     if (this.resourcesCache.has('all')) {
-      const filteredResources = (this.resourcesCache.get('all') || []).filter(r => r.accountId === accountId);
+      const filtered = (this.resourcesCache.get('all') || []).filter((r) => r.accountId === accountId);
       this.resourcesLoading.next(false);
-      return of(filteredResources);
+      return of(filtered);
     }
-    
-    // Otherwise fetch from API using GSI
-    return from(client.models.AWSResource.list({
-      filter: {
-        and: [
-          { accountId: { eq: accountId } },
-          { or: [
-            { isMetric: { eq: false } },
-            { isMetric: { attributeExists: false } }
-          ]}
-        ]
-      },
-      limit: 1000
-    })).pipe(
-      map(response => {
-        // Additional safety check
-        const filteredData = response.data.filter(item => {
-          if (item.isMetric === true) return false;
-          if (item.resourceType?.startsWith('METRIC')) return false;
-          if (item.id?.startsWith('METRICS-')) return false;
-          return true;
-        });
-        
-        // Process each resource to fix any issues
-        return filteredData.map(item => this.processResourceData(item));
-      }),
-      tap(resources => {
-        // Cache the result
+
+    return from(this.loadResourcesByAccountWithPagination(accountId)).pipe(
+      tap((resources) => {
         this.resourcesCache.set(`account:${accountId}`, resources);
         this.resourcesLoading.next(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error(`Error fetching resources for account ${accountId}:`, error);
         this.resourcesLoading.next(false);
         return of([]);
       })
     );
   }
-  
-  /**
-   * Clear the cache to force fresh data on next request
-   */
+
+  getMetricsOnly(): Observable<any[]> {
+    this.resourcesLoading.next(true);
+
+    const cacheKey = 'metrics';
+    if (this.resourcesCache.has(cacheKey)) {
+      this.resourcesLoading.next(false);
+      return of(this.resourcesCache.get(cacheKey) || []);
+    }
+
+    return from(this.loadMetricsWithPagination()).pipe(
+      tap((metrics) => {
+        this.resourcesCache.set(cacheKey, metrics);
+        this.resourcesLoading.next(false);
+        console.log('[ResourceService] metrics loaded:', metrics.length);
+      }),
+      catchError((error) => {
+        console.error('Error fetching metrics:', error);
+        this.resourcesLoading.next(false);
+        return of([]);
+      }),
+      shareReplay(1)
+    );
+  }
+
   clearCache(): void {
     this.resourcesCache.clear();
-    console.log('Resource cache cleared');
+    console.log('[ResourceService] cache cleared');
+  }
+
+  // =====================================================
+  // Private helpers
+  // =====================================================
+
+  private async loadAllResourcesWithPagination(): Promise<any[]> {
+    let all: any[] = [];
+    let nextToken: string | null | undefined = null;
+
+    do {
+      try {
+        const response: { data: any[]; nextToken?: string | null | undefined } =
+          await client.models.AWSResource.list({
+            filter: {
+              or: [
+                { isMetric: { eq: false } },
+                { isMetric: { attributeExists: false } },
+              ],
+            },
+            limit: 1000,
+            nextToken,
+          });
+
+        const filtered = response.data.filter((item) => {
+          if (item.isMetric === true) return false;
+          if (item.resourceType?.startsWith('METRIC')) return false;
+          if (item.id?.startsWith('METRICS-')) return false;
+          return true;
+        });
+
+        const processed = filtered.map((item) => this.processResourceData(item));
+        all = [...all, ...processed];
+        nextToken = response.nextToken;
+        console.log(`[ResourceService] loaded ${processed.length} (total ${all.length})`);
+      } catch (error) {
+        console.error('Error in pagination (all resources):', error);
+        break;
+      }
+    } while (nextToken);
+
+    console.log(`[ResourceService] total resources loaded (excl. metrics): ${all.length}`);
+    return all;
+  }
+
+  private async loadResourcesByTypeWithPagination(resourceType: string): Promise<any[]> {
+    let all: any[] = [];
+    let nextToken: string | null | undefined = null;
+
+    do {
+      try {
+        const response: { data: any[]; nextToken?: string | null | undefined } =
+          await client.models.AWSResource.list({
+            filter: { resourceType: { eq: resourceType } },
+            limit: 1000,
+            nextToken,
+          });
+
+        const filtered = response.data.filter((item) => {
+          if (item.isMetric === true) return false;
+          if (item.id?.startsWith('METRICS-')) return false;
+          return true;
+        });
+
+        const processed = filtered.map((item) => this.processResourceData(item));
+        all = [...all, ...processed];
+        nextToken = response.nextToken;
+        console.log(`[ResourceService] type ${resourceType} batch: ${processed.length}, total ${all.length}`);
+      } catch (error) {
+        console.error(`Error in pagination (type ${resourceType}):`, error);
+        break;
+      }
+    } while (nextToken);
+
+    return all;
+  }
+
+  private async loadResourcesByAccountWithPagination(accountId: string): Promise<any[]> {
+    let all: any[] = [];
+    let nextToken: string | null | undefined = null;
+
+    do {
+      try {
+        const response: { data: any[]; nextToken?: string | null | undefined } =
+          await client.models.AWSResource.list({
+            filter: { accountId: { eq: accountId } },
+            limit: 1000,
+            nextToken,
+          });
+
+        const filtered = response.data.filter((item) => {
+          if (item.isMetric === true) return false;
+          if (item.id?.startsWith('METRICS-')) return false;
+          return true;
+        });
+
+        const processed = filtered.map((item) => this.processResourceData(item));
+        all = [...all, ...processed];
+        nextToken = response.nextToken;
+        console.log(`[ResourceService] account ${accountId} batch: ${processed.length}, total ${all.length}`);
+      } catch (error) {
+        console.error(`Error in pagination (account ${accountId}):`, error);
+        break;
+      }
+    } while (nextToken);
+
+    return all;
+  }
+
+  private async loadMetricsWithPagination(): Promise<any[]> {
+    let all: any[] = [];
+    let nextToken: string | null | undefined = null;
+
+    do {
+      try {
+        const response: { data: any[]; nextToken?: string | null | undefined } =
+          await client.models.AWSResource.list({
+            filter: { resourceType: { beginsWith: 'METRIC-' } },
+            limit: 100, // metrics are few
+            nextToken,
+          });
+
+        const processed = response.data.map((item) => this.processMetricData(item));
+        all = [...all, ...processed];
+        nextToken = response.nextToken;
+        console.log(`[ResourceService] metrics batch: ${processed.length}, total ${all.length}`);
+      } catch (error) {
+        console.error('Error in metrics pagination (beginsWith failed). Trying fallback...', error);
+
+        // Fallback: list everything then filter client-side
+        try {
+          const alternative = await client.models.AWSResource.list({ limit: 1000, nextToken });
+          const metricItems = alternative.data.filter((item: any) =>
+            item.resourceType && item.resourceType.startsWith('METRIC-')
+          );
+          const processed = metricItems.map((item: any) => this.processMetricData(item));
+          all = [...all, ...processed];
+          console.log(`[ResourceService] metrics fallback batch: ${processed.length}, total ${all.length}`);
+          break; // Exit loop after fallback pass
+        } catch (altError) {
+          console.error('Metrics fallback also failed:', altError);
+          break;
+        }
+      }
+    } while (nextToken);
+
+    console.log(`[ResourceService] total metrics loaded: ${all.length}`);
+    return all;
+  }
+
+  // Shape resource items as needed without changing unrelated fields
+  private processResourceData(resource: any): any {
+    const processed = { ...resource };
+
+    // Example: fix null launchTime for EC2Instance using other timestamps
+    if (processed.resourceType === 'EC2Instance') {
+      if (processed.launchTime === null) {
+        if (processed.lastUpdated) processed.launchTime = processed.lastUpdated;
+        else if (processed.createdAt) processed.launchTime = processed.createdAt;
+      }
+    }
+
+    return processed;
+  }
+
+  /**
+   * STRICT schema-aligned metric processing.
+   * Only fields present in your Amplify schema / Angular interfaces are coerced.
+   */
+  private processMetricData(metric: any): any {
+    const processed: any = { ...metric };
+
+    // --- Global Summary ---
+    const globalSummaryNumeric = [
+      'collectionDuration',
+      'resourcesProcessed',
+      'totalResources',
+      'resourceRegionsFound',
+      'regionsCollected',
+    ];
+
+    // --- Resource Counts ---
+    const resourceCountsNumeric = [
+      'resourceCounts_AMI',
+      'resourceCounts_AutoScalingGroup',
+      'resourceCounts_DirectConnectConnection',
+      'resourceCounts_DirectConnectVirtualInterface',
+      'resourceCounts_EBSSnapshot',
+      'resourceCounts_EBSVolume',
+      'resourceCounts_EC2Instance',
+      'resourceCounts_ElasticIP',
+      'resourceCounts_InternetGateway',
+      'resourceCounts_LoadBalancer',
+      'resourceCounts_NetworkACL',
+      'resourceCounts_RDSClusterSnapshot',
+      'resourceCounts_RDSInstance',
+      'resourceCounts_RouteTable',
+      'resourceCounts_S3Bucket',
+      'resourceCounts_SecurityGroup',
+      'resourceCounts_Subnet',
+      'resourceCounts_TransitGateway',
+      'resourceCounts_TransitGatewayAttachment',
+      'resourceCounts_VPC',
+      'resourceCounts_VPCEndpoint',
+      'resourceCounts_VPNConnection',
+    ];
+
+    // --- EC2 Health ---
+    const ec2HealthNumeric = [
+      'total',
+      'byState_running',
+      'byState_stopped',
+      'healthStatus_Healthy',
+      'healthStatus_Stopped',
+      'cloudwatchAgent_bothEnabled',
+      'cloudwatchAgent_diskMonitoring',
+      'cloudwatchAgent_memoryMonitoring',
+      'cloudwatchAgent_noneEnabled',
+      'cloudwatchAgent_percentageWithDisk',
+      'cloudwatchAgent_percentageWithMemory',
+      'ssmAgent_connected',
+      'ssmAgent_notConnected',
+      'ssmAgent_notInstalled',
+      'ssmAgent_percentageConnected',
+    ];
+
+    // --- Cost ---
+    const costNumeric = [
+      'potentialMonthlySavings',
+      'unassociatedElasticIPs',
+      'unattachedEBSVolumes',
+    ];
+
+    // --- Security ---
+    const securityNumeric = ['exposedSecurityGroups', 'percentageExposed'];
+
+    // --- RDS ---
+    const rdsNumeric = [
+      'total',
+      'available',
+      'engines_aurora_mysql',
+      'multiAZ',
+      'percentageMultiAZ',
+      'performanceInsights',
+      'percentageWithPerfInsights',
+    ];
+
+    // --- Storage ---
+    const storageNumeric = ['amiSnapshots', 'ebsSnapshots', 'ebsVolumes', 's3Buckets', 's3WithLifecycle'];
+
+    const numericFields = [
+      ...globalSummaryNumeric,
+      ...resourceCountsNumeric,
+      ...ec2HealthNumeric,
+      ...costNumeric,
+      ...securityNumeric,
+      ...rdsNumeric,
+      ...storageNumeric,
+    ];
+
+    numericFields.forEach((field) => {
+      if (processed[field] !== undefined) {
+        processed[field] = this.toNumber(processed[field]);
+      }
+    });
+
+    // Fallback for totalResources
+    if (!processed.totalResources || processed.totalResources === 0) {
+      const rp = this.toNumber(processed.resourcesProcessed);
+      if (rp > 0) processed.totalResources = rp;
+    }
+
+    // Normalize lastUpdated for UI badges
+    if (!processed.lastUpdated) {
+      processed.lastUpdated = processed.updatedAt || processed.metricDate || processed.createdAt || null;
+    }
+
+    // Parse JSON-like strings if necessary
+    ['accountDistribution', 'regionDistribution', 'recentResources'].forEach((key) => {
+      const v = processed[key];
+      if (typeof v === 'string') {
+        try { processed[key] = JSON.parse(v); } catch { /* keep as-is */ }
+      }
+    });
+
+    return processed;
+  }
+
+  // DynamoDB AttributeValue → number coercion
+  private toNumber(value: any): number {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') return parseFloat(value) || 0;
+    if (typeof value === 'object' && value.N) return parseFloat(value.N) || 0;
+    return 0;
   }
 }

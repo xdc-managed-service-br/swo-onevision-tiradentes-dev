@@ -9,7 +9,7 @@
     "S": "Security Metrics"
   },
   "createdAt": {
-    "S": "2025-09-14T21:16:29.093Z"
+    "S": "2025-09-15T03:24:19.021Z"
   },
   "exposedSecurityGroups": {
     "N": "0"
@@ -18,10 +18,7 @@
     "BOOL": true
   },
   "metricDate": {
-    "S": "2025-09-14"
-  },
-  "metricType": {
-    "S": "SECURITY_METRICS"
+    "S": "2025-09-15"
   },
   "percentageExposed": {
     "N": "0"
@@ -30,12 +27,12 @@
     "S": "global"
   },
   "resourceType": {
-    "S": "METRIC_SECURITY"
+    "S": "METRIC-SECURITY"
   },
   "securityGroups": {
     "N": "60"
   },
   "updatedAt": {
-    "S": "2025-09-14T21:16:29.093Z"
+    "S": "2025-09-15T03:24:19.021Z"
   }
 }

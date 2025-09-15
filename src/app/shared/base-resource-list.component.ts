@@ -55,7 +55,7 @@ export abstract class BaseResourceListComponent implements OnInit, OnDestroy {
   ) {}
   
   ngOnInit(): void {
-    this.loadResources();
+    this.loadMetricsOnly();
   }
   
   ngOnDestroy(): void {
@@ -64,9 +64,12 @@ export abstract class BaseResourceListComponent implements OnInit, OnDestroy {
   }
   
   loadResources(): void {
+    this.loadMetricsOnly();
+  }
+
+  loadMetricsOnly(): void {
     this.loading = true;
-    
-    this.resourceService.getResourcesByType(this.resourceType)
+    this.resourceService.getMetricsOnly()
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => this.loading = false)
@@ -78,9 +81,32 @@ export abstract class BaseResourceListComponent implements OnInit, OnDestroy {
           this.initializeFilters();
         },
         error: (error) => {
-          console.error(`Error fetching ${this.resourceType} resources:`, error);
+          console.error(`Error fetching metrics for ${this.resourceType} resources:`, error);
           this.errorService.handleError({
-            message: `Failed to load ${this.resourceType} resources`,
+            message: `Failed to load metrics for ${this.resourceType} resources`,
+            details: error
+          });
+        }
+      });
+  }
+
+  loadAllResources(): void {
+    this.loading = true;
+    this.resourceService.getAllResources()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loading = false)
+      )
+      .subscribe({
+        next: (data) => {
+          this.resources = data;
+          this.filteredResources = [...this.resources];
+          this.initializeFilters();
+        },
+        error: (error) => {
+          console.error(`Error fetching all ${this.resourceType} resources with metrics:`, error);
+          this.errorService.handleError({
+            message: `Failed to load all ${this.resourceType} resources with metrics`,
             details: error
           });
         }

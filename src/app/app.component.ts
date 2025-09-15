@@ -29,11 +29,9 @@ export class AppComponent implements OnInit, OnDestroy {
   theme: 'light' | 'dark' = 'dark';
   private themeSource: 'system' | 'user' = 'system';
   private mql?: MediaQueryList;
-  // Session timeout properties
   private sessionTimeoutId: any;
-  private readonly SESSION_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour in milliseconds
-  
-  // For cleanup
+  private readonly SESSION_TIMEOUT_MS = 60 * 60 * 1000;
+
   private destroy$ = new Subject<void>();
   
   constructor(private router: Router) {
@@ -52,7 +50,6 @@ export class AppComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe((event: NavigationEnd) => {
-        // Handle async checkAuthState without async keyword
         this.checkAuthState().then(() => {
           console.log('Auth state checked after navigation');
         }).catch((error) => {
@@ -60,7 +57,6 @@ export class AppComponent implements OnInit, OnDestroy {
         });
       });
     
-    // Detect initial layout changes
     setTimeout(() => {
       this.checkScreenSize();
     }, 100);
@@ -77,14 +73,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.theme = t;
 
     const root = document.documentElement;
-    root.setAttribute('data-theme', t);          // <- "light" ou "dark"
+    root.setAttribute('data-theme', t);
 
-    // remove variações antigas
     root.classList.remove(
       'theme-light','theme-dark',
       'theme-Light','theme-Dark','theme-LIGHT','theme-DARK'
     );
-    root.classList.add(`theme-${t}`);            // <- "theme-light" ou "theme-dark"
+    root.classList.add(`theme-${t}`);
   }
 
   private initTheme(): void {
@@ -107,7 +102,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.themeSource = 'user';
     const next = this.theme === 'light' ? 'dark' : 'light';
     this.applyTheme(next);
-    localStorage.setItem('ov-theme', next);          // sempre minúsculo
+    localStorage.setItem('ov-theme', next); 
     localStorage.setItem('ov-theme-source', 'user');
   }
   ngOnDestroy() {
@@ -121,7 +116,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.checkScreenSize();
   }
   
-  // NEW: Reset session timeout on user activity
   @HostListener('window:click')
   @HostListener('window:keypress')
   @HostListener('window:mousemove')
@@ -133,12 +127,10 @@ export class AppComponent implements OnInit, OnDestroy {
   
   checkScreenSize() {
     this.isMobile = window.innerWidth <= 768;
-    
-    // Em mobile, a sidebar começa fechada
+
     if (this.isMobile) {
       this.isSidebarOpen = false;
     }
-    // Em desktop, a sidebar começa aberta
     else {
       this.isSidebarOpen = true;
     }
@@ -148,59 +140,48 @@ export class AppComponent implements OnInit, OnDestroy {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
   
-  // Fecha a sidebar ao clicar em um link no mobile
   closeSidebarOnMobile() {
     if (this.isMobile) {
       this.isSidebarOpen = false;
     }
   }
   
-  // UPDATED: Better authentication state checking
   async checkAuthState() {
     try {
-      // First verify the user is authenticated
+
       const user = await getCurrentUser();
-      
-      // Set authenticated state immediately
+
       this.isAuthenticated = true;
-      
-      // Check if user is on login page while authenticated
+
       const currentPath = window.location.pathname;
       if (currentPath === '/login' || currentPath === '/reset-password') {
         console.log('Authenticated user on login page, redirecting to dashboard');
         this.router.navigate(['/dashboard']);
         return;
       }
-      
-      // Fetch the user attributes to get the email
+
       try {
         const attributes = await fetchUserAttributes();
-        
-        // Format the email into a display name
+
         if (attributes.email) {
           this.username = this.formatNameFromEmail(attributes.email);
         } else {
-          // Fallback in case email isn't available for some reason
           this.username = user.username;
         }
       } catch (attributeError) {
-        // If there's an error fetching attributes, fall back to username
         console.error('Error fetching user attributes:', attributeError);
         this.username = user.username;
       }
-      
-      // Setup session timeout for authenticated users
+
       this.resetSessionTimeout();
-      
       console.log('Authentication state updated: authenticated =', this.isAuthenticated);
       
     } catch (error) {
-      // User is not authenticated
+
       this.isAuthenticated = false;
       this.username = '';
       this.clearSessionTimeout();
       
-      // Only redirect to login if not already on login/reset-password pages
       const currentPath = window.location.pathname;
       if (!currentPath.includes('/login') && !currentPath.includes('/reset-password')) {
         console.log('User not authenticated, redirecting to login');
@@ -210,15 +191,13 @@ export class AppComponent implements OnInit, OnDestroy {
       console.log('Authentication state updated: authenticated =', this.isAuthenticated);
     }
   }
-  
-  // NEW: Setup session timeout
+
   private setupSessionTimeout(): void {
     if (this.isAuthenticated) {
       this.resetSessionTimeout();
     }
   }
-  
-  // NEW: Reset the session timeout
+
   private resetSessionTimeout(): void {
     this.clearSessionTimeout();
     
@@ -227,8 +206,7 @@ export class AppComponent implements OnInit, OnDestroy {
       await this.handleSessionTimeout();
     }, this.SESSION_TIMEOUT_MS);
   }
-  
-  // NEW: Clear session timeout
+
   private clearSessionTimeout(): void {
     if (this.sessionTimeoutId) {
       clearTimeout(this.sessionTimeoutId);
@@ -236,43 +214,32 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
   
-  // NEW: Handle session timeout
   private async handleSessionTimeout(): Promise<void> {
     try {
       await signOut();
       this.isAuthenticated = false;
       this.username = '';
       this.clearSessionTimeout();
-      
-      // Show timeout message and redirect
       alert('Your session has expired. Please log in again.');
       this.router.navigate(['/login']);
     } catch (error) {
       console.error('Error during session timeout signout:', error);
-      // Force reload if signout fails
       window.location.href = '/login';
     }
   }
   
-  /**
-   * Formats a display name from an email address
-   * Example: "renan.bueno@softwareone.com" becomes "Renan Bueno"
-   */
   formatNameFromEmail(email: string): string {
     try {
-      // Extract the part before the @ symbol
+
       const localPart = email.split('@')[0];
-      
-      // Split by both dots and underscores and capitalize each part
       const nameParts = localPart.split(/[._]/).map(part => 
         part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
       );
       
-      // Join with spaces
       return nameParts.join(' ');
     } catch (error) {
       console.error('Error formatting name from email:', error);
-      return email; // Return the original email if there's an error
+      return email;
     }
   }
   
@@ -282,12 +249,9 @@ export class AppComponent implements OnInit, OnDestroy {
       this.isAuthenticated = false;
       this.username = '';
       this.clearSessionTimeout();
-      
-      // Redirect to login page
       this.router.navigate(['/login']);
     } catch (error: unknown) {
       console.error('Error during sign out:', error);
-      // Force reload if signout fails
       window.location.href = '/login';
     }
   }
