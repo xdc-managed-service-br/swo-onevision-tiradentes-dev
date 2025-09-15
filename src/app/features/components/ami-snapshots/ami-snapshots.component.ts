@@ -64,9 +64,14 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
   // ======= AMI FIELDS =======
   availableColumns: ColumnDefinition[] = [
     { key: 'imageId', label: 'Image ID', required: true },
-    { key: 'nameTag', label: 'Name Tag' },
-    { key: 'amiName', label: 'AMI Name' },
-    { key: 'imageName', label: 'Image Name' },
+    { 
+      key: 'imageNameTag', 
+      label: 'Name Tag',
+      transform: (r) => r.imageNameTag 
+                        ?? r.tagObject?.Name 
+                        ?? r.tagObject?.name 
+                        ?? 'N/A'
+    },
     { key: 'imageState', label: 'State' },
     { key: 'platform', label: 'Platform' },
     { key: 'description', label: 'Description', sortable: false },
@@ -78,7 +83,7 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
   ];
   
   // Default columns to show
-  defaultColumns = ['imageId', 'nameTag', 'amiName', 'platform', 'region', 'creationTime', 'accountName'];
+  defaultColumns = ['imageId', 'imageNameTag', 'amiName', 'platform', 'region', 'creationTime', 'accountName'];
   private readonly LS_KEY = 'amiSelectedColumns';
   selectedColumns = new Set<string>();
   
@@ -120,12 +125,11 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
               Key: key,
               Value: value
             }));
-            
+
             return {
-              imageId: resource.imageId || resource.id || resource.resourceId,
-              amiName: resource.amiName || resource.name || resource.imageName,
-              imageName: resource.imageName || resource.amiName || resource.name,
-              nameTag: parsedTagsObj['Name'] || '',
+              imageId: resource.imageId || resource.id,
+              amiName: resource.amiName,
+              imageNameTag: resource.imageNameTag,
               imageState: resource.imageState || resource.state || resource.status,
               description: resource.description || '',
               platform: resource.platform || resource.platformDetails || 'Unknown',
@@ -135,7 +139,7 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
               parsedTags: parsedTagsArray,
               tagObject: parsedTagsObj,
               tags: resource.tags, // Keep original tags for ResourceTagsComponent
-              creationTime: resource.creationTime || resource.createdAt || resource.lastUpdated
+              creationTime: resource.createdAt
             };
           });
 
@@ -216,7 +220,7 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
       .filter(r => {
         if (!term) return true;
         return (r.imageId || '').toLowerCase().includes(term)
-            || (r.nameTag || '').toLowerCase().includes(term)
+            || (r.imageNameTag || '').toLowerCase().includes(term)
             || (r.amiName || '').toLowerCase().includes(term)
             || (r.imageName || '').toLowerCase().includes(term)
             || (r.description || '').toLowerCase().includes(term);

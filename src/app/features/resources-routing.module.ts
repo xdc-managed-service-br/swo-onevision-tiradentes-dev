@@ -12,7 +12,6 @@ const routes: Routes = [
   { path: 'ami-snapshots',  loadComponent: () => import('./components/ami-snapshots/ami-snapshots.component').then(m => m.AMISnapshotsComponent) },
 
   // Storage
-  { path: 'ebs',            loadComponent: () => import('./components/ebs-resources/ebs-resources.component').then(m => m.EbsResourcesComponent) },
   { path: 'ebs-snapshots',  loadComponent: () => import('./components/ebs-snapshots/ebs-snapshots.component').then(m => m.EbsSnapshotsComponent) },
 
 ];

@@ -1,13 +1,11 @@
 // src/app/core/services/resource.service.ts
-// Clean, schema-aligned version for Amplify Gen 2 + Angular 17
-// All code and comments in English per Renan's preference.
-
 import { Injectable } from '@angular/core';
 import { Observable, from, of, BehaviorSubject } from 'rxjs';
 import { map, catchError, tap, shareReplay } from 'rxjs/operators';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../../amplify/data/resource';
-import type { AWSResourceModel, AWSMetricModel } from '../../models/resource.model';
+import type { AWSResourceModel } from '../../models/resource.model';
+import type { AWSMetric } from '../../models/resource.model';
 
 const client = generateClient<Schema>();
 
@@ -142,27 +140,22 @@ export class ResourceService {
     );
   }
 
-  getMetricsOnly(): Observable<AWSMetricModel[]> {
-    this.resourcesLoading.next(true);
-
-    const cacheKey = 'metrics';
-    if (this.resourcesCache.has(cacheKey)) {
-      this.resourcesLoading.next(false);
-      return of(this.resourcesCache.get(cacheKey) as AWSMetricModel[] || []);
-    }
-
+  getMetricsOnly(): Observable<AWSMetric[]> {
+    console.info('[ResourceService] getMetricsOnly(): start');
     return from(this.loadMetricsWithPagination()).pipe(
       tap((metrics) => {
-        this.resourcesCache.set(cacheKey, metrics);
-        this.resourcesLoading.next(false);
-        console.log('[ResourceService] metrics loaded:', metrics.length);
+        const types = Array.isArray(metrics) ? metrics.map((m: any) => m?.resourceType).filter(Boolean) : [];
+        console.info('[ResourceService] getMetricsOnly(): received metrics', {
+          count: Array.isArray(metrics) ? metrics.length : 'not-array',
+          sample: (Array.isArray(metrics) ? metrics.slice(0, 3) : metrics) as any,
+          types,
+          hasSummary: Array.isArray(metrics) && metrics.some((m: any) => m?.resourceType === 'METRIC_SUMMARY')
+        });
       }),
       catchError((error) => {
-        console.error('Error fetching metrics:', error);
-        this.resourcesLoading.next(false);
-        return of([]);
-      }),
-      shareReplay(1)
+        console.error('[ResourceService] getMetricsOnly(): error', error);
+        return of([] as AWSMetric[]);
+      })
     );
   }
 
@@ -278,44 +271,52 @@ export class ResourceService {
     return all;
   }
 
-  private async loadMetricsWithPagination(): Promise<AWSMetricModel[]> {
-    let all: AWSMetricModel[] = [];
+  private async loadMetricsWithPagination(): Promise<AWSMetric[]> {
+    let all: AWSMetric[] = [];
     let nextToken: string | null | undefined = null;
 
     do {
       try {
-        const response: { data: any[]; nextToken?: string | null | undefined } =
-          await client.models.AWSResource.list({
-            filter: { resourceType: { beginsWith: 'METRIC-' } },
-            limit: 100, // metrics are few
-            nextToken,
-          });
+        console.debug('[ResourceService] loadMetricsWithPagination(): listing with beginsWith METRIC_ ...', { nextToken });
+        const response: { data: any[]; nextToken?: string | null | undefined } = await client.models.AWSResource.list({
+          filter: { resourceType: { beginsWith: 'METRIC_' } },
+          limit: 100,
+          nextToken,
+        });
 
-        const processed = response.data.map((item) => this.processMetricData(item));
+        console.debug('[ResourceService] list result', {
+          batchSize: response?.data?.length,
+          nextToken: response?.nextToken,
+          firstKeys: Array.isArray(response?.data) && response.data.length ? Object.keys(response.data[0]) : []
+        });
+        const processed = (response.data || []).map((item: any) => this.processMetricData(item));
         all = [...all, ...processed];
         nextToken = response.nextToken;
-        console.log(`[ResourceService] metrics batch: ${processed.length}, total ${all.length}`);
+        console.info('[ResourceService] metrics batch', { batch: processed.length, total: all.length });
       } catch (error) {
-        console.error('Error in metrics pagination (beginsWith failed). Trying fallback...', error);
+        console.error('[ResourceService] beginsWith METRIC_ failed. Trying fallback(s)...', error);
 
         // Fallback: list everything then filter client-side
         try {
           const alternative = await client.models.AWSResource.list({ limit: 1000, nextToken });
-          const metricItems = alternative.data.filter((item: any) =>
-            item.resourceType && item.resourceType.startsWith('METRIC-')
-          );
+          console.debug('[ResourceService] fallback list all result', { size: alternative?.data?.length });
+          // Accept both METRIC_ and METRIC- just in case
+          const metricItems = (alternative.data || []).filter((item: any) => {
+            const t = item?.resourceType ?? '';
+            return typeof t === 'string' && (t.startsWith('METRIC_') || t.startsWith('METRIC-') || t.startsWith('METRIC'));
+          });
           const processed = metricItems.map((item: any) => this.processMetricData(item));
           all = [...all, ...processed];
-          console.log(`[ResourceService] metrics fallback batch: ${processed.length}, total ${all.length}`);
+          console.info('[ResourceService] metrics fallback batch', { batch: processed.length, total: all.length });
           break; // Exit loop after fallback pass
         } catch (altError) {
-          console.error('Metrics fallback also failed:', altError);
+          console.error('[ResourceService] fallback also failed', altError);
           break;
         }
       }
     } while (nextToken);
 
-    console.log(`[ResourceService] total metrics loaded: ${all.length}`);
+    console.info('[ResourceService] total metrics loaded', { total: all.length, types: all.map((m: any) => m?.resourceType) });
     return all;
   }
 
@@ -365,8 +366,27 @@ export class ResourceService {
    * STRICT schema-aligned metric processing.
    * Only fields present in your Amplify schema / Angular interfaces are coerced.
    */
-  private processMetricData(metric: any): AWSMetricModel {
+  private processMetricData(metric: any): AWSMetric {
     const processed: any = { ...metric };
+    if (!processed || typeof processed !== 'object') {
+      console.warn('[ResourceService] processMetricData(): metric is not an object', { metric });
+      return processed as AWSMetric;
+    }
+    const rawKeys = Object.keys(metric || {});
+    // Normalize resourceType (hyphen → underscore) so the UI can look up by a single value
+    const originalType = processed?.resourceType;
+    if (typeof originalType === 'string') {
+      const normalized = originalType.replace(/-/g, '_');
+      processed.resourceType = normalized;
+    }
+    console.debug('[ResourceService] processMetricData(): in', {
+      id: processed?.id,
+      type: processed?.resourceType,
+      originalType,
+      rawKeys,
+      hasDataField: 'data' in (metric || {}),
+      dataType: typeof (metric as any)?.data
+    });
 
     // --- Global Summary ---
     const globalSummaryNumeric = [
@@ -452,14 +472,71 @@ export class ResourceService {
       ...storageNumeric,
     ];
 
-    numericFields.forEach((field) => {
-      if (processed[field] !== undefined) {
-        processed[field] = this.toNumber(processed[field]);
-      }
-    });
+    const coerceNumericFields = (obj: any) => {
+      numericFields.forEach((field) => {
+        if (obj[field] !== undefined) {
+          obj[field] = this.toNumber(obj[field]);
+        }
+      });
+    };
 
-    // Fallback for totalResources: Always coerce to number, fallback to 0 if missing
+    // Coerce direct fields first
+    coerceNumericFields(processed);
+
+    // If provider stored a JSON payload under `data`, try to extract from it too
+    let payload: any = (processed as any).data;
+    if (typeof payload === 'string') {
+      try { payload = JSON.parse(payload); } catch { payload = undefined; }
+    }
+    if (payload && typeof payload === 'object') {
+      coerceNumericFields(payload);
+      // If direct fields are missing/undefined, hydrate from payload
+      const setIfUndef = (k: string) => {
+        if (processed[k] === undefined && payload[k] !== undefined) processed[k] = payload[k];
+      };
+      numericFields.forEach(setIfUndef);
+
+      // Some producers may use nested `resourceCounts` object, e.g. { resourceCounts: { EC2Instance: 12 } }
+      const rc = payload.resourceCounts || payload.resource_counts || undefined;
+      if (rc && typeof rc === 'object') {
+        const map: Record<string, string> = {
+          EC2Instance: 'resourceCounts_EC2Instance',
+          S3Bucket: 'resourceCounts_S3Bucket',
+          RDSInstance: 'resourceCounts_RDSInstance',
+          RDSClusterSnapshot: 'resourceCounts_RDSClusterSnapshot',
+          VPC: 'resourceCounts_VPC',
+          SecurityGroup: 'resourceCounts_SecurityGroup',
+          AMI: 'resourceCounts_AMI',
+          AutoScalingGroup: 'resourceCounts_AutoScalingGroup',
+          DirectConnectConnection: 'resourceCounts_DirectConnectConnection',
+          DirectConnectVirtualInterface: 'resourceCounts_DirectConnectVirtualInterface',
+          EBSSnapshot: 'resourceCounts_EBSSnapshot',
+          EBSVolume: 'resourceCounts_EBSVolume',
+          ElasticIP: 'resourceCounts_ElasticIP',
+          InternetGateway: 'resourceCounts_InternetGateway',
+          LoadBalancer: 'resourceCounts_LoadBalancer',
+          NetworkACL: 'resourceCounts_NetworkACL',
+          RouteTable: 'resourceCounts_RouteTable',
+          Subnet: 'resourceCounts_Subnet',
+          TransitGateway: 'resourceCounts_TransitGateway',
+          TransitGatewayAttachment: 'resourceCounts_TransitGatewayAttachment',
+          VPCEndpoint: 'resourceCounts_VPCEndpoint',
+          VPNConnection: 'resourceCounts_VPNConnection'
+        };
+        for (const [short, full] of Object.entries(map)) {
+          if (processed[full] === undefined && rc[short] !== undefined) {
+            processed[full] = this.toNumber(rc[short]);
+          }
+        }
+      }
+    }
+
+    // Fallbacks for totals: prefer explicit totalResources → resourcesProcessed
     processed.totalResources = this.toNumber(processed.totalResources);
+    if (!processed.totalResources) {
+      const rp = this.toNumber((processed as any).resourcesProcessed ?? (payload?.resourcesProcessed));
+      if (rp) processed.totalResources = rp;
+    }
 
     // Normalize updatedAt for UI badges
     if (!processed.updatedAt) {
@@ -474,7 +551,19 @@ export class ResourceService {
       }
     });
 
-    return processed as AWSMetricModel;
+    if (processed.resourceType === 'METRIC_SUMMARY') {
+      console.info('[ResourceService] METRIC_SUMMARY processed', {
+        id: processed.id,
+        totalResources: processed.totalResources,
+        EC2: processed.resourceCounts_EC2Instance,
+        RDS: processed.resourceCounts_RDSInstance,
+        S3: processed.resourceCounts_S3Bucket,
+        SG: processed.resourceCounts_SecurityGroup,
+        VPC: processed.resourceCounts_VPC
+      });
+    }
+
+    return processed as AWSMetric;
   }
 
   // DynamoDB AttributeValue → number coercion

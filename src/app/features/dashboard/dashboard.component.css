@@ -1,0 +1,309 @@
+/* src/app/features/dashboard/dashboard.component.css */
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ov-space-6);
+}
+
+.dashboard-section {
+  background-color: var(--ov-surface);
+  border-radius: var(--ov-radius-lg);
+  padding: var(--ov-space-6);
+  box-shadow: var(--ov-shadow-1);
+}
+
+.dashboard-section-title {
+  font-size: var(--ov-text-xl);
+  font-weight: 600;
+  margin: 0 0 var(--ov-space-6) 0;
+  color: var(--ov-text);
+}
+
+/* Summary Cards */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--ov-space-4);
+}
+
+.summary-card {
+  background-color: var(--ov-surface-raised);
+  border-radius: var(--ov-radius);
+  padding: var(--ov-space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--ov-space-4);
+  box-shadow: var(--ov-shadow-1);
+  transition: var(--ov-transition);
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ov-shadow-2);
+}
+
+.summary-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--ov-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.summary-card-content h3 {
+  font-size: var(--ov-text-2xl);
+  font-weight: 700;
+  margin: 0 0 var(--ov-space-1) 0;
+  color: var(--ov-text);
+}
+
+.summary-card-content p {
+  margin: 0;
+  color: var(--ov-text-secondary);
+  font-size: var(--ov-text-sm);
+}
+
+/* Charts */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--ov-space-4);
+}
+
+.chart-card {
+  background-color: var(--ov-surface-raised);
+  border-radius: var(--ov-radius);
+  padding: var(--ov-space-4);
+  box-shadow: var(--ov-shadow-1);
+}
+
+.chart-card h3 {
+  font-size: var(--ov-text-base);
+  font-weight: 600;
+  margin: 0 0 var(--ov-space-4) 0;
+  color: var(--ov-text);
+}
+
+.chart-container {
+  position: relative;
+  height: 250px;
+}
+
+/* Distribution */
+.distribution-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--ov-space-6);
+}
+
+.distribution-card {
+  background-color: var(--ov-surface-raised);
+  border-radius: var(--ov-radius);
+  padding: var(--ov-space-4);
+  box-shadow: var(--ov-shadow-1);
+}
+
+.distribution-card h3 {
+  font-size: var(--ov-text-base);
+  font-weight: 600;
+  margin: 0 0 var(--ov-space-4) 0;
+  color: var(--ov-text);
+}
+
+.distribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ov-space-3);
+}
+
+.distribution-item {
+  display: flex;
+  align-items: center;
+  gap: var(--ov-space-3);
+}
+
+.distribution-label {
+  flex: 0 0 120px;
+  font-size: var(--ov-text-sm);
+  color: var(--ov-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.distribution-bar-container {
+  flex: 1;
+  height: 8px;
+  background-color: var(--ov-border);
+  border-radius: var(--ov-radius-full);
+  overflow: hidden;
+}
+
+.distribution-bar {
+  height: 100%;
+  background-color: var(--ov-accent);
+  border-radius: var(--ov-radius-full);
+  transition: width 0.5s ease;
+}
+
+.distribution-value {
+  flex: 0 0 60px;
+  text-align: right;
+  font-size: var(--ov-text-sm);
+  color: var(--ov-text-secondary);
+}
+
+/* Recent Resources */
+.recent-resources {
+  overflow-x: auto;
+}
+
+.ov-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--ov-surface-raised);
+  border-radius: var(--ov-radius);
+  overflow: hidden;
+}
+
+.ov-table th {
+  background-color: var(--ov-surface-overlay);
+  padding: var(--ov-space-3) var(--ov-space-4);
+  text-align: left;
+  font-weight: 600;
+  color: var(--ov-text);
+  font-size: var(--ov-text-sm);
+}
+
+.ov-table td {
+  padding: var(--ov-space-3) var(--ov-space-4);
+  border-top: 1px solid var(--ov-border);
+  color: var(--ov-text);
+  font-size: var(--ov-text-sm);
+}
+
+.ov-table tr:hover td {
+  background-color: var(--ov-surface-overlay);
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: var(--ov-space-1) var(--ov-space-3);
+  border-radius: var(--ov-radius-full);
+  font-size: var(--ov-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-running {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--ov-status-running);
+}
+
+.status-stopped {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: var(--ov-status-stopped);
+}
+
+.status-pending {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--ov-status-pending);
+}
+
+.status-terminated {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--ov-status-terminated);
+}
+
+.status-available {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--ov-status-available);
+}
+
+/* Loading and Error States */
+.ov-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ov-space-10);
+  gap: var(--ov-space-4);
+}
+
+.ov-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--ov-border);
+  border-top: 3px solid var(--ov-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.ov-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ov-space-10);
+  gap: var(--ov-space-4);
+  text-align: center;
+}
+
+.ov-error-icon {
+  font-size: 3rem;
+  margin-bottom: var(--ov-space-4);
+}
+
+.ov-error h3 {
+  margin: 0;
+  color: var(--ov-danger);
+}
+
+.ov-error p {
+  margin: 0;
+  color: var(--ov-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .distribution-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .distribution-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--ov-space-2);
+  }
+  
+  .distribution-label {
+    flex: 1;
+    width: 100%;
+  }
+  
+  .distribution-bar-container {
+    width: 100%;
+  }
+  
+  .distribution-value {
+    flex: 1;
+    text-align: left;
+    width: 100%;
+  }
+}

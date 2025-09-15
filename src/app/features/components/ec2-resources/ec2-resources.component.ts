@@ -100,12 +100,12 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
     'instanceState',
     'healthStatus',
     'cwAgentMemoryDetected',
-    'privateIpArray',
-    'publicIpArray',
+    'instancePrivateIps',
+    'instancePublicIps',
     'region',
     'accountId',
     'accountName',
-    'lastUpdated'
+    'updatedAt'
   ];
 
   requiredColumns = ['instanceId'];
@@ -135,15 +135,15 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.resources = data.map(resource => {
-            const privateIpArray = TagFormatter.parseIpList(resource.instancePrivateIps ?? resource.instancePrivateIps);
-            const publicIpArray = TagFormatter.parseIpList(resource.instancePublicIps ?? resource.instancePublicIps);
+          this.resources = data.map((r: any) => {
+            const privateIpArray = TagFormatter.parseIpList(r.instancePrivateIps ?? r.instancePrivateIps);
+            const publicIpArray = TagFormatter.parseIpList(r.instancePublicIps ?? r.instancePublicIps);
             return {
-              ...resource,
+              ...r,
               privateIpArray,
               publicIpArray,
-              cwAgentMemoryDetected: typeof resource.cwAgentMemoryDetected === 'string' ? resource.cwAgentMemoryDetected === 'true' : Boolean(resource.cwAgentMemoryDetected),
-              cwAgentDiskDetected: typeof resource.cwAgentDiskDetected === 'string' ? resource.cwAgentDiskDetected === 'true' : Boolean(resource.cwAgentDiskDetected)
+              cwAgentMemoryDetected: typeof r.cwAgentMemoryDetected === 'string' ? r.cwAgentMemoryDetected === 'true' : Boolean(r.cwAgentMemoryDetected),
+              cwAgentDiskDetected: typeof r.cwAgentDiskDetected === 'string' ? r.cwAgentDiskDetected === 'true' : Boolean(r.cwAgentDiskDetected)
             };
           });
 
@@ -156,7 +156,7 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (error) => {
-          console.error('Error loading EC2 instances:', error);
+          console.error('Error loading EC2 resources:', error);
           this.loading = false;
         }
       });
@@ -212,7 +212,10 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
     }
   }
 
-  searchInstances(event: Event): void {
+  // Kept for backward template compatibility. Prefer calling searchResources.
+  searchInstances(event: Event): void { this.searchResources(event); }
+
+  searchResources(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.searchTerm = value.trim().toLowerCase();
     this.applyFilters();
@@ -371,7 +374,7 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
   exportToCSV(): void {
     if (!this.filteredResources.length) return;
 
-    const filename = 'ec2-instances.csv';
+    const filename = 'ec2-resources.csv';
     const visibleColumns = this.getVisibleColumns();
 
     const exportColumns: ExportColumn[] = visibleColumns.map(col => ({
@@ -390,7 +393,7 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
   exportToXLSX(): void {
     if (!this.filteredResources.length) return;
 
-    const filename = 'ec2-instances.xlsx';
+    const filename = 'ec2-resources.xlsx';
     const visibleColumns = this.getVisibleColumns();
 
     const exportColumns: ExportColumn[] = visibleColumns.map(col => ({
