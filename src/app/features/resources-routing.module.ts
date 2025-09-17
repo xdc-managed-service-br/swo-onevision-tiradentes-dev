@@ -22,7 +22,7 @@ const routes: Routes = [
   {
     path: 'ec2',
     loadComponent: () =>
-      import('./components/ec2-resources/ec2-instances.component')
+      import('./components/ec2-instances/ec2-instances.component')
         .then(m => m.EC2InstancesComponent)
   },
   {
@@ -45,6 +45,12 @@ const routes: Routes = [
       import('./components/ebs-volumes/ebs-volumes.component')  // << caminho correto
         .then(m => m.EBSVolumesComponent)
   },
+  {
+      path: 'ebs-snapshots',
+      loadComponent: () =>
+        import('./components/ebs-snapshots/ebs-snapshots.component')  // << caminho correto
+          .then(m => m.EBSSnapshotsComponent)
+    },
 ];
 
 @NgModule({
