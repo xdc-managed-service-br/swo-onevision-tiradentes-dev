@@ -300,14 +300,14 @@ def get_available_regions(credentials):
         return DEFAULT_REGIONS
     
 class ResourceCollector:
-    """Base class for all resource collectors."""
+    """Base class for all resource collectors that handle resource tables (not metrics tables)."""
     
-    def __init__(self, account_id, account_name, region, credentials, tables):
+    def __init__(self, account_id, account_name, region, credentials, resource_tables):
         self.account_id = account_id
         self.account_name = account_name
         self.region = region
         self.credentials = credentials
-        self.tables = tables
+        self.resource_tables = resource_tables
         self.items = []
         self._cache = {}
     
@@ -348,22 +348,22 @@ class ResourceCollector:
         raise NotImplementedError("Subclasses must implement this method")
 
     def save(self):
-        """Save collected items to all configured DynamoDB tables."""
+        """Save collected items to all configured DynamoDB resource tables."""
         if not self.items:
             logger.debug(f"No items to save for {self.__class__.__name__} in region {self.region} / account {self.account_id}")
             return 0
         
-        if not self.tables:
-            logger.error(f"No DynamoDB tables configured for saving {self.__class__.__name__} items.")
+        if not self.resource_tables:
+            logger.error(f"No DynamoDB resource tables configured for saving {self.__class__.__name__} items.")
             return 0
 
         items_to_save = self.items
         self.items = []
         
         try:
-            count = batch_write_to_dynamodb(self.tables, items_to_save)
+            count = batch_write_to_dynamodb(self.resource_tables, items_to_save)
             if count > 0:
-                logger.info(f"Saved {count} items of type {self.__class__.__name__} from region {self.region} / account {self.account_id} to DynamoDB.")
+                logger.info(f"Saved {count} items of type {self.__class__.__name__} from region {self.region} / account {self.account_id} to DynamoDB resource tables.")
             return count
         except Exception as e:
             logger.error(f"Failed to save items for {self.__class__.__name__} in region {self.region} / account {self.account_id}: {e}", exc_info=True)

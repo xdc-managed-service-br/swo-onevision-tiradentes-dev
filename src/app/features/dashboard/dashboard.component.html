@@ -1,27 +1,75 @@
+<!-- src/app/features/dashboard/dashboard.component.html -->
+<div class="dashboard">
+  <h2>Metrics Dashboard</h2>
 
+  <div *ngIf="loading">Loading metrics...</div>
+  <div *ngIf="error">{{ error }}</div>
 
-
-<div *ngIf="loading">
-  Loading metrics...
-</div>
-<div *ngIf="!loading && error">
-  <div class="error">
-    {{ error }}
+  <div *ngIf="!loading && metrics?.length">
+    <div *ngFor="let metric of metrics" class="metric-card">
+      <h3>{{ metric.resourceType }}</h3>
+      <ul>
+        <li>ID: {{ metric.id }}</li>
+        <li>Metric Date: {{ metric.metricDate }}</li>
+        <li>Created At: {{ metric.createdAt }}</li>
+        <li>Updated At: {{ metric.updatedAt }}</li>
+        <li>Total Resources: {{ metric.totalResources }}</li>
+        <li>Resource Regions Found: {{ metric.resourceRegionsFound }}</li>
+        <li>Regions Collected: {{ metric.regionsCollected }}</li>
+        <li>ByState Running: {{ metric.byState_running }}</li>
+        <li>ByState Stopped: {{ metric.byState_stopped }}</li>
+        <li>HealthStatus Healthy: {{ metric.healthStatus_Healthy }}</li>
+        <li>HealthStatus Stopped: {{ metric.healthStatus_Stopped }}</li>
+        <li>Cloudwatch Agent Both Enabled: {{ metric.cloudwatchAgent_bothEnabled }}</li>
+        <li>Cloudwatch Agent Disk Monitoring: {{ metric.cloudwatchAgent_diskMonitoring }}</li>
+        <li>Cloudwatch Agent Memory Monitoring: {{ metric.cloudwatchAgent_memoryMonitoring }}</li>
+        <li>Cloudwatch Agent None Enabled: {{ metric.cloudwatchAgent_noneEnabled }}</li>
+        <li>Cloudwatch Agent % Disk: {{ metric.cloudwatchAgent_percentageWithDisk }}</li>
+        <li>Cloudwatch Agent % Memory: {{ metric.cloudwatchAgent_percentageWithMemory }}</li>
+        <li>SSM Connected: {{ metric.ssmAgent_connected }}</li>
+        <li>SSM Not Connected: {{ metric.ssmAgent_notConnected }}</li>
+        <li>SSM Not Installed: {{ metric.ssmAgent_notInstalled }}</li>
+        <li>SSM % Connected: {{ metric.ssmAgent_percentageConnected }}</li>
+        <li>Potential Monthly Savings: {{ metric.potentialMonthlySavings }}</li>
+        <li>Unassociated EIPs: {{ metric.unassociatedElasticIPs }}</li>
+        <li>Unattached EBS Volumes: {{ metric.unattachedEBSVolumes }}</li>
+        <li>Exposed Security Groups: {{ metric.exposedSecurityGroups }}</li>
+        <li>% Exposed: {{ metric.percentageExposed }}</li>
+        <li>RDS Total: {{ metric.total }}</li>
+        <li>RDS Available: {{ metric.available }}</li>
+        <li>Aurora MySQL Engines: {{ metric.engines_aurora_mysql }}</li>
+        <li>MultiAZ: {{ metric.multiAZ }}</li>
+        <li>% MultiAZ: {{ metric.percentageMultiAZ }}</li>
+        <li>Performance Insights: {{ metric.performanceInsights }}</li>
+        <li>% With Perf Insights: {{ metric.percentageWithPerfInsights }}</li>
+        <li>AMI Snapshots: {{ metric.amiSnapshots }}</li>
+        <li>EBS Snapshots: {{ metric.ebsSnapshots }}</li>
+        <li>EBS Volumes: {{ metric.ebsVolumes }}</li>
+        <li>S3 Buckets: {{ metric.s3Buckets }}</li>
+        <li>S3 With Lifecycle: {{ metric.s3WithLifecycle }}</li>
+        <li>ResourceCounts AMI: {{ metric.resourceCounts_AMI }}</li>
+        <li>ResourceCounts AutoScalingGroup: {{ metric.resourceCounts_AutoScalingGroup }}</li>
+        <li>ResourceCounts DirectConnectConnection: {{ metric.resourceCounts_DirectConnectConnection }}</li>
+        <li>ResourceCounts DirectConnectVirtualInterface: {{ metric.resourceCounts_DirectConnectVirtualInterface }}</li>
+        <li>ResourceCounts EBSSnapshot: {{ metric.resourceCounts_EBSSnapshot }}</li>
+        <li>ResourceCounts EBSVolume: {{ metric.resourceCounts_EBSVolume }}</li>
+        <li>ResourceCounts EC2Instance: {{ metric.resourceCounts_EC2Instance }}</li>
+        <li>ResourceCounts ElasticIP: {{ metric.resourceCounts_ElasticIP }}</li>
+        <li>ResourceCounts InternetGateway: {{ metric.resourceCounts_InternetGateway }}</li>
+        <li>ResourceCounts LoadBalancer: {{ metric.resourceCounts_LoadBalancer }}</li>
+        <li>ResourceCounts NetworkACL: {{ metric.resourceCounts_NetworkACL }}</li>
+        <li>ResourceCounts RDSClusterSnapshot: {{ metric.resourceCounts_RDSClusterSnapshot }}</li>
+        <li>ResourceCounts RDSInstance: {{ metric.resourceCounts_RDSInstance }}</li>
+        <li>ResourceCounts RouteTable: {{ metric.resourceCounts_RouteTable }}</li>
+        <li>ResourceCounts S3Bucket: {{ metric.resourceCounts_S3Bucket }}</li>
+        <li>ResourceCounts SecurityGroup: {{ metric.resourceCounts_SecurityGroup }}</li>
+        <li>ResourceCounts Subnet: {{ metric.resourceCounts_Subnet }}</li>
+        <li>ResourceCounts TransitGateway: {{ metric.resourceCounts_TransitGateway }}</li>
+        <li>ResourceCounts TransitGatewayAttachment: {{ metric.resourceCounts_TransitGatewayAttachment }}</li>
+        <li>ResourceCounts VPC: {{ metric.resourceCounts_VPC }}</li>
+        <li>ResourceCounts VPCEndpoint: {{ metric.resourceCounts_VPCEndpoint }}</li>
+        <li>ResourceCounts VPNConnection: {{ metric.resourceCounts_VPNConnection }}</li>
+      </ul>
+    </div>
   </div>
-</div>
-<div *ngIf="!loading && !error">
-  <table>
-    <thead>
-      <tr>
-        <th>Metric</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let metric of metrics">
-        <td>
-          {{ metric | json }}
-        </td>
-      </tr>
-    </tbody>
-  </table>
 </div>

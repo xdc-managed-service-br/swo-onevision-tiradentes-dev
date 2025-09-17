@@ -59,4 +59,27 @@ export class MetricService {
 
     return all;
   }
+
+  getCurrentMetrics(): Observable<AWSMetricsModel[]> {
+    return this.getAllMetrics().pipe(
+      map(metrics => metrics.filter(m => m.id.endsWith('-CURRENT')))
+    );
+  }
+
+  getHistoricalMetricsByDate(date: string): Observable<AWSMetricsModel[]> {
+    return this.getAllMetrics().pipe(
+      map(metrics => metrics.filter(m => m.id.endsWith(date)))
+    );
+  }
+
+  getHistoricalMetricsRange(start: string, end: string): Observable<AWSMetricsModel[]> {
+    return this.getAllMetrics().pipe(
+      map(metrics => metrics.filter(m => {
+        const dateMatch = m.id.match(/-(\d{4}-\d{2}-\d{2})$/);
+        if (!dateMatch) return false;
+        const metricDate = dateMatch[1];
+        return metricDate >= start && metricDate <= end;
+      }))
+    );
+  }  
 }

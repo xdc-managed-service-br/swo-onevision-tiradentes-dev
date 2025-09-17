@@ -216,24 +216,40 @@ def lambda_handler(event, context):
             })
         }
 
-    # 2. Configure DynamoDB Tables
+    # 2. Configure DynamoDB Tables (resource and metrics tables separately)
     try:
-        primary_table_name = os.environ.get('PROD_TABLE_NAME')
-        secondary_table_name = os.environ.get('DEV_TABLE_NAME')
-        
-        if not primary_table_name:
+        # Resource tables (for resources)
+        prod_table_name = os.environ.get('PROD_TABLE_NAME')
+        dev_table_name = os.environ.get('DEV_TABLE_NAME')
+        # Metrics tables (for metrics)
+        prod_metrics_table_name = os.environ.get('PROD_METRICS_TABLE_NAME')
+        dev_metrics_table_name = os.environ.get('DEV_METRICS_TABLE_NAME')
+
+        if not prod_table_name:
             raise ValueError("PROD_TABLE_NAME env var not set.")
-        if not secondary_table_name:
+        if not dev_table_name:
             raise ValueError("DEV_TABLE_NAME env var not set.")
+        if not prod_metrics_table_name:
+            raise ValueError("PROD_METRICS_TABLE_NAME env var not set.")
+        if not dev_metrics_table_name:
+            raise ValueError("DEV_METRICS_TABLE_NAME env var not set.")
 
-        primary_table = get_dynamodb_table(primary_table_name)
-        secondary_table = get_dynamodb_table(secondary_table_name)
-        
-        if not primary_table or not secondary_table:
-            raise ConnectionError("Failed to init DynamoDB tables.")
+        prod_table = get_dynamodb_table(prod_table_name)
+        dev_table = get_dynamodb_table(dev_table_name)
+        prod_metrics_table = get_dynamodb_table(prod_metrics_table_name)
+        dev_metrics_table = get_dynamodb_table(dev_metrics_table_name)
 
-        tables_to_write = [primary_table, secondary_table]
-        logger.info(f"DynamoDB tables configured for writing: {primary_table_name}, {secondary_table_name}")
+        if not prod_table or not dev_table:
+            raise ConnectionError("Failed to init DynamoDB resource tables.")
+        if not prod_metrics_table or not dev_metrics_table:
+            raise ConnectionError("Failed to init DynamoDB metrics tables.")
+
+        resource_tables = [prod_table, dev_table]
+        metrics_tables = [prod_metrics_table, dev_metrics_table]
+        logger.info(
+            f"DynamoDB resource tables configured: {prod_table_name}, {dev_table_name}; "
+            f"metrics tables: {prod_metrics_table_name}, {dev_metrics_table_name}"
+        )
     except (ValueError, ConnectionError, Exception) as e:
         logger.error(f"DynamoDB configuration error: {e}", exc_info=True)
         return {
@@ -258,7 +274,7 @@ def lambda_handler(event, context):
     
     with ThreadPoolExecutor(max_workers=max_account_workers) as executor:
         future_to_account = {
-            executor.submit(process_account, account_id, account_name, tables_to_write, global_metrics_accumulator): (account_id, account_name)
+            executor.submit(process_account, account_id, account_name, resource_tables, global_metrics_accumulator): (account_id, account_name)
             for account_id, account_name in sorted_accounts
         }
         
@@ -306,9 +322,9 @@ def lambda_handler(event, context):
         if metrics.get('cost'):
             logger.info(f"  - Potential Monthly Savings: ${metrics['cost']['potentialMonthlySavings']}")
         
-        # Save metrics to DynamoDB
-        metrics_saved = save_metrics_to_dynamodb(tables_to_write, metrics, overall_duration)
-        logger.info(f"Successfully saved {metrics_saved} metric items to DynamoDB")
+        # Save metrics to DynamoDB metrics tables only
+        metrics_saved = save_metrics_to_dynamodb(metrics_tables, metrics, overall_duration)
+        logger.info(f"Successfully saved {metrics_saved} metric items to DynamoDB metrics tables")
         
     except Exception as e:
         logger.error(f"Error calculating or saving metrics: {str(e)}", exc_info=True)

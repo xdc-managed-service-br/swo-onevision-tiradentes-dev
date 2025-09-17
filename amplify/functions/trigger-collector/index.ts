@@ -1,3 +1,4 @@
+// amplify/functions/trigger-collector/handler.ts
 import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 

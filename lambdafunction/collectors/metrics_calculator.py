@@ -413,7 +413,7 @@ def flatten_metric(item: dict, metric: dict, parent_key: str = "") -> dict:
     return item
 
 
-def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: float) -> int:
+def save_metrics_to_dynamodb(metrics_tables: List, metrics: Dict, processing_duration: float) -> int:
     
     from collectors.base import batch_write_to_dynamodb, format_aws_datetime
     
@@ -544,14 +544,14 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
         security_item_current = flatten_metric(security_item_current, metrics['security'])
         items_to_save.append(security_item_current)
     
-    # Save to all configured tables
+    # Save to all configured metrics tables
     total_saved = 0
-    for table in tables:
+    for table in metrics_tables:
         try:
             count = batch_write_to_dynamodb([table], items_to_save)
-            total_saved = count  # Track based on primary table
-            logger.info(f"Successfully saved {len(items_to_save)} metric items to table {table.name}")
+            total_saved = count  # Track based on primary metrics table
+            logger.info(f"Successfully saved {len(items_to_save)} metric items to metrics table {table.name}")
         except Exception as e:
-            logger.error(f"Error saving metrics to table {table.name}: {e}", exc_info=True)
+            logger.error(f"Error saving metrics to metrics table {table.name}: {e}", exc_info=True)
     
     return total_saved
