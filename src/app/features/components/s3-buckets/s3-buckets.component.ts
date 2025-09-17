@@ -262,7 +262,7 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
   }
 
   // === Pagination ===
-  private recomputePagination(): void {
+  recomputePagination(): void {
     const total = this.filteredResources?.length ?? 0;
     this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
     this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);

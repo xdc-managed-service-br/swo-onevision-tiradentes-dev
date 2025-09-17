@@ -33,6 +33,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return [...this.currentMetrics, ...this.historicalMetrics];
   }
 
+  get currentMetric(): AWSMetricsModel | null {
+    return this.currentMetrics.length > 0 ? this.currentMetrics[0] : null;
+  }
+
   selectedDate = new FormControl<string | null>(null);
 
   // Estatísticas para debug
@@ -300,6 +304,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return value !== null && value !== undefined && value !== '' && value !== 0;
   }
 
+  private toNumber(value: number | null | undefined): number {
+    return typeof value === 'number' ? value : 0;
+  }
+
   /**
    * Obtém classe CSS baseada no tipo de métrica
    */
@@ -395,7 +403,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.metricService.setDebugMode(this.debugMode);
     console.log('[Dashboard] Debug mode:', this.debugMode ? 'ON' : 'OFF');
   }
-
+  /**
+   * Obtém a hora atual formatada
+   */
   getCurrentTime(): string {
     return new Date().toLocaleString('pt-BR', {
       day: '2-digit',
@@ -417,15 +427,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   /**
    * Calcula percentagem de saúde dos recursos
    */
-  getHealthPercentage(healthy: number | undefined, total: number | undefined): number {
-    if (!healthy || !total || total === 0) return 0;
-    return Math.round((healthy / total) * 100);
+  getHealthPercentage(healthy: number | null | undefined, total: number | null | undefined): number {
+    const safeHealthy = this.toNumber(healthy);
+    const safeTotal = this.toNumber(total);
+    if (safeHealthy === 0 || safeTotal === 0) return 0;
+    return Math.round((safeHealthy / safeTotal) * 100);
   }
 
   /**
    * Determina classe CSS baseada na percentagem de saúde
    */
-  getHealthStatusClass(healthy: number | undefined, total: number | undefined): string {
+  getHealthStatusClass(healthy: number | null | undefined, total: number | null | undefined): string {
     const percentage = this.getHealthPercentage(healthy, total);
     if (percentage >= 90) return 'ov-status-healthy';
     if (percentage >= 70) return 'ov-status-warning';
@@ -440,6 +452,65 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const running = metric.byState_running || 0;
     if (total === 0) return 0;
     return Math.round((running / total) * 100);
+  }
+
+  hasEC2Data(): boolean {
+    const metric = this.currentMetric;
+    if (!metric) return false;
+    return (
+      this.toNumber(metric.resourceCounts_EC2Instance) > 0 ||
+      this.toNumber(metric.byState_running) > 0 ||
+      this.toNumber(metric.byState_stopped) > 0
+    );
+  }
+
+  getEC2RunningPercentage(): number {
+    const metric = this.currentMetric;
+    if (!metric) return 0;
+    return this.getHealthPercentage(metric.byState_running, metric.resourceCounts_EC2Instance);
+  }
+
+  getEC2StoppedPercentage(): number {
+    const metric = this.currentMetric;
+    if (!metric) return 0;
+    return this.getHealthPercentage(metric.byState_stopped, metric.resourceCounts_EC2Instance);
+  }
+
+  getEC2HealthClass(): string {
+    const metric = this.currentMetric;
+    if (!metric) return '';
+    return this.getHealthStatusClass(metric.byState_running, metric.resourceCounts_EC2Instance);
+  }
+
+  getEC2HealthText(): string {
+    const metric = this.currentMetric;
+    if (!metric) return 'No data';
+    const total = this.toNumber(metric.resourceCounts_EC2Instance);
+    if (total === 0) return 'No data';
+    const percentage = this.getHealthPercentage(metric.byState_running, metric.resourceCounts_EC2Instance);
+    return `${percentage}% Healthy`;
+  }
+
+  hasEC2HealthDetails(): boolean {
+    const metric = this.currentMetric;
+    if (!metric) return false;
+    return (
+      this.toNumber(metric.healthStatus_Healthy) > 0 ||
+      this.toNumber(metric.healthStatus_Stopped) > 0 ||
+      this.toNumber(metric.ssmAgent_connected) > 0
+    );
+  }
+
+  hasRDSData(): boolean {
+    const metric = this.currentMetric;
+    if (!metric) return false;
+    return this.toNumber(metric.total) > 0 || this.toNumber(metric.available) > 0;
+  }
+
+  getRDSHealthPercentage(): number {
+    const metric = this.currentMetric;
+    if (!metric) return 0;
+    return this.getHealthPercentage(metric.available, metric.total);
   }
 
   /**
@@ -596,5 +667,5 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } catch (e) {
       return 'Recently';
     }
-  }  
+  }
 }

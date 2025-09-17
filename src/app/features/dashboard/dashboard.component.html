@@ -4,7 +4,7 @@
   <div class="ov-dashboard-header">
     <div class="ov-header-title">
       <h1>Dashboard</h1>
-      <span class="ov-last-update" *ngIf="!loading">
+      <span class="ov-last-update" *ngIf="!loading && currentMetric">
         Last updated: {{ getCurrentTime() }}
       </span>
     </div>
@@ -35,300 +35,243 @@
   </div>
 
   <!-- Main Dashboard Content -->
-  <div *ngIf="!loading && !error && currentMetrics?.length" class="ov-dashboard-content">
+  <div *ngIf="!loading && !error && currentMetric" class="ov-dashboard-content">
     
-    <!-- Top Metrics Cards -->
-    <div class="ov-metrics-cards">
-      <!-- Total Resources Card -->
-      <div class="ov-metric-card" *ngFor="let metric of currentMetrics">
-        <div class="ov-card-mini" *ngIf="hasValue(metric.totalResources)">
-          <div class="ov-card-value">{{ formatNumber(metric.totalResources) }}</div>
-          <div class="ov-card-label">Total Resources</div>
-        </div>
+    <!-- Top Metrics Cards Grid -->
+    <div class="ov-metrics-grid">
+      <!-- Total Resources - Central Card -->
+      <div class="ov-metric-card-large" *ngIf="hasValue(currentMetric.totalResources)">
+        <div class="ov-card-value">{{ formatNumber(currentMetric.totalResources) }}</div>
+        <div class="ov-card-label">TOTAL RESOURCES</div>
       </div>
 
       <!-- EC2 Instances -->
-      <a class="ov-metric-card ov-card-clickable" routerLink="/ec2" *ngFor="let metric of currentMetrics">
-        <div class="ov-card-mini" *ngIf="hasValue(metric.resourceCounts_EC2Instance)">
-          <div class="ov-card-value">{{ formatNumber(metric.resourceCounts_EC2Instance) }}</div>
-          <div class="ov-card-label">EC2 Instances</div>
-        </div>
+      <a class="ov-metric-card" routerLink="/ec2" *ngIf="hasValue(currentMetric.resourceCounts_EC2Instance)">
+        <div class="ov-card-value">{{ formatNumber(currentMetric.resourceCounts_EC2Instance) }}</div>
+        <div class="ov-card-label">EC2 INSTANCES</div>
       </a>
 
       <!-- RDS Instances -->
-      <a class="ov-metric-card ov-card-clickable" routerLink="/rds" *ngFor="let metric of currentMetrics">
-        <div class="ov-card-mini" *ngIf="hasValue(metric.resourceCounts_RDSInstance)">
-          <div class="ov-card-value">{{ formatNumber(metric.resourceCounts_RDSInstance) }}</div>
-          <div class="ov-card-label">RDS Instances</div>
-        </div>
+      <a class="ov-metric-card" routerLink="/rds" *ngIf="hasValue(currentMetric.resourceCounts_RDSInstance)">
+        <div class="ov-card-value">{{ formatNumber(currentMetric.resourceCounts_RDSInstance) }}</div>
+        <div class="ov-card-label">RDS INSTANCES</div>
       </a>
 
       <!-- S3 Buckets -->
-      <a class="ov-metric-card ov-card-clickable" routerLink="/s3" *ngFor="let metric of currentMetrics">
-        <div class="ov-card-mini" *ngIf="hasValue(metric.resourceCounts_S3Bucket)">
-          <div class="ov-card-value">{{ formatNumber(metric.resourceCounts_S3Bucket) }}</div>
-          <div class="ov-card-label">S3 Buckets</div>
-        </div>
+      <a class="ov-metric-card" routerLink="/s3" *ngIf="hasValue(currentMetric.resourceCounts_S3Bucket)">
+        <div class="ov-card-value">{{ formatNumber(currentMetric.resourceCounts_S3Bucket) }}</div>
+        <div class="ov-card-label">S3 BUCKETS</div>
       </a>
 
       <!-- EBS Volumes -->
-      <a class="ov-metric-card ov-card-clickable" routerLink="/ebs" *ngFor="let metric of currentMetrics">
-        <div class="ov-card-mini" *ngIf="hasValue(metric.resourceCounts_EBSVolume)">
-          <div class="ov-card-value">{{ formatNumber(metric.resourceCounts_EBSVolume) }}</div>
-          <div class="ov-card-label">EBS Volumes</div>
-        </div>
+      <a class="ov-metric-card" routerLink="/ebs" *ngIf="hasValue(currentMetric.resourceCounts_EBSVolume)">
+        <div class="ov-card-value">{{ formatNumber(currentMetric.resourceCounts_EBSVolume) }}</div>
+        <div class="ov-card-label">EBS VOLUMES</div>
       </a>
 
       <!-- EBS Snapshots -->
-      <a class="ov-metric-card ov-card-clickable" routerLink="/ebs-snapshots" *ngFor="let metric of currentMetrics">
-        <div class="ov-card-mini" *ngIf="hasValue(metric.ebsSnapshots || metric.resourceCounts_EBSSnapshot)">
-          <div class="ov-card-value">{{ formatNumber(metric.ebsSnapshots || metric.resourceCounts_EBSSnapshot) }}</div>
-          <div class="ov-card-label">EBS Snapshots</div>
-        </div>
+      <a class="ov-metric-card" routerLink="/ebs-snapshots" *ngIf="hasValue(currentMetric.resourceCounts_EBSSnapshot)">
+        <div class="ov-card-value">{{ formatNumber(currentMetric.resourceCounts_EBSSnapshot) }}</div>
+        <div class="ov-card-label">EBS SNAPSHOTS</div>
       </a>
 
       <!-- AMI Snapshots -->
-      <a class="ov-metric-card ov-card-clickable" routerLink="/ami-snapshots" *ngFor="let metric of currentMetrics">
-        <div class="ov-card-mini" *ngIf="hasValue(metric.amiSnapshots)">
-          <div class="ov-card-value">{{ formatNumber(metric.amiSnapshots) }}</div>
-          <div class="ov-card-label">AMI Snapshots</div>
-        </div>
+      <a class="ov-metric-card" routerLink="/ami-snapshots" *ngIf="hasValue(currentMetric.amiSnapshots)">
+        <div class="ov-card-value">{{ formatNumber(currentMetric.amiSnapshots) }}</div>
+        <div class="ov-card-label">AMI SNAPSHOTS</div>
       </a>
     </div>
 
     <!-- Resource Health Section -->
-    <div class="ov-section" *ngFor="let metric of currentMetrics">
+    <section class="ov-section">
       <h2 class="ov-section-title">Resource Health</h2>
       
       <div class="ov-health-grid">
-        <!-- EC2 Instances Health -->
-        <div class="ov-health-card" *ngIf="hasValue(metric.byState_running) || hasValue(metric.byState_stopped)">
+        <!-- EC2 Instances Health Card -->
+        <div class="ov-health-card" *ngIf="hasEC2Data()">
           <div class="ov-health-header">
             <span class="ov-health-title">EC2 Instances</span>
-            <span class="ov-health-badge">{{ metric.resourceCounts_EC2Instance || 0 }}</span>
+            <span class="ov-health-badge">{{ currentMetric.resourceCounts_EC2Instance }}</span>
           </div>
-          <div class="ov-progress-container">
-            <div class="ov-progress-bar">
-              <div class="ov-progress-fill ov-progress-green" 
-                   [style.width.%]="getHealthPercentage(metric.byState_running, metric.resourceCounts_EC2Instance)">
-              </div>
-              <div class="ov-progress-fill ov-progress-yellow" 
-                   [style.width.%]="getHealthPercentage(metric.byState_stopped, metric.resourceCounts_EC2Instance)"
-                   [style.left.%]="getHealthPercentage(metric.byState_running, metric.resourceCounts_EC2Instance)">
-              </div>
+          
+          <div class="ov-progress-bar">
+            <div class="ov-progress-segment ov-segment-running" 
+                 [style.width.%]="getEC2RunningPercentage()">
             </div>
-            <div class="ov-progress-values">
-              <span class="ov-value-left">{{ metric.byState_running || 0 }}</span>
-              <span class="ov-value-right">{{ metric.byState_stopped || 0 }}</span>
+            <div class="ov-progress-segment ov-segment-stopped" 
+                 [style.width.%]="getEC2StoppedPercentage()">
             </div>
           </div>
-          <div class="ov-health-status" [ngClass]="getHealthStatusClass(metric.byState_running, metric.resourceCounts_EC2Instance)">
-            {{ getHealthPercentage(metric.byState_running, metric.resourceCounts_EC2Instance) }}% Healthy
-            <span class="ov-status-detail">({{ metric.byState_stopped || 0 }} stopped)</span>
+          
+          <div class="ov-progress-labels">
+            <span class="ov-label-running">{{ currentMetric.byState_running }}</span>
+            <span class="ov-label-stopped">{{ currentMetric.byState_stopped }}</span>
           </div>
-          <div class="ov-health-meta">
-            <span>System: {{ formatValue(metric.instanceId) }}</span>
-            <span>Instance: {{ formatValue(metric.instanceId) }}</span>
-            <span>EBS: {{ formatValue(metric.ebsStatus) }}</span>
+          
+          <div class="ov-health-status" [ngClass]="getEC2HealthClass()">
+            {{ getEC2HealthText() }}
+            <span class="ov-status-detail" *ngIf="currentMetric && currentMetric.byState_stopped && currentMetric.byState_stopped > 0">
+              ({{ currentMetric.byState_stopped }} stopped)
+            </span>
+          </div>
+          
+          <div class="ov-health-details" *ngIf="hasEC2HealthDetails()">
+            <span>Healthy: {{ currentMetric.healthStatus_Healthy }}</span>
+            <span>Stopped: {{ currentMetric.healthStatus_Stopped }}</span>
+            <span>SSM Connected: {{ currentMetric.ssmAgent_connected }}</span>
           </div>
         </div>
 
-        <!-- RDS Instances Health -->
-        <div class="ov-health-card" *ngIf="hasValue(metric.total) && metric.id?.includes('RDS')">
+        <!-- RDS Instances Health Card -->
+        <div class="ov-health-card" *ngIf="hasRDSData()">
           <div class="ov-health-header">
             <span class="ov-health-title">RDS Instances</span>
-            <span class="ov-health-badge">{{ metric.total || 0 }}</span>
+            <span class="ov-health-badge">{{ currentMetric.total }}</span>
           </div>
-          <div class="ov-progress-container">
-            <div class="ov-progress-bar">
-              <div class="ov-progress-fill ov-progress-green" 
-                   [style.width.%]="getHealthPercentage(metric.available, metric.total)">
-              </div>
-            </div>
-            <div class="ov-progress-values">
-              <span class="ov-value-left">{{ metric.available || 0 }}</span>
+          
+          <div class="ov-progress-bar">
+            <div class="ov-progress-segment ov-segment-running" 
+                 [style.width.%]="getRDSHealthPercentage()">
             </div>
           </div>
+          
+          <div class="ov-progress-labels">
+            <span class="ov-label-running">{{ currentMetric.available }}</span>
+          </div>
+          
           <div class="ov-health-status ov-status-healthy">
-            100% Healthy
+            {{ getRDSHealthPercentage() }}% Healthy
           </div>
         </div>
 
-        <!-- EBS Volumes Health -->
-        <div class="ov-health-card" *ngIf="hasValue(metric.ebsVolumes)">
+        <!-- EBS Volumes Health Card -->
+        <div class="ov-health-card" *ngIf="hasValue(currentMetric.resourceCounts_EBSVolume)">
           <div class="ov-health-header">
             <span class="ov-health-title">EBS Volumes</span>
-            <span class="ov-health-badge">{{ metric.ebsVolumes || metric.resourceCounts_EBSVolume || 0 }}</span>
+            <span class="ov-health-badge">{{ currentMetric.resourceCounts_EBSVolume }}</span>
           </div>
-          <div class="ov-progress-container">
-            <div class="ov-progress-bar">
-              <div class="ov-progress-fill ov-progress-green" [style.width.%]="100"></div>
-            </div>
-            <div class="ov-progress-values">
-              <span class="ov-value-left">{{ metric.ebsVolumes || metric.resourceCounts_EBSVolume || 0 }}</span>
-            </div>
+          
+          <div class="ov-progress-bar">
+            <div class="ov-progress-segment ov-segment-running" style="width: 100%"></div>
           </div>
+          
+          <div class="ov-progress-labels">
+            <span class="ov-label-running">{{ currentMetric.resourceCounts_EBSVolume }}</span>
+          </div>
+          
           <div class="ov-health-status ov-status-healthy">
             100% Healthy
           </div>
         </div>
 
-        <!-- S3 Buckets Health -->
-        <div class="ov-health-card" *ngIf="hasValue(metric.s3Buckets || metric.resourceCounts_S3Bucket)">
+        <!-- S3 Buckets Health Card -->
+        <div class="ov-health-card" *ngIf="hasValue(currentMetric.resourceCounts_S3Bucket)">
           <div class="ov-health-header">
             <span class="ov-health-title">S3 Buckets</span>
-            <span class="ov-health-badge">{{ metric.s3Buckets || metric.resourceCounts_S3Bucket || 0 }}</span>
+            <span class="ov-health-badge">{{ currentMetric.resourceCounts_S3Bucket }}</span>
           </div>
-          <div class="ov-progress-container">
-            <div class="ov-progress-bar">
-              <div class="ov-progress-fill ov-progress-green" [style.width.%]="100"></div>
-            </div>
-            <div class="ov-progress-values">
-              <span class="ov-value-left">{{ metric.s3Buckets || metric.resourceCounts_S3Bucket || 0 }}</span>
-            </div>
+          
+          <div class="ov-progress-bar">
+            <div class="ov-progress-segment ov-segment-running" style="width: 100%"></div>
           </div>
+          
+          <div class="ov-progress-labels">
+            <span class="ov-label-running">{{ currentMetric.resourceCounts_S3Bucket }}</span>
+          </div>
+          
           <div class="ov-health-status ov-status-healthy">
             100% Healthy
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Monitoring Grid -->
-    <div class="ov-monitoring-grid" *ngFor="let metric of currentMetrics">
-      
-      <!-- Resource Monitoring (CloudWatch) -->
-      <div class="ov-monitoring-card">
-        <h3>Resource Monitoring (CloudWatch)</h3>
+    <!-- Monitoring Section -->
+    <section class="ov-monitoring-section">
+      <div class="ov-monitoring-grid">
         
-        <!-- RAM Monitoring -->
-        <div class="ov-monitor-item" *ngIf="hasValue(metric.cloudwatchAgent_memoryMonitoring)">
-          <div class="ov-monitor-label">RAM Monitoring</div>
-          <div class="ov-monitor-bar">
-            <div class="ov-monitor-progress" 
-                 [style.width.%]="metric.cloudwatchAgent_percentageWithMemory || 83">
+        <!-- CloudWatch Monitoring Card -->
+        <div class="ov-monitoring-card">
+          <h3>Resource Monitoring (CloudWatch)</h3>
+          
+          <!-- RAM Monitoring -->
+          <div class="ov-monitor-item" *ngIf="hasValue(currentMetric.cloudwatchAgent_percentageWithMemory)">
+            <div class="ov-monitor-label">RAM Monitoring</div>
+            <div class="ov-monitor-bar">
+              <div class="ov-monitor-fill ov-fill-cyan" 
+                   [style.width.%]="currentMetric.cloudwatchAgent_percentageWithMemory">
+              </div>
+            </div>
+            <div class="ov-monitor-value">
+              {{ currentMetric.cloudwatchAgent_percentageWithMemory }}%
+              <span>Active Monitoring on Resources</span>
             </div>
           </div>
-          <div class="ov-monitor-value">
-            {{ metric.cloudwatchAgent_percentageWithMemory || 83 }}% 
-            <span>Active Monitoring on Resources</span>
-          </div>
-        </div>
 
-        <!-- Disk Monitoring -->
-        <div class="ov-monitor-item" *ngIf="hasValue(metric.cloudwatchAgent_diskMonitoring)">
-          <div class="ov-monitor-label">Disk Monitoring</div>
-          <div class="ov-monitor-bar">
-            <div class="ov-monitor-progress ov-monitor-purple" 
-                 [style.width.%]="metric.cloudwatchAgent_percentageWithDisk || 83">
+          <!-- Disk Monitoring -->
+          <div class="ov-monitor-item" *ngIf="hasValue(currentMetric.cloudwatchAgent_percentageWithDisk)">
+            <div class="ov-monitor-label">Disk Monitoring</div>
+            <div class="ov-monitor-bar">
+              <div class="ov-monitor-fill ov-fill-purple" 
+                   [style.width.%]="currentMetric.cloudwatchAgent_percentageWithDisk">
+              </div>
+            </div>
+            <div class="ov-monitor-value">
+              {{ currentMetric.cloudwatchAgent_percentageWithDisk }}%
+              <span>Active Monitoring on Resources</span>
             </div>
           </div>
-          <div class="ov-monitor-value">
-            {{ metric.cloudwatchAgent_percentageWithDisk || 83 }}% 
-            <span>Active Monitoring on Resources</span>
-          </div>
         </div>
-      </div>
 
-      <!-- Instance Status -->
-      <div class="ov-monitoring-card">
-        <h3>Instance Status</h3>
-        <div class="ov-status-header">
-          <span>EC2 Status</span>
-          <span class="ov-status-indicator">{{ getRunningPercentage(metric) }}% RUNNING</span>
-        </div>
-        <div class="ov-status-subtitle">Overview of instance states</div>
-        
-        <div class="ov-status-stats">
-          <div class="ov-stat-item">
-            <div class="ov-stat-label">TOTAL</div>
-            <div class="ov-stat-value">{{ metric.resourceCounts_EC2Instance || 0 }}</div>
+        <!-- Instance Status Card -->
+        <div class="ov-status-card">
+          <h3>Instance Status</h3>
+          <div class="ov-status-header">
+            <span>EC2 Status</span>
+            <span class="ov-status-badge" *ngIf="hasEC2Data()">
+              {{ getEC2RunningPercentage() }}% RUNNING
+            </span>
           </div>
-          <div class="ov-stat-item">
-            <div class="ov-stat-label">RUNNING</div>
-            <div class="ov-stat-value ov-text-green">{{ metric.byState_running || 0 }}</div>
-          </div>
-          <div class="ov-stat-item">
-            <div class="ov-stat-label">STOPPED</div>
-            <div class="ov-stat-value ov-text-gray">{{ metric.byState_stopped || 0 }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SSM Agent Status -->
-      <div class="ov-monitoring-card">
-        <h3>SSM Agent Status</h3>
-        <div class="ov-agent-header">
-          <span>SSM Agent</span>
-        </div>
-        
-        <div class="ov-agent-bar">
-          <div class="ov-agent-progress" 
-               [style.width.%]="metric.ssmAgent_percentageConnected || 92">
-          </div>
-        </div>
-        <div class="ov-agent-value">
-          {{ metric.ssmAgent_percentageConnected || 92 }}% 
-          <span>Instances with SSM Agent Connected</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Resources by Account & Region -->
-    <div class="ov-distribution-grid" *ngFor="let metric of currentMetrics">
-      
-      <!-- Resources by Account -->
-      <div class="ov-distribution-card" *ngIf="metric.accountDistribution">
-        <h3>Resources by Account</h3>
-        <div class="ov-distribution-list">
-          <div class="ov-dist-item" *ngFor="let account of getAccountDistribution(metric)">
-            <div class="ov-dist-label">{{ account.name }}</div>
-            <div class="ov-dist-bar-container">
-              <div class="ov-dist-bar" [style.width.%]="account.percentage"></div>
+          <div class="ov-status-subtitle">Overview of instance states</div>
+          
+          <div class="ov-status-grid">
+            <div class="ov-stat">
+              <div class="ov-stat-label">TOTAL</div>
+              <div class="ov-stat-value">{{ currentMetric.resourceCounts_EC2Instance || 0 }}</div>
             </div>
-            <div class="ov-dist-value">{{ account.value }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Resources by Region -->
-      <div class="ov-distribution-card" *ngIf="metric.regionDistribution">
-        <h3>Resources by Region</h3>
-        <div class="ov-distribution-list">
-          <div class="ov-dist-item" *ngFor="let region of getRegionDistribution(metric)">
-            <div class="ov-dist-label">{{ region.name }}</div>
-            <div class="ov-dist-bar-container">
-              <div class="ov-dist-bar" [style.width.%]="region.percentage"></div>
+            <div class="ov-stat">
+              <div class="ov-stat-label">RUNNING</div>
+              <div class="ov-stat-value ov-text-green">{{ currentMetric.byState_running || 0 }}</div>
             </div>
-            <div class="ov-dist-value">{{ region.value }}</div>
+            <div class="ov-stat">
+              <div class="ov-stat-label">STOPPED</div>
+              <div class="ov-stat-value ov-text-gray">{{ currentMetric.byState_stopped || 0 }}</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Recent Resources -->
-      <div class="ov-distribution-card">
-        <h3>Recent Resources</h3>
-        <a class="ov-view-all" routerLink="/resources">View All</a>
-        
-        <div class="ov-empty-resources" *ngIf="!metric.recentResources || getRecentResources(metric).length === 0">
-          <div class="ov-empty-icon">📁</div>
-          <p>No recent resources found</p>
-          <span>Resources will appear here as they are created or updated</span>
-        </div>
-        
-        <div class="ov-recent-list" *ngIf="getRecentResources(metric).length > 0">
-          <div class="ov-recent-item" *ngFor="let resource of getRecentResources(metric)">
-            <span class="ov-recent-type">{{ resource.type }}</span>
-            <span class="ov-recent-name">{{ resource.name }}</span>
-            <span class="ov-recent-time">{{ resource.time }}</span>
+        <!-- SSM Agent Status Card -->
+        <div class="ov-agent-card">
+          <h3>SSM Agent Status</h3>
+          <div class="ov-agent-label">SSM Agent</div>
+          
+          <div class="ov-agent-bar" *ngIf="hasValue(currentMetric.ssmAgent_percentageConnected)">
+            <div class="ov-agent-fill" 
+                 [style.width.%]="currentMetric.ssmAgent_percentageConnected">
+            </div>
+          </div>
+          
+          <div class="ov-agent-value">
+            {{ currentMetric.ssmAgent_percentageConnected || 0 }}%
+            <span>Instances with SSM Agent Connected</span>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!loading && !error && (!currentMetrics || currentMetrics.length === 0)" class="ov-empty-state">
+  <div *ngIf="!loading && !error && !currentMetric" class="ov-empty-state">
     <div class="ov-empty-icon">📊</div>
     <h3>No metrics available</h3>
     <p>Click "Trigger Collector" to start collecting AWS metrics.</p>

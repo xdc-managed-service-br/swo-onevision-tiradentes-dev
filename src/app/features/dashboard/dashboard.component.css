@@ -1,8 +1,12 @@
 /* src/app/features/dashboard/dashboard.component.css */
 
 /* ========================================
-   CORE DASHBOARD STYLES
+   RESET & BASE
    ======================================== */
+* {
+  box-sizing: border-box;
+}
+
 .ov-dashboard {
   max-width: 1600px;
   margin: 0 auto;
@@ -21,19 +25,18 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #2d3748;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(45, 55, 72, 0.5);
 }
 
 .ov-header-title h1 {
   margin: 0;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 600;
   color: #ffffff;
 }
 
 .ov-last-update {
-  display: block;
   font-size: 12px;
   color: #718096;
   margin-top: 4px;
@@ -48,25 +51,26 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 10px 18px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: #2d3748;
-  color: #ffffff;
+  background: rgba(45, 55, 72, 0.6);
+  color: #e2e8f0;
   text-decoration: none;
 }
 
 .ov-btn:hover {
-  background: #374151;
+  background: rgba(55, 65, 81, 0.8);
   transform: translateY(-1px);
 }
 
 .ov-btn-primary {
   background: #3b82f6;
+  color: #ffffff;
 }
 
 .ov-btn-primary:hover {
@@ -76,95 +80,126 @@
 .ov-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .ov-btn-icon .ov-icon {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 /* ========================================
-   METRICS CARDS
+   TOP METRICS GRID
    ======================================== */
-.ov-metrics-cards {
+.ov-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
+}
+
+.ov-metric-card-large {
+  grid-column: span 2;
+  background: linear-gradient(135deg, #3b4a5f 0%, #2d3748 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .ov-metric-card {
-  text-decoration: none;
-}
-
-.ov-card-mini {
   background: #2d3748;
   border: 1px solid #374151;
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px;
+  text-decoration: none;
+  display: block;
   transition: all 0.2s ease;
-}
-
-.ov-card-clickable {
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 
-.ov-card-clickable .ov-card-mini:hover {
+.ov-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.ov-metric-card:hover {
   background: #374151;
   border-color: #4b5563;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.ov-metric-card:hover::before {
+  transform: translateX(0);
 }
 
 .ov-card-value {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 8px;
+  line-height: 1;
+}
+
+.ov-metric-card-large .ov-card-value {
+  font-size: 48px;
 }
 
 .ov-card-label {
-  font-size: 13px;
+  font-size: 11px;
   color: #9ca3af;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 500;
+  letter-spacing: 0.1em;
+  font-weight: 600;
 }
 
 /* ========================================
    SECTIONS
    ======================================== */
 .ov-section {
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 }
 
 .ov-section-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: #ffffff;
-  margin: 0 0 20px 0;
+  margin: 0 0 24px 0;
+  padding-left: 4px;
 }
 
 /* ========================================
-   RESOURCE HEALTH
+   RESOURCE HEALTH CARDS
    ======================================== */
 .ov-health-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 20px;
+  margin-bottom: 40px;
 }
 
 .ov-health-card {
   background: #2d3748;
   border: 1px solid #374151;
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px;
 }
 
 .ov-health-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .ov-health-title {
@@ -174,66 +209,59 @@
 }
 
 .ov-health-badge {
-  background: #374151;
-  color: #3b82f6;
-  padding: 4px 10px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+  padding: 4px 12px;
   border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
-}
-
-.ov-progress-container {
-  margin-bottom: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .ov-progress-bar {
   width: 100%;
-  height: 24px;
+  height: 28px;
   background: #1f2937;
   border-radius: 4px;
   overflow: hidden;
-  position: relative;
   display: flex;
+  position: relative;
 }
 
-.ov-progress-fill {
+.ov-progress-segment {
   height: 100%;
-  position: absolute;
   transition: width 0.5s ease;
 }
 
-.ov-progress-green {
+.ov-segment-running {
   background: linear-gradient(90deg, #10b981, #059669);
 }
 
-.ov-progress-yellow {
+.ov-segment-stopped {
   background: linear-gradient(90deg, #f59e0b, #d97706);
 }
 
-.ov-progress-red {
-  background: linear-gradient(90deg, #ef4444, #dc2626);
-}
-
-.ov-progress-values {
+.ov-progress-labels {
   display: flex;
   justify-content: space-between;
   margin-top: 8px;
   font-size: 12px;
-  color: #9ca3af;
 }
 
-.ov-value-left {
+.ov-label-running {
   color: #10b981;
+  font-weight: 600;
 }
 
-.ov-value-right {
+.ov-label-stopped {
   color: #f59e0b;
+  font-weight: 600;
 }
 
 .ov-health-status {
-  font-size: 13px;
+  margin-top: 16px;
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 12px;
 }
 
 .ov-status-healthy {
@@ -255,39 +283,48 @@
   margin-left: 4px;
 }
 
-.ov-health-meta {
+.ov-health-details {
   display: flex;
   gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #374151;
   font-size: 11px;
   color: #6b7280;
-  padding-top: 12px;
-  border-top: 1px solid #374151;
 }
 
 /* ========================================
-   MONITORING GRID
+   MONITORING SECTION
    ======================================== */
+.ov-monitoring-section {
+  margin-top: 40px;
+}
+
 .ov-monitoring-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   gap: 20px;
-  margin-bottom: 32px;
 }
 
-.ov-monitoring-card {
+.ov-monitoring-card,
+.ov-status-card,
+.ov-agent-card {
   background: #2d3748;
   border: 1px solid #374151;
   border-radius: 12px;
   padding: 24px;
 }
 
-.ov-monitoring-card h3 {
-  font-size: 16px;
+.ov-monitoring-card h3,
+.ov-status-card h3,
+.ov-agent-card h3 {
+  font-size: 15px;
   font-weight: 600;
   color: #ffffff;
   margin: 0 0 20px 0;
 }
 
+/* CloudWatch Monitoring */
 .ov-monitor-item {
   margin-bottom: 24px;
 }
@@ -297,7 +334,7 @@
 }
 
 .ov-monitor-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #e2e8f0;
   margin-bottom: 8px;
@@ -309,30 +346,34 @@
   background: #1f2937;
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 8px;
 }
 
-.ov-monitor-progress {
+.ov-monitor-fill {
   height: 100%;
-  background: linear-gradient(90deg, #06b6d4, #0891b2);
   transition: width 0.5s ease;
 }
 
-.ov-monitor-purple {
+.ov-fill-cyan {
+  background: linear-gradient(90deg, #06b6d4, #0891b2);
+}
+
+.ov-fill-purple {
   background: linear-gradient(90deg, #8b5cf6, #7c3aed);
 }
 
 .ov-monitor-value {
+  margin-top: 8px;
   font-size: 14px;
   font-weight: 600;
   color: #e2e8f0;
 }
 
 .ov-monitor-value span {
+  display: block;
   font-weight: 400;
   font-size: 12px;
   color: #9ca3af;
-  margin-left: 4px;
+  margin-top: 2px;
 }
 
 /* Instance Status Card */
@@ -343,10 +384,10 @@
   margin-bottom: 4px;
 }
 
-.ov-status-indicator {
+.ov-status-badge {
   background: rgba(16, 185, 129, 0.1);
   color: #10b981;
-  padding: 4px 8px;
+  padding: 2px 8px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
@@ -358,17 +399,17 @@
   margin-bottom: 20px;
 }
 
-.ov-status-stats {
+.ov-status-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  text-align: center;
 }
 
-.ov-stat-item {
+.ov-stat {
   background: #1f2937;
-  padding: 12px 8px;
+  padding: 16px 8px;
   border-radius: 8px;
+  text-align: center;
 }
 
 .ov-stat-label {
@@ -376,11 +417,11 @@
   color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .ov-stat-value {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
   color: #ffffff;
 }
@@ -394,10 +435,10 @@
 }
 
 /* SSM Agent Card */
-.ov-agent-header {
+.ov-agent-label {
+  font-size: 13px;
+  color: #9ca3af;
   margin-bottom: 16px;
-  font-size: 14px;
-  color: #e2e8f0;
 }
 
 .ov-agent-bar {
@@ -406,19 +447,19 @@
   background: #1f2937;
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
-.ov-agent-progress {
+.ov-agent-fill {
   height: 100%;
   background: linear-gradient(90deg, #10b981, #059669);
   transition: width 0.5s ease;
 }
 
 .ov-agent-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #e2e8f0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
 }
 
 .ov-agent-value span {
@@ -430,149 +471,11 @@
 }
 
 /* ========================================
-   DISTRIBUTION GRID
-   ======================================== */
-.ov-distribution-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.ov-distribution-card {
-  background: #2d3748;
-  border: 1px solid #374151;
-  border-radius: 12px;
-  padding: 24px;
-  position: relative;
-}
-
-.ov-distribution-card h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0 0 20px 0;
-}
-
-.ov-view-all {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  font-size: 12px;
-  color: #60a5fa;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.ov-view-all:hover {
-  color: #3b82f6;
-  text-decoration: underline;
-}
-
-.ov-distribution-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.ov-dist-item {
-  display: grid;
-  grid-template-columns: 140px 1fr 60px;
-  align-items: center;
-  gap: 12px;
-}
-
-.ov-dist-label {
-  font-size: 13px;
-  color: #e2e8f0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ov-dist-bar-container {
-  width: 100%;
-  height: 20px;
-  background: #1f2937;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.ov-dist-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #6366f1, #818cf8);
-  border-radius: 10px;
-  transition: width 0.5s ease;
-}
-
-.ov-dist-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #60a5fa;
-  text-align: right;
-}
-
-/* Empty Resources */
-.ov-empty-resources {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.ov-empty-resources .ov-empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  opacity: 0.5;
-}
-
-.ov-empty-resources p {
-  font-size: 14px;
-  color: #e2e8f0;
-  margin: 0 0 8px 0;
-}
-
-.ov-empty-resources span {
-  font-size: 12px;
-  color: #6b7280;
-}
-
-/* Recent Resources List */
-.ov-recent-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.ov-recent-item {
-  display: grid;
-  grid-template-columns: 80px 1fr auto;
-  align-items: center;
-  gap: 12px;
-  padding: 8px;
-  background: #1f2937;
-  border-radius: 6px;
-}
-
-.ov-recent-type {
-  font-size: 11px;
-  color: #60a5fa;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.ov-recent-name {
-  font-size: 13px;
-  color: #e2e8f0;
-}
-
-.ov-recent-time {
-  font-size: 11px;
-  color: #6b7280;
-}
-
-/* ========================================
    LOADING & ERROR STATES
    ======================================== */
 .ov-loading-container,
-.ov-error-container {
+.ov-error-container,
+.ov-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -598,52 +501,21 @@
   to { transform: rotate(360deg); }
 }
 
-.ov-error-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-.ov-error-container h3 {
-  font-size: 20px;
-  color: #ffffff;
-  margin: 0 0 8px 0;
-}
-
-.ov-error-container p {
-  font-size: 14px;
-  color: #9ca3af;
-  margin: 0 0 20px 0;
-}
-
-/* ========================================
-   EMPTY STATE
-   ======================================== */
-.ov-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 500px;
-  background: #2d3748;
-  border: 2px dashed #374151;
-  border-radius: 12px;
-  padding: 40px;
-  text-align: center;
-}
-
-.ov-empty-state .ov-empty-icon {
+.ov-error-icon,
+.ov-empty-icon {
   font-size: 64px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   opacity: 0.5;
 }
 
+.ov-error-container h3,
 .ov-empty-state h3 {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 20px;
   color: #ffffff;
   margin: 0 0 12px 0;
 }
 
+.ov-error-container p,
 .ov-empty-state p {
   font-size: 14px;
   color: #9ca3af;
@@ -658,8 +530,8 @@
     grid-template-columns: 1fr;
   }
   
-  .ov-distribution-grid {
-    grid-template-columns: 1fr;
+  .ov-metric-card-large {
+    grid-column: span 1;
   }
 }
 
@@ -676,13 +548,15 @@
   
   .ov-header-actions {
     width: 100%;
+    display: flex;
+    gap: 8px;
   }
   
   .ov-header-actions .ov-btn {
     flex: 1;
   }
   
-  .ov-metrics-cards {
+  .ov-metrics-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
@@ -691,7 +565,8 @@
     grid-template-columns: 1fr;
   }
   
-  .ov-dist-item {
-    grid-template-columns: 100px 1fr 50px;
+  .ov-status-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 }
