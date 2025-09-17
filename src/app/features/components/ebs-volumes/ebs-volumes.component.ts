@@ -214,6 +214,19 @@ export class EBSVolumesComponent implements OnInit, OnDestroy {
   filterByEncrypted(e: Event): void { this.encryptedFilter = ((e.target as HTMLSelectElement).value as any); this.applyFilters(); }
   filterByAttached(e: Event): void { this.attachedFilter = ((e.target as HTMLSelectElement).value as any); this.applyFilters(); }
 
+  private recomputePagination(): void {
+    const total = this.filteredResources?.length ?? 0;
+    this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
+    this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);
+    const start = total === 0 ? 0 : (this.currentPage - 1) * this.pageSize;
+    const end = total === 0 ? 0 : Math.min(start + this.pageSize, total);
+    this.paginatedResources = (this.filteredResources ?? []).slice(start, end);
+    this.pageStartIndex = total === 0 ? 0 : start + 1;
+    this.pageEndIndex = end;
+  }
+
+  updatePaginationAfterChange(): void { this.currentPage = 1; this.recomputePagination(); }
+
   applyFilters(): void {
     this.filteredResources = this.resources.filter(r => {
       if (this.searchTerm) {
@@ -339,24 +352,44 @@ export class EBSVolumesComponent implements OnInit, OnDestroy {
     this.exportService.exportDataToXLSX(this.filteredResources, cols, filename);
   }
 
-  // ===== Paginação =====
-  private recomputePagination(): void {
-    const total = this.filteredResources?.length ?? 0;
-    this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
-    this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);
-    const start = total === 0 ? 0 : (this.currentPage - 1) * this.pageSize;
-    const end = total === 0 ? 0 : Math.min(start + this.pageSize, total);
-    this.paginatedResources = (this.filteredResources ?? []).slice(start, end);
-    this.pageStartIndex = total === 0 ? 0 : start + 1;
-    this.pageEndIndex = end;
-  }
-
-  updatePaginationAfterChange(): void {
-    this.currentPage = 1;
-    this.recomputePagination();
-  }
-
+  // ==== Pagination helpers for template ====
   getPageNumbers(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(page: number): void {
+    const clamped = Math.min(Math.max(page, 1), this.totalPages);
+    if (clamped !== this.currentPage) {
+      this.currentPage = clamped;
+      this.recomputePagination();
+    }
+  }
+
+  goToFirstPage(): void {
+    if (this.currentPage !== 1) {
+      this.currentPage = 1;
+      this.recomputePagination();
+    }
+  }
+
+  goToLastPage(): void {
+    if (this.currentPage !== this.totalPages) {
+      this.currentPage = this.totalPages;
+      this.recomputePagination();
+    }
+  }
+
+  goToPreviousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.recomputePagination();
+    }
+  }
+
+  goToNextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.recomputePagination();
+    }
   }
 }

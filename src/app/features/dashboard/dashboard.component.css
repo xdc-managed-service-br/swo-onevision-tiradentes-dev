@@ -1,474 +1,697 @@
 /* src/app/features/dashboard/dashboard.component.css */
-/* Dashboard Complementary Styles - Works with onevision-base.css */
 
 /* ========================================
-   DASHBOARD LAYOUT
+   CORE DASHBOARD STYLES
    ======================================== */
-.dashboard {
-  max-width: 1400px;
+.ov-dashboard {
+  max-width: 1600px;
   margin: 0 auto;
+  padding: 24px;
+  background: #1a1d23;
+  min-height: 100vh;
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
-.dashboard-header {
+/* ========================================
+   HEADER
+   ======================================== */
+.ov-dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--ov-space-8);
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #2d3748;
 }
 
-.dashboard-controls {
+.ov-header-title h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.ov-last-update {
+  display: block;
+  font-size: 12px;
+  color: #718096;
+  margin-top: 4px;
+}
+
+.ov-header-actions {
   display: flex;
-  gap: var(--ov-space-3);
+  gap: 12px;
 }
 
-/* ========================================
-   BUTTONS (Complementing ov-btn styles)
-   ======================================== */
-.ov-btn-subtle,
-.ov-btn-primary {
+.ov-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--ov-space-2);
-  padding: var(--ov-space-2) var(--ov-space-4);
-  border-radius: var(--ov-radius);
-  font-size: var(--ov-text-sm);
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 500;
-  border: 1px solid transparent;
   cursor: pointer;
-  transition: var(--ov-transition);
+  transition: all 0.2s ease;
+  background: #2d3748;
+  color: #ffffff;
+  text-decoration: none;
 }
 
-.ov-btn-subtle {
-  background-color: var(--ov-btn-bg-subtle);
-  color: var(--ov-btn-text-subtle);
-  border-color: var(--ov-border);
-}
-
-.ov-btn-subtle:hover {
-  background-color: var(--ov-btn-bg-subtle-hover);
-  border-color: var(--ov-border-strong);
+.ov-btn:hover {
+  background: #374151;
+  transform: translateY(-1px);
 }
 
 .ov-btn-primary {
-  background-color: var(--ov-btn-bg);
-  color: var(--ov-btn-text);
+  background: #3b82f6;
 }
 
 .ov-btn-primary:hover {
-  background-color: var(--ov-btn-bg-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--ov-shadow-2);
+  background: #2563eb;
 }
 
-.btn-icon {
-  font-size: 1.1em;
+.ov-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ov-btn-icon .ov-icon {
+  font-size: 18px;
 }
 
 /* ========================================
-   DEBUG PANEL
+   METRICS CARDS
    ======================================== */
-.debug-panel {
-  background-color: var(--ov-surface);
-  border: 2px solid var(--ov-border-strong);
-  border-radius: var(--ov-radius-lg);
-  padding: var(--ov-space-4);
-  margin-bottom: var(--ov-space-6);
+.ov-metrics-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
 }
 
-.debug-panel h3 {
-  font-size: var(--ov-text-base);
+.ov-metric-card {
+  text-decoration: none;
+}
+
+.ov-card-mini {
+  background: #2d3748;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.ov-card-clickable {
+  cursor: pointer;
+}
+
+.ov-card-clickable .ov-card-mini:hover {
+  background: #374151;
+  border-color: #4b5563;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ov-card-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.ov-card-label {
+  font-size: 13px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+/* ========================================
+   SECTIONS
+   ======================================== */
+.ov-section {
+  margin-bottom: 32px;
+}
+
+.ov-section-title {
+  font-size: 20px;
   font-weight: 600;
-  color: var(--ov-text);
-  margin: 0 0 var(--ov-space-3) 0;
-}
-
-.debug-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ov-space-3);
-}
-
-.debug-stats span {
-  background-color: var(--ov-surface-raised);
-  padding: var(--ov-space-2) var(--ov-space-3);
-  border-radius: var(--ov-radius);
-  border: 1px solid var(--ov-border);
-  font-size: var(--ov-text-sm);
-  color: var(--ov-text-secondary);
+  color: #ffffff;
+  margin: 0 0 20px 0;
 }
 
 /* ========================================
-   METRICS CONTAINER & CARDS
+   RESOURCE HEALTH
    ======================================== */
-.metrics-container {
+.ov-health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.ov-health-card {
+  background: #2d3748;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.ov-health-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ov-health-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.ov-health-badge {
+  background: #374151;
+  color: #3b82f6;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ov-progress-container {
+  margin-bottom: 12px;
+}
+
+.ov-progress-bar {
+  width: 100%;
+  height: 24px;
+  background: #1f2937;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+}
+
+.ov-progress-fill {
+  height: 100%;
+  position: absolute;
+  transition: width 0.5s ease;
+}
+
+.ov-progress-green {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.ov-progress-yellow {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.ov-progress-red {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.ov-progress-values {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.ov-value-left {
+  color: #10b981;
+}
+
+.ov-value-right {
+  color: #f59e0b;
+}
+
+.ov-health-status {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.ov-status-healthy {
+  color: #10b981;
+}
+
+.ov-status-warning {
+  color: #f59e0b;
+}
+
+.ov-status-critical {
+  color: #ef4444;
+}
+
+.ov-status-detail {
+  font-weight: 400;
+  font-size: 12px;
+  color: #6b7280;
+  margin-left: 4px;
+}
+
+.ov-health-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: #6b7280;
+  padding-top: 12px;
+  border-top: 1px solid #374151;
+}
+
+/* ========================================
+   MONITORING GRID
+   ======================================== */
+.ov-monitoring-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.ov-monitoring-card {
+  background: #2d3748;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.ov-monitoring-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 20px 0;
+}
+
+.ov-monitor-item {
+  margin-bottom: 24px;
+}
+
+.ov-monitor-item:last-child {
+  margin-bottom: 0;
+}
+
+.ov-monitor-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e2e8f0;
+  margin-bottom: 8px;
+}
+
+.ov-monitor-bar {
+  width: 100%;
+  height: 32px;
+  background: #1f2937;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.ov-monitor-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #06b6d4, #0891b2);
+  transition: width 0.5s ease;
+}
+
+.ov-monitor-purple {
+  background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+}
+
+.ov-monitor-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.ov-monitor-value span {
+  font-weight: 400;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-left: 4px;
+}
+
+/* Instance Status Card */
+.ov-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.ov-status-indicator {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ov-status-subtitle {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.ov-status-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  text-align: center;
+}
+
+.ov-stat-item {
+  background: #1f2937;
+  padding: 12px 8px;
+  border-radius: 8px;
+}
+
+.ov-stat-label {
+  font-size: 10px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.ov-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.ov-text-green {
+  color: #10b981;
+}
+
+.ov-text-gray {
+  color: #6b7280;
+}
+
+/* SSM Agent Card */
+.ov-agent-header {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #e2e8f0;
+}
+
+.ov-agent-bar {
+  width: 100%;
+  height: 32px;
+  background: #1f2937;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.ov-agent-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  transition: width 0.5s ease;
+}
+
+.ov-agent-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.ov-agent-value span {
+  display: block;
+  font-weight: 400;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+/* ========================================
+   DISTRIBUTION GRID
+   ======================================== */
+.ov-distribution-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.ov-distribution-card {
+  background: #2d3748;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+}
+
+.ov-distribution-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 20px 0;
+}
+
+.ov-view-all {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  font-size: 12px;
+  color: #60a5fa;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.ov-view-all:hover {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.ov-distribution-list {
   display: flex;
   flex-direction: column;
-  gap: var(--ov-space-4);
+  gap: 12px;
 }
 
-.date-selector {
-  background-color: var(--ov-surface);
-  padding: var(--ov-space-4);
-  border-radius: var(--ov-radius-lg);
-  display: flex;
-  align-items: center;
-  gap: var(--ov-space-4);
-}
-
-.date-selector label {
-  color: var(--ov-text);
-  font-weight: 500;
-  font-size: var(--ov-text-sm);
-}
-
-.date-input {
-  padding: var(--ov-space-2) var(--ov-space-3);
-  background-color: var(--ov-surface-raised);
-  color: var(--ov-text);
-  border: 1px solid var(--ov-border);
-  border-radius: var(--ov-radius);
-  font-size: var(--ov-text-sm);
-}
-
-.metric-card {
-  background-color: var(--ov-surface);
-  border-radius: var(--ov-radius-lg);
-  padding: var(--ov-space-6);
-  box-shadow: var(--ov-shadow-1);
-  border-left: 4px solid var(--ov-border-strong);
-}
-
-.metric-card.metric-ec2 { border-left-color: var(--ov-info); }
-.metric-card.metric-cost { border-left-color: var(--ov-success); }
-.metric-card.metric-security { border-left-color: var(--ov-warning); }
-.metric-card.metric-rds { border-left-color: var(--ov-accent); }
-.metric-card.metric-storage { border-left-color: #8b5cf6; }
-.metric-card.metric-summary { border-left-color: var(--ov-muted); }
-
-.metric-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--ov-space-4);
-  padding-bottom: var(--ov-space-3);
-  border-bottom: 1px solid var(--ov-border);
-}
-
-.metric-header h3 {
-  font-size: var(--ov-text-xl);
-  font-weight: 600;
-  color: var(--ov-text);
-  margin: 0;
-}
-
-.metric-id {
-  font-size: var(--ov-text-xs);
-  color: var(--ov-text-secondary);
-  font-family: var(--ov-font-mono);
-  background-color: var(--ov-surface-raised);
-  padding: var(--ov-space-1) var(--ov-space-2);
-  border-radius: var(--ov-radius-sm);
-}
-
-/* ========================================
-   METRIC SECTIONS
-   ======================================== */
-.metric-section {
-  margin-bottom: var(--ov-space-6);
-}
-
-.metric-section h4 {
-  font-size: var(--ov-text-base);
-  font-weight: 600;
-  color: var(--ov-text);
-  margin: 0 0 var(--ov-space-4) 0;
-  padding-bottom: var(--ov-space-2);
-  border-bottom: 1px solid var(--ov-border);
-}
-
-.metric-grid {
+.ov-dist-item {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--ov-space-4);
-}
-
-.metric-item {
-  display: flex;
-  justify-content: space-between;
+  grid-template-columns: 140px 1fr 60px;
   align-items: center;
-  padding: var(--ov-space-3);
-  background-color: var(--ov-surface-raised);
-  border-radius: var(--ov-radius);
-  border: 1px solid var(--ov-border);
+  gap: 12px;
 }
 
-.metric-item .label {
-  font-size: var(--ov-text-sm);
-  font-weight: 500;
-  color: var(--ov-text-secondary);
+.ov-dist-label {
+  font-size: 13px;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.metric-item .value {
-  font-size: var(--ov-text-base);
-  font-weight: 600;
-  color: var(--ov-text);
-}
-
-.value.highlight { color: var(--ov-accent); }
-.value.highlight-cost { 
-  color: var(--ov-success); 
-  font-size: var(--ov-text-lg);
-}
-.value.status-running { color: var(--ov-status-running); }
-.value.status-stopped { color: var(--ov-status-stopped); }
-.value.status-healthy { color: var(--ov-success); }
-.value.status-unhealthy { color: var(--ov-danger); }
-.value.status-warning { color: var(--ov-warning); }
-.value.status-connected { color: var(--ov-success); }
-.value.status-disconnected { color: var(--ov-danger); }
-
-/* ========================================
-   PROGRESS BARS
-   ======================================== */
-.metric-item-progress {
-  grid-column: span 1;
-  padding: var(--ov-space-4);
-  background-color: var(--ov-surface-raised);
-  border-radius: var(--ov-radius);
-  border: 1px solid var(--ov-border);
-}
-
-.progress-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--ov-space-3);
-}
-
-.progress-header .label {
-  font-size: var(--ov-text-sm);
-  font-weight: 500;
-  color: var(--ov-text-secondary);
-}
-
-.progress-header .value {
-  font-size: var(--ov-text-base);
-  font-weight: 700;
-  color: var(--ov-text);
-}
-
-.progress-bar-container {
+.ov-dist-bar-container {
   width: 100%;
   height: 20px;
-  background-color: var(--ov-surface-overlay);
-  border-radius: var(--ov-radius-full);
+  background: #1f2937;
+  border-radius: 10px;
   overflow: hidden;
-  border: 1px solid var(--ov-border);
 }
 
-.progress-bar {
+.ov-dist-bar {
   height: 100%;
-  border-radius: var(--ov-radius-full);
-  transition: width 0.5s ease-in-out, background-color 0.3s ease;
-  background: linear-gradient(
-    90deg, 
-    var(--ov-accent) 0%, 
-    var(--ov-accent-hover) 100%
-  );
-  position: relative;
-  overflow: hidden;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  border-radius: 10px;
+  transition: width 0.5s ease;
 }
 
-/* Progress Bar Color Variants */
-.progress-bar-info {
-  background: linear-gradient(90deg, var(--ov-info) 0%, #2563eb 100%);
+.ov-dist-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #60a5fa;
+  text-align: right;
 }
 
-.progress-bar-success {
-  background: linear-gradient(90deg, var(--ov-success) 0%, #059669 100%);
+/* Empty Resources */
+.ov-empty-resources {
+  text-align: center;
+  padding: 40px 20px;
 }
 
-.progress-bar-warning {
-  background: linear-gradient(90deg, var(--ov-warning) 0%, #d97706 100%);
+.ov-empty-resources .ov-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
 }
 
-.progress-bar-danger {
-  background: linear-gradient(90deg, var(--ov-danger) 0%, #dc2626 100%);
+.ov-empty-resources p {
+  font-size: 14px;
+  color: #e2e8f0;
+  margin: 0 0 8px 0;
 }
 
-/* Animated shine effect */
-.progress-bar::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  animation: shine 2s infinite;
+.ov-empty-resources span {
+  font-size: 12px;
+  color: #6b7280;
 }
 
-@keyframes shine {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+/* Recent Resources List */
+.ov-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.progress-hint {
-  margin-top: var(--ov-space-2);
-  font-size: var(--ov-text-xs);
-  color: var(--ov-text-secondary);
+.ov-recent-item {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: #1f2937;
+  border-radius: 6px;
+}
+
+.ov-recent-type {
+  font-size: 11px;
+  color: #60a5fa;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.ov-recent-name {
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+.ov-recent-time {
+  font-size: 11px;
+  color: #6b7280;
 }
 
 /* ========================================
-   STACKED BARS
+   LOADING & ERROR STATES
    ======================================== */
-.metric-item-stacked {
-  grid-column: span 2;
-  padding: var(--ov-space-4);
-  background-color: var(--ov-surface-raised);
-  border-radius: var(--ov-radius);
-  border: 1px solid var(--ov-border);
-}
-
-.stacked-header {
-  margin-bottom: var(--ov-space-3);
-}
-
-.stacked-header .label {
-  font-size: var(--ov-text-sm);
-  font-weight: 500;
-  color: var(--ov-text-secondary);
-}
-
-.stacked-bar-container {
-  width: 100%;
-  height: 30px;
-  background-color: var(--ov-surface-overlay);
-  border-radius: var(--ov-radius);
-  overflow: hidden;
+.ov-loading-container,
+.ov-error-container {
   display: flex;
-  border: 1px solid var(--ov-border);
-}
-
-.stacked-bar-segment {
-  height: 100%;
-  display: inline-block;
-  transition: width 0.5s ease-in-out;
-  position: relative;
-}
-
-/* Stacked bar colors */
-.stacked-bar-segment.running { background-color: var(--ov-status-running); }
-.stacked-bar-segment.stopped { background-color: var(--ov-status-stopped); }
-.stacked-bar-segment.healthy { background-color: var(--ov-success); }
-.stacked-bar-segment.unhealthy { background-color: var(--ov-danger); }
-.stacked-bar-segment.connected { background-color: var(--ov-success); }
-.stacked-bar-segment.not-connected { background-color: var(--ov-warning); }
-.stacked-bar-segment.not-installed { background-color: var(--ov-muted); }
-
-.stacked-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ov-space-4);
-  margin-top: var(--ov-space-3);
-}
-
-.legend-item {
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--ov-space-2);
-  font-size: var(--ov-text-sm);
-  color: var(--ov-text-secondary);
+  justify-content: center;
+  min-height: 400px;
+  background: #2d3748;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
 }
 
-.legend-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: var(--ov-radius-full);
-  display: inline-block;
+.ov-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #374151;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
 }
 
-.legend-dot.running { background-color: var(--ov-status-running); }
-.legend-dot.stopped { background-color: var(--ov-status-stopped); }
-.legend-dot.healthy { background-color: var(--ov-success); }
-.legend-dot.unhealthy { background-color: var(--ov-danger); }
-.legend-dot.connected { background-color: var(--ov-success); }
-.legend-dot.not-connected { background-color: var(--ov-warning); }
-.legend-dot.not-installed { background-color: var(--ov-muted); }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ov-error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.ov-error-container h3 {
+  font-size: 20px;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.ov-error-container p {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0 0 20px 0;
+}
 
 /* ========================================
    EMPTY STATE
    ======================================== */
-.empty-state {
+.ov-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  background: #2d3748;
+  border: 2px dashed #374151;
+  border-radius: 12px;
+  padding: 40px;
   text-align: center;
-  padding: var(--ov-space-10) var(--ov-space-6);
-  background-color: var(--ov-surface);
-  border-radius: var(--ov-radius-lg);
-  border: 2px dashed var(--ov-border);
 }
 
-.empty-state h3 {
-  font-size: var(--ov-text-xl);
-  color: var(--ov-text);
-  margin: 0 0 var(--ov-space-3) 0;
+.ov-empty-state .ov-empty-icon {
+  font-size: 64px;
+  margin-bottom: 24px;
+  opacity: 0.5;
 }
 
-.empty-state p {
-  color: var(--ov-text-secondary);
-  font-size: var(--ov-text-base);
+.ov-empty-state h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 12px 0;
+}
+
+.ov-empty-state p {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0 0 24px 0;
 }
 
 /* ========================================
    RESPONSIVE DESIGN
    ======================================== */
-@media (max-width: 768px) {
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--ov-space-4);
-  }
-  
-  .dashboard-controls {
-    width: 100%;
-    justify-content: stretch;
-  }
-  
-  .dashboard-controls button {
-    flex: 1;
-  }
-  
-  .metric-grid {
+@media (max-width: 1200px) {
+  .ov-monitoring-grid {
     grid-template-columns: 1fr;
   }
   
-  .metric-item-stacked {
-    grid-column: span 1;
-  }
-  
-  .stacked-legend {
-    flex-direction: column;
-    gap: var(--ov-space-2);
-  }
-  
-  .date-selector {
-    flex-direction: column;
-    align-items: stretch;
+  .ov-distribution-grid {
+    grid-template-columns: 1fr;
   }
 }
 
-/* ========================================
-   TRANSITIONS & ANIMATIONS
-   ======================================== */
-.metric-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.metric-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--ov-shadow-2);
+@media (max-width: 768px) {
+  .ov-dashboard {
+    padding: 16px;
+  }
+  
+  .ov-dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .ov-header-actions {
+    width: 100%;
+  }
+  
+  .ov-header-actions .ov-btn {
+    flex: 1;
+  }
+  
+  .ov-metrics-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .ov-health-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .ov-dist-item {
+    grid-template-columns: 100px 1fr 50px;
+  }
 }

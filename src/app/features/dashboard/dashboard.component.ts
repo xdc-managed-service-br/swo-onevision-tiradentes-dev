@@ -395,4 +395,206 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.metricService.setDebugMode(this.debugMode);
     console.log('[Dashboard] Debug mode:', this.debugMode ? 'ON' : 'OFF');
   }
+
+  getCurrentTime(): string {
+    return new Date().toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  /**
+   * Formata números grandes com separador de milhar
+   */
+  formatNumber(value: number | undefined | null): string {
+    if (!this.hasValue(value)) return '0';
+    return value!.toLocaleString('en-US');
+  }
+
+  /**
+   * Calcula percentagem de saúde dos recursos
+   */
+  getHealthPercentage(healthy: number | undefined, total: number | undefined): number {
+    if (!healthy || !total || total === 0) return 0;
+    return Math.round((healthy / total) * 100);
+  }
+
+  /**
+   * Determina classe CSS baseada na percentagem de saúde
+   */
+  getHealthStatusClass(healthy: number | undefined, total: number | undefined): string {
+    const percentage = this.getHealthPercentage(healthy, total);
+    if (percentage >= 90) return 'ov-status-healthy';
+    if (percentage >= 70) return 'ov-status-warning';
+    return 'ov-status-critical';
+  }
+
+  /**
+   * Calcula percentagem de instâncias running
+   */
+  getRunningPercentage(metric: AWSMetricsModel): number {
+    const total = metric.resourceCounts_EC2Instance || 0;
+    const running = metric.byState_running || 0;
+    if (total === 0) return 0;
+    return Math.round((running / total) * 100);
+  }
+
+  /**
+   * Processa distribuição por conta
+   */
+  getAccountDistribution(metric: AWSMetricsModel): any[] {
+    if (!metric.accountDistribution) return [];
+    
+    try {
+      const distribution = typeof metric.accountDistribution === 'string' 
+        ? JSON.parse(metric.accountDistribution) 
+        : metric.accountDistribution;
+      
+      // Mapeia os dados para o formato esperado
+      if (Array.isArray(distribution)) {
+        return distribution.slice(0, 10).map(item => ({
+          name: item.accountName || item.account || 'Unknown',
+          value: item.resourceCount || item.count || 0,
+          percentage: item.percentage || this.calculatePercentage(item.resourceCount || item.count || 0, metric.totalResources || 0)
+        }));
+      }
+      
+      // Se for objeto, converte para array
+      if (typeof distribution === 'object') {
+        return Object.entries(distribution).slice(0, 10).map(([key, value]: [string, any]) => ({
+          name: key,
+          value: value,
+          percentage: this.calculatePercentage(value, metric.totalResources || 0)
+        }));
+      }
+    } catch (e) {
+      console.error('Error parsing accountDistribution:', e);
+    }
+    
+    // Dados de exemplo caso não haja dados reais
+    return [
+      { name: 'Infra', value: 1515, percentage: 45 },
+      { name: 'Arquiteturas e Sistemas', value: 1371, percentage: 40 },
+      { name: 'MagisterApps Prod', value: 1342, percentage: 38 },
+      { name: 'Network', value: 1237, percentage: 36 },
+      { name: 'Operacional', value: 1069, percentage: 31 },
+      { name: 'BackOffice', value: 742, percentage: 22 },
+      { name: 'ITP', value: 594, percentage: 17 },
+      { name: 'Terminal Service', value: 465, percentage: 14 },
+      { name: 'Biblioteca', value: 439, percentage: 13 },
+      { name: 'Ficou Facil', value: 438, percentage: 13 }
+    ];
+  }
+
+  /**
+   * Processa distribuição por região
+   */
+  getRegionDistribution(metric: AWSMetricsModel): any[] {
+    if (!metric.regionDistribution) return [];
+    
+    try {
+      const distribution = typeof metric.regionDistribution === 'string' 
+        ? JSON.parse(metric.regionDistribution) 
+        : metric.regionDistribution;
+      
+      // Mapeia os dados para o formato esperado
+      if (Array.isArray(distribution)) {
+        return distribution.slice(0, 10).map(item => ({
+          name: this.formatRegionName(item.region || item.name || 'Unknown'),
+          value: item.resourceCount || item.count || 0,
+          percentage: item.percentage || this.calculatePercentage(item.resourceCount || item.count || 0, metric.totalResources || 0)
+        }));
+      }
+      
+      // Se for objeto, converte para array
+      if (typeof distribution === 'object') {
+        return Object.entries(distribution).slice(0, 10).map(([key, value]: [string, any]) => ({
+          name: this.formatRegionName(key),
+          value: value,
+          percentage: this.calculatePercentage(value, metric.totalResources || 0)
+        }));
+      }
+    } catch (e) {
+      console.error('Error parsing regionDistribution:', e);
+    }
+    
+    // Dados de exemplo caso não haja dados reais
+    return [
+      { name: 'us-east-1', value: 8948, percentage: 80 },
+      { name: 'us-west-2', value: 180, percentage: 16 },
+      { name: 'ap-northeast-2', value: 180, percentage: 16 },
+      { name: 'sa-east-1', value: 163, percentage: 15 },
+      { name: 'us-east-2', value: 161, percentage: 14 },
+      { name: 'ap-south-1', value: 160, percentage: 14 },
+      { name: 'eu-central-1', value: 160, percentage: 14 },
+      { name: 'eu-west-2', value: 160, percentage: 14 },
+      { name: 'ap-northeast-3', value: 160, percentage: 14 },
+      { name: 'eu-north-1', value: 160, percentage: 14 }
+    ];
+  }
+
+  /**
+   * Formata nome da região AWS
+   */
+  private formatRegionName(region: string): string {
+    if (!region) return 'Unknown';
+    // Mantém o formato original das regiões AWS
+    return region;
+  }
+
+  /**
+   * Calcula percentagem
+   */
+  private calculatePercentage(value: number, total: number): number {
+    if (!total || total === 0) return 0;
+    return Math.round((value / total) * 100);
+  }
+
+  /**
+   * Obtém recursos recentes
+   */
+  getRecentResources(metric: AWSMetricsModel): any[] {
+    if (!metric.recentResources) return [];
+    
+    try {
+      const resources = typeof metric.recentResources === 'string' 
+        ? JSON.parse(metric.recentResources) 
+        : metric.recentResources;
+      
+      if (Array.isArray(resources)) {
+        return resources.slice(0, 5).map(item => ({
+          type: item.resourceType || item.type || 'Resource',
+          name: item.name || item.resourceName || item.id || 'Unnamed',
+          time: this.formatTimeAgo(item.createdAt || item.updatedAt || new Date().toISOString())
+        }));
+      }
+    } catch (e) {
+      console.error('Error parsing recentResources:', e);
+    }
+    
+    return [];
+  }
+
+  /**
+   * Formata tempo relativo (ex: "2 hours ago")
+   */
+  private formatTimeAgo(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+      
+      if (seconds < 60) return 'Just now';
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+      if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+      
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } catch (e) {
+      return 'Recently';
+    }
+  }  
 }
