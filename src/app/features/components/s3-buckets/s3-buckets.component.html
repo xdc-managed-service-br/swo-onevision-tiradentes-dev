@@ -1,5 +1,6 @@
 <!-- src/app/features/components/s3-buckets/s3-buckets.component.html -->
 <article class="ov-container" aria-labelledby="s3-title">
+
   <div class="ov-header">
     <h1 id="s3-title" class="ov-title">S3 Buckets</h1>
 
@@ -38,8 +39,7 @@
           id="s3Search"
           type="search"
           placeholder="Search by Bucket Name or Name Tag"
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="applyFilters()"
+          (input)="searchBuckets($event)"
           #searchInput />
         <button
           type="button"
@@ -63,7 +63,7 @@
     No buckets found matching your filters.
   </div>
 
-  <!-- Tabela desktop -->
+  <!-- Tabela (desktop) -->
   <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
     <table class="ov-table" aria-label="S3 buckets table">
       <thead>
@@ -82,18 +82,15 @@
       <tbody>
         <tr *ngFor="let resource of paginatedResources">
           <td *ngFor="let column of getVisibleColumns()">
-            <ng-container [ngSwitch]="column.key">
-              <span *ngSwitchCase="'hasLifecycleRules'" [ngClass]="getColumnClass(column.key, resource)">
-                {{ getColumnValue(column, resource) }}
-              </span>
-              <span *ngSwitchDefault [ngClass]="getColumnClass(column.key, resource)">
-                {{ getColumnValue(column, resource) }}
-              </span>
-            </ng-container>
+            <span [ngClass]="getColumnClass(column.key, resource)">
+              {{ getColumnValue(column, resource) }}
+            </span>
           </td>
           <td>
             <div class="ov-actions">
-              <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
+              <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">
+                View Details
+              </button>
             </div>
           </td>
         </tr>
@@ -101,7 +98,7 @@
     </table>
   </section>
 
-  <!-- Cards mobile -->
+  <!-- Cards (mobile) -->
   <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
     <article class="ov-card" *ngFor="let resource of paginatedResources">
       <header class="ov-card__head">
@@ -109,13 +106,13 @@
           <div class="ov-card__title">{{ resource.bucketName }}</div>
           <div class="ov-card__sub">{{ resource.bucketNameTag || 'No Tag' }}</div>
         </div>
-        <span [ngClass]="getColumnClass('hasLifecycleRules', resource)">
+        <span [ngClass]="resource.hasLifecycleRules ? 'status-running' : 'status-stopped'">
           {{ resource.hasLifecycleRules ? 'Enabled' : 'Disabled' }}
         </span>
       </header>
       <div class="ov-card__grid">
         <div><div class="ov-k">Objects</div><div class="ov-v">{{ resource.objectCount ?? 'N/A' }}</div></div>
-        <div><div class="ov-k">Storage</div><div class="ov-v">{{ resource.storageBytesNum ? (resource.storageBytesNum | number) : '0' }} B</div></div>
+        <div class="ov-k">Storage</div><div class="ov-v">{{ resource.storageBytes || 'N/A' }}</div>
         <div><div class="ov-k">Region</div><div class="ov-v">{{ resource.region }}</div></div>
         <div><div class="ov-k">Account</div><div class="ov-v">{{ resource.accountName || resource.accountId }}</div></div>
         <div><div class="ov-k">Created</div><div class="ov-v">{{ formatDate(resource.createdAt) }}</div></div>
@@ -138,7 +135,7 @@
          style="max-width: 800px;">
       <div class="ov-modal__head">
         <h2 id="s3-details-title" class="ov-modal__title">
-          S3 Bucket Details: {{ selectedResource.bucketName }}
+          S3 Bucket Details: {{ selectedResource?.bucketName }}
         </h2>
         <button class="ov-btn" (click)="closeDetails()" aria-label="Close">×</button>
       </div>
@@ -147,32 +144,34 @@
         <section aria-labelledby="bucket-info">
           <h3 id="bucket-info">Bucket Information</h3>
           <table class="ov-details-table">
-            <tr><th>Bucket Name</th><td>{{ selectedResource.bucketName }}</td></tr>
-            <tr><th>Name Tag</th><td>{{ selectedResource.bucketNameTag || 'N/A' }}</td></tr>
+            <tr><th>Bucket Name</th><td>{{ selectedResource?.bucketName }}</td></tr>
+            <tr><th>Name Tag</th><td>{{ selectedResource?.bucketNameTag || 'N/A' }}</td></tr>
             <tr>
               <th>Lifecycle Rules</th>
-              <td><span [ngClass]="selectedResource.hasLifecycleRules ? 'status-running' : 'status-stopped'">
-                {{ selectedResource.hasLifecycleRules ? 'Enabled' : 'Disabled' }}
-              </span></td>
+              <td>
+                <span [ngClass]="selectedResource?.hasLifecycleRules ? 'status-running' : 'status-stopped'">
+                  {{ selectedResource?.hasLifecycleRules ? 'Enabled' : 'Disabled' }}
+                </span>
+              </td>
             </tr>
-            <tr><th>Objects</th><td>{{ selectedResource.objectCount ?? 'N/A' }}</td></tr>
-            <tr><th>Storage Used</th><td>{{ formatBytes(selectedResource.storageBytesNum || 0) }}</td></tr>
-            <tr><th>Created</th><td>{{ formatDate(selectedResource.createdAt) }}</td></tr>
+            <tr><th>Objects</th><td>{{ selectedResource?.objectCount ?? 'N/A' }}</td></tr>
+            <tr><th>Storage Used</th><td>{{ selectedResource?.storageBytes || 'N/A' }}</td></tr>
+            <tr><th>Created</th><td>{{ formatDate(selectedResource?.createdAt) }}</td></tr>
           </table>
         </section>
 
         <section aria-labelledby="location-info">
           <h3 id="location-info">Location Information</h3>
           <table class="ov-details-table">
-            <tr><th>Region</th><td>{{ selectedResource.region }}</td></tr>
-            <tr><th>Account ID</th><td>{{ selectedResource.accountId }}</td></tr>
-            <tr *ngIf="selectedResource.accountName"><th>Account Name</th><td>{{ selectedResource.accountName }}</td></tr>
+            <tr><th>Region</th><td>{{ selectedResource?.region }}</td></tr>
+            <tr><th>Account ID</th><td>{{ selectedResource?.accountId }}</td></tr>
+            <tr *ngIf="selectedResource?.accountName"><th>Account Name</th><td>{{ selectedResource?.accountName }}</td></tr>
           </table>
         </section>
 
-        <section *ngIf="selectedResource.tags" aria-labelledby="tags-info">
+        <section *ngIf="selectedResource?.tags" aria-labelledby="tags-info">
           <h3 id="tags-info">Tags</h3>
-          <app-resource-tags [tags]="selectedResource.tags"></app-resource-tags>
+          <app-resource-tags [tags]="selectedResource?.tags"></app-resource-tags>
         </section>
       </div>
 
@@ -182,26 +181,19 @@
     </div>
   </div>
 
-  <!-- Pagination Controls -->
+  <!-- Paginação -->
   <div class="ov-pagination" *ngIf="!loading && filteredResources.length > 0">
     <div class="ov-pagination__info">
       Showing {{ pageStartIndex }} - {{ pageEndIndex }} of {{ filteredResources.length }} items
     </div>
-
     <div class="ov-pagination__controls">
       <button class="ov-btn ov-btn--subtle" (click)="goToFirstPage()" [disabled]="currentPage === 1">First</button>
       <button class="ov-btn ov-btn--subtle" (click)="goToPreviousPage()" [disabled]="currentPage === 1">Previous</button>
-
       <span class="ov-pagination__pages">
-        <button
-          class="ov-btn"
-          *ngFor="let page of getPageNumbers()"
-          (click)="goToPage(page)"
-          [class.is-active]="page === currentPage">
+        <button class="ov-btn" *ngFor="let page of getPageNumbers()" (click)="goToPage(page)" [class.is-active]="page===currentPage">
           {{ page }}
         </button>
       </span>
-
       <button class="ov-btn ov-btn--subtle" (click)="goToNextPage()" [disabled]="currentPage === totalPages">Next</button>
       <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
     </div>

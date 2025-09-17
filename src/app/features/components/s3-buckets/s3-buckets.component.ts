@@ -12,7 +12,7 @@ interface ColumnDefinition {
   key: ColumnKey;
   label: string;
   sortable?: boolean;
-  transform?: (resource: S3Bucket & { storageBytesNum?: number }) => string;
+  transform?: (resource: S3Bucket) => string;
 }
 
 type ColumnKey = keyof S3Bucket;
@@ -25,11 +25,11 @@ type ColumnKey = keyof S3Bucket;
 })
 export class S3BucketsComponent implements OnInit, OnDestroy {
   // Data
-  resources: (S3Bucket & { storageBytesNum?: number })[] = [];
-  filteredResources: (S3Bucket & { storageBytesNum?: number })[] = [];
-  paginatedResources: (S3Bucket & { storageBytesNum?: number })[] = [];
+  resources: S3Bucket[] = [];
+  filteredResources: S3Bucket[] = [];
+  paginatedResources: S3Bucket[] = [];
   loading = true;
-  selectedResource: (S3Bucket & { storageBytesNum?: number }) | null = null;
+  selectedResource: S3Bucket | null = null;
 
   // Pagination
   pageSize = 50;
@@ -55,15 +55,16 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
   selectedColumns: Set<string> = new Set();
 
   availableColumns: ColumnDefinition[] = [
-    { key: 'bucketName',       label: 'Bucket Name', sortable: true },
-    { key: 'bucketNameTag',    label: 'Name Tag',    sortable: true },
-    { key: 'hasLifecycleRules',label: 'Lifecycle',   sortable: true, transform: (r) => r.hasLifecycleRules ? 'Enabled' : 'Disabled' },
-    { key: 'objectCount',      label: 'Objects',     sortable: true, transform: (r) => this.formatNumber(r.objectCount ?? 0) },
-    { key: 'storageBytes',     label: 'Storage Used',sortable: true, transform: (r) => this.formatBytes(r.storageBytesNum ?? this.parseBytes(r.storageBytes)) },
-    { key: 'region',           label: 'Region',      sortable: true },
-    { key: 'accountId',        label: 'Account ID',  sortable: true },
-    { key: 'accountName',      label: 'Account Name',sortable: true },
-    { key: 'createdAt',        label: 'Created',     sortable: true, transform: (r) => this.formatDate(r.createdAt) },
+    { key: 'bucketName',        label: 'Bucket Name',  sortable: true },
+    { key: 'bucketNameTag',     label: 'Name Tag',     sortable: true },
+    { key: 'hasLifecycleRules', label: 'Lifecycle',    sortable: true, transform: (r) => r.hasLifecycleRules ? 'Enabled' : 'Disabled' },
+    { key: 'objectCount',       label: 'Objects',      sortable: true, transform: (r) => this.formatNumber(r.objectCount ?? 0) },
+    // ⬇️ AGORA É STRING PURA (sem conversão)
+    { key: 'storageBytes',      label: 'Storage Used', sortable: true, transform: (r) => r.storageBytes || 'N/A' },
+    { key: 'region',            label: 'Region',       sortable: true },
+    { key: 'accountId',         label: 'Account ID',   sortable: true },
+    { key: 'accountName',       label: 'Account Name', sortable: true },
+    { key: 'createdAt',         label: 'Created',      sortable: true, transform: (r) => this.formatDate(r.createdAt) },
   ];
 
   defaultColumns = [
@@ -106,11 +107,8 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.resources = (data || []).map((r: S3Bucket) => {
-            // parse storageBytes (string) → number para sort/format
-            const storageBytesNum = this.parseBytes(r.storageBytes);
-            return { ...r, storageBytesNum };
-          });
+          // Nada de parse/conversão aqui — mantemos storageBytes como veio
+          this.resources = (data || []) as S3Bucket[];
 
           this.filteredResources = [...this.resources];
           this.uniqueRegions = [...new Set(this.resources.map(r => r.region).filter(Boolean))].sort();
@@ -191,13 +189,13 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  filterByRegion(e: Event): void  { this.regionFilter    = (e.target as HTMLSelectElement).value; this.applyFilters(); }
-  filterByAccount(e: Event): void { this.accountFilter   = (e.target as HTMLSelectElement).value; this.applyFilters(); }
+  filterByRegion(e: Event): void    { this.regionFilter    = (e.target as HTMLSelectElement).value; this.applyFilters(); }
+  filterByAccount(e: Event): void   { this.accountFilter   = (e.target as HTMLSelectElement).value; this.applyFilters(); }
   filterByLifecycle(e: Event): void { this.lifecycleFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
 
   applyFilters(): void {
     this.filteredResources = this.resources.filter(r => {
-      // search: apenas bucketName e bucketNameTag
+      // busca: só bucketName e bucketNameTag
       if (this.searchTerm) {
         const name = r.bucketName?.toLowerCase() ?? '';
         const tag  = r.bucketNameTag?.toLowerCase() ?? '';
@@ -243,15 +241,11 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
         return (da - db) * dir;
       }
       if (column === 'objectCount') {
-        const na = typeof A === 'number' ? A : -Infinity;
-        const nb = typeof B === 'number' ? B : -Infinity;
+        const na = typeof A === 'number' ? A : parseInt(A ?? '0', 10) || 0;
+        const nb = typeof B === 'number' ? B : parseInt(B ?? '0', 10) || 0;
         return (na - nb) * dir;
       }
-      if (column === 'storageBytes') {
-        const sa = a.storageBytesNum ?? this.parseBytes(a.storageBytes);
-        const sb = b.storageBytesNum ?? this.parseBytes(b.storageBytes);
-        return (sa - sb) * dir;
-      }
+      // storageBytes agora é STRING: ordena alfabeticamente
       if (typeof A === 'string' && typeof B === 'string') {
         return A.localeCompare(B) * dir;
       }
@@ -259,7 +253,6 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
         const va = A ? 1 : 0, vb = B ? 1 : 0;
         return (va - vb) * dir;
       }
-      // fallback
       return 0;
     });
 
@@ -298,11 +291,11 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
   goToNextPage(): void     { if (this.currentPage < this.totalPages) { this.currentPage++; this.recomputePagination(); } }
 
   // === Modal ===
-  showDetails(r: S3Bucket & { storageBytesNum?: number }): void { this.selectedResource = r; }
+  showDetails(r: S3Bucket): void { this.selectedResource = r; }
   closeDetails(): void { this.selectedResource = null; }
 
   // === Cell helpers ===
-  getColumnValue(column: ColumnDefinition, resource: S3Bucket & { storageBytesNum?: number }): string {
+  getColumnValue(column: ColumnDefinition, resource: S3Bucket): string {
     if (column.transform) return column.transform(resource);
     const value = (resource as any)[column.key as keyof S3Bucket];
     if (value === null || value === undefined) return 'N/A';
@@ -323,10 +316,7 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
     const cols: ExportColumn[] = visible.map(col => ({
       key: col.key,
       label: col.label,
-      transform: col.transform ?? ((r: S3Bucket & { storageBytesNum?: number }) => {
-        if (col.key === 'storageBytes') return this.formatBytes(r.storageBytesNum ?? this.parseBytes(r.storageBytes));
-        return (r as any)[col.key] ?? '';
-      })
+      transform: col.transform ?? ((r: S3Bucket) => (r as any)[col.key] ?? '')
     }));
     this.exportService.exportDataToCSV(this.filteredResources, cols, filename);
   }
@@ -338,12 +328,7 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
     const cols: ExportColumn[] = visible.map(col => ({
       key: col.key,
       label: col.label,
-      transform: col.transform ?? ((r: S3Bucket & { storageBytesNum?: number }) => {
-        if (col.key === 'createdAt')   return r.createdAt ? new Date(r.createdAt).toISOString() : '';
-        if (col.key === 'objectCount') return typeof r.objectCount === 'number' ? r.objectCount : null as any;
-        if (col.key === 'storageBytes') return r.storageBytesNum ?? this.parseBytes(r.storageBytes);
-        return (r as any)[col.key] ?? '';
-      })
+      transform: col.transform ?? ((r: S3Bucket) => (r as any)[col.key] ?? '')
     }));
     this.exportService.exportDataToXLSX(this.filteredResources, cols, filename);
   }
@@ -357,19 +342,5 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
 
   formatNumber(n: number): string {
     try { return new Intl.NumberFormat().format(n); } catch { return String(n); }
-  }
-
-  parseBytes(s?: string): number {
-    if (!s) return 0;
-    const num = parseInt(String(s), 10);
-    return isNaN(num) ? 0 : num;
-  }
-
-  formatBytes(bytes: number): string {
-    if (!bytes || bytes < 0) return '0 B';
-    const units = ['B','KB','MB','GB','TB','PB'];
-    let i = 0, v = bytes;
-    while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
-    return `${v.toFixed(v < 10 ? 2 : v < 100 ? 1 : 0)} ${units[i]}`;
   }
 }
