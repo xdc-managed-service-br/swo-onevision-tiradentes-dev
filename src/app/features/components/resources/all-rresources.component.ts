@@ -300,16 +300,58 @@ export class ResourcesComponent implements OnInit, OnDestroy {
     return typeMap[resourceType] || resourceType;
   }
   
-  // Export to CSV
+// === Export columns (CSV → strings formatadas) ===
+exportColumnsCsv: ExportColumn[] = [
+  { key: 'resourceType', label: 'Type' },
+  {
+    key: 'identifier',
+    label: 'Identifier',
+    transform: (r) => this.getResourceIdentifier(r)
+  },
+  { key: 'resourceName', label: 'Name' },
+  { key: 'region', label: 'Region' },
+  {
+    key: 'accountId',
+    label: 'Account',
+    transform: (r) => r.accountName || r.accountId
+  },
+  {
+    key: 'createdAt',
+    label: 'Created',
+    transform: (r) => this.formatDate(r.createdAt)
+  },
+  { key: 'state', label: 'State' },
+  {
+    key: 'cost',
+    label: 'Monthly Cost',
+    transform: (r) => (typeof r.cost === 'number' ? `$${r.cost.toFixed(2)}` : 'N/A')
+  }
+];
+
+  // === Export columns (XLSX → valores “crus” quando possível) ===
+  exportColumnsXlsx: ExportColumn[] = [
+    { key: 'resourceType', label: 'Type' },
+    { key: 'identifier', label: 'Identifier', transform: (r) => this.getResourceIdentifier(r) },
+    { key: 'resourceName', label: 'Name' },
+    { key: 'region', label: 'Region' },
+    { key: 'accountId', label: 'Account', transform: (r) => r.accountName || r.accountId },
+    // passe uma data parseável por Excel; ISO é seguro
+    { key: 'createdAt', label: 'Created', transform: (r) => (r.createdAt ? new Date(r.createdAt).toISOString() : '') },
+    { key: 'state', label: 'State' },
+    // número cru para o Excel poder formatar como moeda
+    { key: 'cost', label: 'Monthly Cost', transform: (r) => (typeof r.cost === 'number' ? r.cost : null) }
+  ];
+
   exportToCSV(): void {
     if (!this.filteredResources.length) return;
-    
     const filename = 'all-resources.csv';
-    this.exportService.exportDataToCSV(
-      this.filteredResources, 
-      this.exportColumns,
-      filename
-    );
+    this.exportService.exportDataToCSV(this.filteredResources, this.exportColumnsCsv, filename);
+  }
+
+  exportToXLSX(): void {
+    if (!this.filteredResources.length) return;
+    const filename = 'all-resources.xlsx';
+    this.exportService.exportDataToXLSX(this.filteredResources, this.exportColumnsXlsx, filename);
   }
   
   // Pagination methods

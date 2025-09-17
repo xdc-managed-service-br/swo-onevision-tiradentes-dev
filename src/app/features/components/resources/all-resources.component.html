@@ -54,6 +54,11 @@
         class="ov-btn ov-btn--subtle"
         *ngIf="!loading && filteredResources.length > 0"
         (click)="exportToCSV()">Export to CSV</button>
+
+      <button
+        class="ov-btn ov-btn--subtle"
+        *ngIf="!loading && filteredResources.length > 0"
+        (click)="exportToXLSX()">Export to XLSX</button>
       <button
         type="button"
         class="ov-btn ov-btn--subtle"
