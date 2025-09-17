@@ -1,82 +1,713 @@
 // src/app/features/dashboard/dashboard.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { Subject, of } from 'rxjs';
-import { takeUntil, finalize, catchError } from 'rxjs/operators';
-import { ErrorService } from '../../core/services/error.service';
+import { Subject, takeUntil } from 'rxjs';
 import { MetricService } from '../../core/services/metric.service';
-import { AWSMetricsModel } from '../../models/metric.model';
-import { CollectorService } from '../../core/services/collector.service';
+import { MetricProcessorService, ProcessedMetricData } from '../../core/services/metric-processor.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css', '../../shared/styles/onevision-base.css']
+  imports: [CommonModule],
+  template: `
+    <div class="dashboard-container">
+      <!-- Header Section -->
+      <div class="dashboard-header">
+        <h1>AWS Resources Dashboard</h1>
+        <div class="header-actions">
+          <button class="btn-refresh" (click)="refreshData()">
+            <i class="fas fa-sync-alt" [class.spinning]="isLoading"></i>
+            Refresh
+          </button>
+          <span class="last-updated">
+            Last updated: {{ getFormattedDate(dashboardData?.summary?.lastUpdated) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="summary-cards">
+        <div class="summary-card">
+          <div class="card-icon total-resources">
+            <i class="fas fa-server"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-value">{{ dashboardData?.summary?.totalResources || 0 }}</div>
+            <div class="card-label">Total Resources</div>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon total-accounts">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-value">{{ dashboardData?.summary?.totalAccounts || 0 }}</div>
+            <div class="card-label">AWS Accounts</div>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon total-regions">
+            <i class="fas fa-globe-americas"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-value">{{ dashboardData?.summary?.totalRegions || 0 }}</div>
+            <div class="card-label">Active Regions</div>
+          </div>
+        </div>
+
+        <div class="summary-card" *ngIf="dashboardData?.costOptimization as costOptimization">
+          <div class="card-icon savings">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-value">
+              {{ formatCurrency(costOptimization.potentialSavings) }}
+            </div>
+            <div class="card-label">Potential Monthly Savings</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Distribution Cards -->
+      <div class="distribution-grid">
+        <!-- Account Distribution Card -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3>Resources by Account</h3>
+            <span class="total-count">{{ getAccountTotal() }} resources</span>
+          </div>
+          
+          <div class="distribution-list">
+            <div *ngFor="let account of dashboardData?.accountDistribution || []" 
+                 class="distribution-item">
+              <div class="item-info">
+                <span class="item-name">{{ account.accountName }}</span>
+                <span class="item-count">{{ account.count }}</span>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar account-bar" 
+                     [style.width.%]="account.percentage">
+                  <span class="progress-label">{{ account.percentage }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Region Distribution Card -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3>Resources by Region</h3>
+            <span class="total-count">{{ dashboardData?.regionDistribution?.length || 0 }} regions</span>
+          </div>
+          
+          <div class="distribution-list">
+            <div *ngFor="let region of getTopRegions()" 
+                 class="distribution-item">
+              <div class="item-info">
+                <span class="item-name">{{ region.region }}</span>
+                <span class="item-count">{{ region.count }}</span>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar region-bar" 
+                     [style.width.%]="region.percentage">
+                  <span class="progress-label">{{ region.percentage }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resources Section -->
+      <div class="resources-section">
+        <!-- Recent Resources Card -->
+        <div class="dashboard-card recent-resources-card">
+          <div class="card-header">
+            <h3>Recent Resources</h3>
+            <span class="total-count">Last 10 created</span>
+          </div>
+          
+          <div class="resources-list">
+            <div *ngFor="let resource of getRecentResources()" 
+                 class="resource-item">
+              <div class="resource-icon">
+                <i [class]="getResourceIcon(resource.resourceType)"></i>
+              </div>
+              <div class="resource-details">
+                <div class="resource-name">{{ resource.resourceName }}</div>
+                <div class="resource-info">
+                  <span class="resource-type">{{ resource.resourceType }}</span>
+                  <span class="separator">•</span>
+                  <span class="resource-region">{{ resource.region }}</span>
+                  <span class="separator">•</span>
+                  <span class="resource-time">{{ getRelativeTime(resource.createdAt) }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div *ngIf="!(dashboardData?.recentResources?.length)" 
+                 class="no-resources">
+              <p>No recent resources found</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resource Types Distribution -->
+        <div class="dashboard-card resource-types-card">
+          <div class="card-header">
+            <h3>Resource Types</h3>
+            <span class="total-count">{{ resourceTypes.length }} types</span>
+          </div>
+          
+          <div class="resource-types-grid">
+            <div *ngFor="let type of resourceTypes" class="resource-type-item">
+              <span class="type-name">{{ type.name }}</span>
+              <span class="type-count">{{ type.count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Health & Security Section -->
+      <div class="health-security-grid" *ngIf="dashboardData?.ec2Health || dashboardData?.security">
+        <!-- EC2 Health Card -->
+        <div class="dashboard-card" *ngIf="dashboardData?.ec2Health as ec2Health">
+          <div class="card-header">
+            <h3>EC2 Health</h3>
+          </div>
+          
+          <div class="health-metrics">
+            <div class="health-metric">
+              <div class="metric-label">Running Instances</div>
+              <div class="metric-value">{{ ec2Health.running }}</div>
+              <div class="metric-bar">
+                <div class="bar-fill running" 
+                     [style.width.%]="getPercentage(ec2Health.running, ec2Health.total)">
+                </div>
+              </div>
+            </div>
+
+            <div class="health-metric">
+              <div class="metric-label">CloudWatch Agent Coverage</div>
+              <div class="metric-value">{{ ec2Health.cloudwatchAgentCoverage }}%</div>
+              <div class="metric-bar">
+                <div class="bar-fill coverage" 
+                     [style.width.%]="ec2Health.cloudwatchAgentCoverage">
+                </div>
+              </div>
+            </div>
+
+            <div class="health-metric">
+              <div class="metric-label">SSM Agent Connected</div>
+              <div class="metric-value">{{ ec2Health.ssmAgentCoverage }}%</div>
+              <div class="metric-bar">
+                <div class="bar-fill ssm" 
+                     [style.width.%]="ec2Health.ssmAgentCoverage">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Card -->
+        <div class="dashboard-card" *ngIf="dashboardData?.security as security">
+          <div class="card-header">
+            <h3>Security Groups</h3>
+          </div>
+          
+          <div class="security-metrics">
+            <div class="security-stat">
+              <span class="stat-label">Total Groups</span>
+              <span class="stat-value">{{ security.totalGroups }}</span>
+            </div>
+            <div class="security-stat">
+              <span class="stat-label">Exposed to Internet</span>
+              <span class="stat-value danger">{{ security.exposedGroups }}</span>
+            </div>
+            <div class="security-stat">
+              <span class="stat-label">Exposure Rate</span>
+              <span class="stat-value" 
+                    [class.danger]="security.exposurePercentage">
+                {{ security.exposurePercentage }}%
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Overlay -->
+      <div class="loading-overlay" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Loading metrics data...</p>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .dashboard-container {
+      padding: 24px;
+      background: #0f0f1e;
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .dashboard-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-refresh {
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s;
+    }
+
+    .btn-refresh:hover {
+      transform: scale(1.05);
+    }
+
+    .btn-refresh i.spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .last-updated {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .summary-card {
+      background: #1e1e2e;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .card-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .card-icon.total-resources {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+
+    .card-icon.total-accounts {
+      background: linear-gradient(135deg, #ec4899, #f43f5e);
+    }
+
+    .card-icon.total-regions {
+      background: linear-gradient(135deg, #10b981, #14b8a6);
+    }
+
+    .card-icon.savings {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    }
+
+    .card-content {
+      flex: 1;
+    }
+
+    .card-value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .card-label {
+      font-size: 14px;
+      color: #888;
+    }
+
+    .distribution-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .dashboard-card {
+      background: #1e1e2e;
+      border-radius: 12px;
+      padding: 20px;
+      color: #fff;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .card-header h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .total-count {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .distribution-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .distribution-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .item-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .item-name {
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    .item-count {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .progress-bar-container {
+      height: 28px;
+      background: #2a2a3e;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 14px;
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      position: relative;
+    }
+
+    .progress-bar.account-bar {
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    }
+
+    .progress-bar.region-bar {
+      background: linear-gradient(90deg, #10b981, #14b8a6);
+    }
+
+    .progress-label {
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .resources-section {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .resources-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 450px;
+      overflow-y: auto;
+    }
+
+    .resource-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #2a2a3e;
+      border-radius: 8px;
+      transition: background 0.2s ease;
+      cursor: pointer;
+    }
+
+    .resource-item:hover {
+      background: #323246;
+    }
+
+    .resource-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .resource-icon i {
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .resource-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .resource-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .resource-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #888;
+    }
+
+    .resource-type {
+      color: #a78bfa;
+    }
+
+    .resource-region {
+      color: #60a5fa;
+    }
+
+    .resource-time {
+      color: #10b981;
+    }
+
+    .separator {
+      color: #4a4a5e;
+    }
+
+    .no-resources {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .resource-types-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .resource-type-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #2a2a3e;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .type-name {
+      color: #ccc;
+    }
+
+    .type-count {
+      font-weight: 600;
+      color: #8b5cf6;
+    }
+
+    .health-security-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .health-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .health-metric {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .metric-label {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .metric-value {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .metric-bar {
+      height: 8px;
+      background: #2a2a3e;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .bar-fill.running {
+      background: #10b981;
+    }
+
+    .bar-fill.coverage {
+      background: #3b82f6;
+    }
+
+    .bar-fill.ssm {
+      background: #8b5cf6;
+    }
+
+    .security-metrics {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .security-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #2a2a3e;
+      border-radius: 8px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #888;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .stat-value.danger {
+      color: #ef4444;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid #2a2a3e;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .resources-section {
+        grid-template-columns: 1fr;
+      }
+
+      .distribution-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .health-security-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  `]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  loading = false;
-  error: string | null = null;
-  debugMode = true; // Ativa modo debug
-
-  currentMetrics: AWSMetricsModel[] = [];
-  historicalMetrics: AWSMetricsModel[] = [];
   
-  // Métricas agrupadas por tipo para melhor visualização
-  metricsByType: Map<string, AWSMetricsModel> = new Map();
-
-  get metrics(): AWSMetricsModel[] {
-    return [...this.currentMetrics, ...this.historicalMetrics];
-  }
-
-  get currentMetric(): AWSMetricsModel | null {
-    return this.currentMetrics.length > 0 ? this.currentMetrics[0] : null;
-  }
-
-  selectedDate = new FormControl<string | null>(null);
-
-  // Estatísticas para debug
-  debugStats = {
-    totalMetrics: 0,
-    currentMetrics: 0,
-    historicalMetrics: 0,
-    fieldsWithData: 0,
-    fieldsEmpty: 0,
-    numericFieldsCount: 0,
-    stringFieldsCount: 0
-  };
+  isLoading = false;
+  dashboardData: ProcessedMetricData | null = null;
+  resourceTypes: { name: string; count: number }[] = [];
 
   constructor(
     private metricService: MetricService,
-    private errorService: ErrorService,
-    private collectorService: CollectorService
+    private metricProcessor: MetricProcessorService
   ) {}
 
   ngOnInit() {
-    console.info('[Dashboard] ngOnInit - Debug mode:', this.debugMode);
-    
-    // Ativa debug no service se necessário
-    if (this.debugMode) {
-      this.metricService.setDebugMode(true);
-    }
-    
-    this.fetchMetrics();
-    
-    // Observa mudanças na data selecionada
-    this.selectedDate.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(date => {
-        if (date) {
-          this.fetchHistoricalMetrics(date);
-        } else {
-          this.historicalMetrics = [];
-          this.updateMetricsByType();
-        }
-      });
+    this.loadDashboardData();
   }
 
   ngOnDestroy() {
@@ -84,588 +715,130 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Dispara o coletor Lambda
-   */
-  onTriggerCollector() {
-    console.log('[Dashboard] Triggering collector...');
-    this.collectorService.triggerCollector()
-      .pipe(
-        takeUntil(this.destroy$),
-        catchError((error) => {
-          console.error('[Dashboard] Failed to trigger collector', error);
-          alert('Failed to trigger collector: ' + error.message);
-          return of(null);
-        })
-      )
-      .subscribe((res) => {
-        if (res !== null) {
-          console.log('[Dashboard] Collector triggered successfully:', res);
-          alert('Collector triggered successfully! Refreshing metrics in 5 seconds...');
-          
-          // Aguarda 5 segundos e recarrega métricas
-          setTimeout(() => {
-            this.metricService.clearCache();
-            this.fetchMetrics();
-          }, 5000);
-        }
-      });
-  }
-
-  /**
-   * Busca métricas atuais
-   */
-  fetchMetrics() {
-    console.info('[Dashboard] fetchMetrics(): start');
-    this.loading = true;
-    this.error = null;
+  loadDashboardData() {
+    this.isLoading = true;
     
     this.metricService.getCurrentMetrics()
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => {
-          this.loading = false;
-          console.info('[Dashboard] fetchMetrics(): complete');
-        }),
-        catchError((error) => {
-          console.error('[Dashboard] fetchMetrics(): error', error);
-          this.errorService.handleError(error);
-          this.error = error?.message || 'Failed to load metrics';
-          return of([]);
-        })
-      )
-      .subscribe((metrics) => {
-        console.info('[Dashboard] fetchMetrics(): received', {
-          count: metrics?.length,
-          sample: metrics?.slice(0, 1)
-        });
-        
-        this.currentMetrics = metrics;
-        this.updateMetricsByType();
-        
-        if (this.debugMode) {
-          this.analyzeMetricsData(metrics);
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (metrics) => {
+          console.log('[Dashboard] Processing metrics:', metrics.length);
+          
+          // Processa os dados para o dashboard
+          this.dashboardData = this.metricProcessor.processMetricsForDashboard(metrics);
+          
+          // Extrai tipos de recursos
+          this.extractResourceTypes();
+          
+          console.log('[Dashboard] Data processed:', this.dashboardData);
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('[Dashboard] Error loading metrics:', error);
+          this.isLoading = false;
         }
       });
   }
 
-  /**
-   * Busca métricas históricas
-   */
-  fetchHistoricalMetrics(date: string) {
-    if (!date) {
-      this.historicalMetrics = [];
-      this.updateMetricsByType();
+  refreshData() {
+    this.metricService.clearCache();
+    this.loadDashboardData();
+  }
+
+  private extractResourceTypes() {
+    if (!this.dashboardData?.resourceCounts) {
+      this.resourceTypes = [];
       return;
     }
-    
-    console.log('[Dashboard] Fetching historical metrics for:', date);
-    this.loading = true;
-    
-    this.metricService.getHistoricalMetricsByDate(date)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => {
-          this.loading = false;
-        }),
-        catchError((error) => {
-          console.error('[Dashboard] fetchHistoricalMetrics(): error', error);
-          this.errorService.handleError(error);
-          this.error = error?.message || 'Failed to load historical metrics';
-          return of([]);
-        })
-      )
-      .subscribe((metrics) => {
-        console.log('[Dashboard] Historical metrics received:', metrics.length);
-        this.historicalMetrics = metrics;
-        this.updateMetricsByType();
-      });
+
+    this.resourceTypes = Array.from(this.dashboardData.resourceCounts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .filter(type => type.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 12); // Top 12 resource types
   }
 
-  /**
-   * Organiza métricas por tipo
-   */
-  private updateMetricsByType() {
-    this.metricsByType.clear();
+  // Métodos auxiliares para o template
+  getFormattedDate(date: Date | undefined): string {
+    if (!date) return 'Unknown';
     
-    const allMetrics = [...this.currentMetrics, ...this.historicalMetrics];
+    const now = new Date();
+    const diffMs = now.getTime() - new Date(date).getTime();
+    const diffMins = Math.floor(diffMs / 60000);
     
-    allMetrics.forEach(metric => {
-      if (metric.id) {
-        // Extrai o tipo da métrica do ID
-        const typeMatch = metric.id.match(/^METRICS-([^-]+)/);
-        if (typeMatch) {
-          const type = typeMatch[1];
-          this.metricsByType.set(type, metric);
-        }
-      }
-    });
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hours ago`;
     
-    console.log('[Dashboard] Metrics by type:', Array.from(this.metricsByType.keys()));
-  }
-
-  /**
-   * Analisa dados das métricas para debug
-   */
-  private analyzeMetricsData(metrics: AWSMetricsModel[]) {
-    console.group('[Dashboard] Metrics Analysis');
-    
-    // Reset stats
-    this.debugStats = {
-      totalMetrics: metrics.length,
-      currentMetrics: metrics.filter(m => m.id?.endsWith('-CURRENT')).length,
-      historicalMetrics: metrics.filter(m => !m.id?.endsWith('-CURRENT')).length,
-      fieldsWithData: 0,
-      fieldsEmpty: 0,
-      numericFieldsCount: 0,
-      stringFieldsCount: 0
-    };
-    
-    if (metrics.length > 0) {
-      const firstMetric = metrics[0];
-      const allFields = Object.keys(firstMetric);
-      
-      allFields.forEach(field => {
-        const value = (firstMetric as any)[field];
-        
-        if (value !== null && value !== undefined && value !== '') {
-          this.debugStats.fieldsWithData++;
-        } else {
-          this.debugStats.fieldsEmpty++;
-          console.warn(`[Dashboard] Empty field: ${field}`);
-        }
-        
-        if (typeof value === 'number') {
-          this.debugStats.numericFieldsCount++;
-        } else if (typeof value === 'string') {
-          this.debugStats.stringFieldsCount++;
-        }
-      });
-      
-      console.log('Debug Stats:', this.debugStats);
-      
-      // Log campos numéricos críticos
-      console.group('Critical Numeric Fields Check');
-      const criticalFields = [
-        'totalResources', 'byState_running', 'byState_stopped',
-        'cloudwatchAgent_memoryMonitoring', 'cloudwatchAgent_diskMonitoring',
-        'ssmAgent_connected', 'resourceCounts_EC2Instance', 'resourceCounts_S3Bucket'
-      ];
-      
-      criticalFields.forEach(field => {
-        const value = (firstMetric as any)[field];
-        console.log(`${field}:`, {
-          value,
-          type: typeof value,
-          isNumber: typeof value === 'number',
-          isEmpty: value === null || value === undefined || value === ''
-        });
-      });
-      console.groupEnd();
-    }
-    
-    console.groupEnd();
-  }
-
-  /**
-   * Formata valor para exibição
-   */
-  formatValue(value: any): string {
-    if (value === null || value === undefined) {
-      return 'N/A';
-    }
-    
-    if (typeof value === 'object') {
-      if (value instanceof Date) {
-        return value.toLocaleString();
-      }
-      return JSON.stringify(value, null, 2);
-    }
-    
-    if (typeof value === 'number') {
-      // Formata números grandes com separadores
-      if (value >= 1000) {
-        return value.toLocaleString();
-      }
-      // Formata porcentagens
-      if (value > 0 && value < 1) {
-        return (value * 100).toFixed(2) + '%';
-      }
-      return value.toString();
-    }
-    
-    return String(value);
-  }
-
-  /**
-   * Verifica se um campo tem valor válido
-   */
-  hasValue(value: any): boolean {
-    return value !== null && value !== undefined && value !== '' && value !== 0;
-  }
-
-  private toNumber(value: number | null | undefined): number {
-    return typeof value === 'number' ? value : 0;
-  }
-
-  /**
-   * Obtém classe CSS baseada no tipo de métrica
-   */
-  getMetricTypeClass(metricId: string): string {
-    if (!metricId) return '';
-    
-    if (metricId.includes('EC2HEALTH')) return 'metric-ec2';
-    if (metricId.includes('COST')) return 'metric-cost';
-    if (metricId.includes('SECURITY')) return 'metric-security';
-    if (metricId.includes('RDS')) return 'metric-rds';
-    if (metricId.includes('STORAGE')) return 'metric-storage';
-    if (metricId.includes('SUMMARY')) return 'metric-summary';
-    
-    return 'metric-default';
-  }
-
-  /**
-   * Calcula porcentagem de um valor em relação ao total
-   * @param value Valor parcial
-   * @param total Valor total
-   * @returns Porcentagem calculada (0-100)
-   */
-  getPercentage(value: number | undefined, total: number): number {
-    if (!value || !total || total === 0) return 0;
-    return Math.min(100, Math.round((value / total) * 100));
-  }
-
-  /**
-   * Calcula total de SSM para visualização stacked
-   * @param metric Métrica com dados de SSM
-   * @returns Soma total de instâncias SSM
-   */
-  getTotalSSM(metric: AWSMetricsModel): number {
-    return (metric.ssmAgent_connected || 0) + 
-           (metric.ssmAgent_notConnected || 0) + 
-           (metric.ssmAgent_notInstalled || 0);
-  }
-
-  /**
-   * Define classe CSS baseada no valor percentual
-   * @param percentage Valor percentual
-   * @returns Classe CSS apropriada para o nível
-   */
-  getProgressBarClass(percentage: number | undefined): string {
-    if (!percentage) return 'progress-bar-danger';
-    
-    if (percentage >= 80) return 'progress-bar-success';
-    if (percentage >= 60) return 'progress-bar-info';
-    if (percentage >= 40) return 'progress-bar-warning';
-    return 'progress-bar-danger';
-  }
-
-  /**
-   * Define classe CSS para indicador de segurança
-   * @param percentage Porcentagem de exposição
-   * @returns Classe CSS baseada no nível de risco
-   */
-  getSecurityClass(percentage: number | undefined): string {
-    if (!percentage) return '';
-    
-    if (percentage <= 5) return 'status-healthy';
-    if (percentage <= 15) return 'status-warning';
-    return 'status-unhealthy';
-  }
-
-  /**
-   * Define classe CSS para barra de progresso de segurança
-   * @param percentage Porcentagem de exposição
-   * @returns Classe CSS apropriada para o nível de risco
-   */
-  getSecurityProgressClass(percentage: number | undefined): string {
-    if (!percentage) return 'progress-bar-success';
-    
-    if (percentage <= 5) return 'progress-bar-success';
-    if (percentage <= 15) return 'progress-bar-warning';
-    return 'progress-bar-danger';
-  }
-
-  /**
-   * Limpa cache e recarrega dados
-   */
-  refreshData() {
-    console.log('[Dashboard] Forcing data refresh...');
-    this.metricService.clearCache();
-    this.fetchMetrics();
-  }
-
-  /**
-   * Alterna modo debug
-   */
-  toggleDebugMode() {
-    this.debugMode = !this.debugMode;
-    this.metricService.setDebugMode(this.debugMode);
-    console.log('[Dashboard] Debug mode:', this.debugMode ? 'ON' : 'OFF');
-  }
-  /**
-   * Obtém a hora atual formatada
-   */
-  getCurrentTime(): string {
-    return new Date().toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
   }
 
-  /**
-   * Formata números grandes com separador de milhar
-   */
-  formatNumber(value: number | undefined | null): string {
-    if (!this.hasValue(value)) return '0';
-    return value!.toLocaleString('en-US');
+  formatCurrency(value: number | undefined): string {
+    if (!value) return '$0.00';
+    return `$${value.toFixed(2)}`;
   }
 
-  /**
-   * Calcula percentagem de saúde dos recursos
-   */
-  getHealthPercentage(healthy: number | null | undefined, total: number | null | undefined): number {
-    const safeHealthy = this.toNumber(healthy);
-    const safeTotal = this.toNumber(total);
-    if (safeHealthy === 0 || safeTotal === 0) return 0;
-    return Math.round((safeHealthy / safeTotal) * 100);
-  }
-
-  /**
-   * Determina classe CSS baseada na percentagem de saúde
-   */
-  getHealthStatusClass(healthy: number | null | undefined, total: number | null | undefined): string {
-    const percentage = this.getHealthPercentage(healthy, total);
-    if (percentage >= 90) return 'ov-status-healthy';
-    if (percentage >= 70) return 'ov-status-warning';
-    return 'ov-status-critical';
-  }
-
-  /**
-   * Calcula percentagem de instâncias running
-   */
-  getRunningPercentage(metric: AWSMetricsModel): number {
-    const total = metric.resourceCounts_EC2Instance || 0;
-    const running = metric.byState_running || 0;
-    if (total === 0) return 0;
-    return Math.round((running / total) * 100);
-  }
-
-  hasEC2Data(): boolean {
-    const metric = this.currentMetric;
-    if (!metric) return false;
-    return (
-      this.toNumber(metric.resourceCounts_EC2Instance) > 0 ||
-      this.toNumber(metric.byState_running) > 0 ||
-      this.toNumber(metric.byState_stopped) > 0
-    );
-  }
-
-  getEC2RunningPercentage(): number {
-    const metric = this.currentMetric;
-    if (!metric) return 0;
-    return this.getHealthPercentage(metric.byState_running, metric.resourceCounts_EC2Instance);
-  }
-
-  getEC2StoppedPercentage(): number {
-    const metric = this.currentMetric;
-    if (!metric) return 0;
-    return this.getHealthPercentage(metric.byState_stopped, metric.resourceCounts_EC2Instance);
-  }
-
-  getEC2HealthClass(): string {
-    const metric = this.currentMetric;
-    if (!metric) return '';
-    return this.getHealthStatusClass(metric.byState_running, metric.resourceCounts_EC2Instance);
-  }
-
-  getEC2HealthText(): string {
-    const metric = this.currentMetric;
-    if (!metric) return 'No data';
-    const total = this.toNumber(metric.resourceCounts_EC2Instance);
-    if (total === 0) return 'No data';
-    const percentage = this.getHealthPercentage(metric.byState_running, metric.resourceCounts_EC2Instance);
-    return `${percentage}% Healthy`;
-  }
-
-  hasEC2HealthDetails(): boolean {
-    const metric = this.currentMetric;
-    if (!metric) return false;
-    return (
-      this.toNumber(metric.healthStatus_Healthy) > 0 ||
-      this.toNumber(metric.healthStatus_Stopped) > 0 ||
-      this.toNumber(metric.ssmAgent_connected) > 0
-    );
-  }
-
-  hasRDSData(): boolean {
-    const metric = this.currentMetric;
-    if (!metric) return false;
-    return this.toNumber(metric.total) > 0 || this.toNumber(metric.available) > 0;
-  }
-
-  getRDSHealthPercentage(): number {
-    const metric = this.currentMetric;
-    if (!metric) return 0;
-    return this.getHealthPercentage(metric.available, metric.total);
-  }
-
-  /**
-   * Processa distribuição por conta
-   */
-  getAccountDistribution(metric: AWSMetricsModel): any[] {
-    if (!metric.accountDistribution) return [];
-    
-    try {
-      const distribution = typeof metric.accountDistribution === 'string' 
-        ? JSON.parse(metric.accountDistribution) 
-        : metric.accountDistribution;
-      
-      // Mapeia os dados para o formato esperado
-      if (Array.isArray(distribution)) {
-        return distribution.slice(0, 10).map(item => ({
-          name: item.accountName || item.account || 'Unknown',
-          value: item.resourceCount || item.count || 0,
-          percentage: item.percentage || this.calculatePercentage(item.resourceCount || item.count || 0, metric.totalResources || 0)
-        }));
-      }
-      
-      // Se for objeto, converte para array
-      if (typeof distribution === 'object') {
-        return Object.entries(distribution).slice(0, 10).map(([key, value]: [string, any]) => ({
-          name: key,
-          value: value,
-          percentage: this.calculatePercentage(value, metric.totalResources || 0)
-        }));
-      }
-    } catch (e) {
-      console.error('Error parsing accountDistribution:', e);
-    }
-    
-    // Dados de exemplo caso não haja dados reais
-    return [
-      { name: 'Infra', value: 1515, percentage: 45 },
-      { name: 'Arquiteturas e Sistemas', value: 1371, percentage: 40 },
-      { name: 'MagisterApps Prod', value: 1342, percentage: 38 },
-      { name: 'Network', value: 1237, percentage: 36 },
-      { name: 'Operacional', value: 1069, percentage: 31 },
-      { name: 'BackOffice', value: 742, percentage: 22 },
-      { name: 'ITP', value: 594, percentage: 17 },
-      { name: 'Terminal Service', value: 465, percentage: 14 },
-      { name: 'Biblioteca', value: 439, percentage: 13 },
-      { name: 'Ficou Facil', value: 438, percentage: 13 }
-    ];
-  }
-
-  /**
-   * Processa distribuição por região
-   */
-  getRegionDistribution(metric: AWSMetricsModel): any[] {
-    if (!metric.regionDistribution) return [];
-    
-    try {
-      const distribution = typeof metric.regionDistribution === 'string' 
-        ? JSON.parse(metric.regionDistribution) 
-        : metric.regionDistribution;
-      
-      // Mapeia os dados para o formato esperado
-      if (Array.isArray(distribution)) {
-        return distribution.slice(0, 10).map(item => ({
-          name: this.formatRegionName(item.region || item.name || 'Unknown'),
-          value: item.resourceCount || item.count || 0,
-          percentage: item.percentage || this.calculatePercentage(item.resourceCount || item.count || 0, metric.totalResources || 0)
-        }));
-      }
-      
-      // Se for objeto, converte para array
-      if (typeof distribution === 'object') {
-        return Object.entries(distribution).slice(0, 10).map(([key, value]: [string, any]) => ({
-          name: this.formatRegionName(key),
-          value: value,
-          percentage: this.calculatePercentage(value, metric.totalResources || 0)
-        }));
-      }
-    } catch (e) {
-      console.error('Error parsing regionDistribution:', e);
-    }
-    
-    // Dados de exemplo caso não haja dados reais
-    return [
-      { name: 'us-east-1', value: 8948, percentage: 80 },
-      { name: 'us-west-2', value: 180, percentage: 16 },
-      { name: 'ap-northeast-2', value: 180, percentage: 16 },
-      { name: 'sa-east-1', value: 163, percentage: 15 },
-      { name: 'us-east-2', value: 161, percentage: 14 },
-      { name: 'ap-south-1', value: 160, percentage: 14 },
-      { name: 'eu-central-1', value: 160, percentage: 14 },
-      { name: 'eu-west-2', value: 160, percentage: 14 },
-      { name: 'ap-northeast-3', value: 160, percentage: 14 },
-      { name: 'eu-north-1', value: 160, percentage: 14 }
-    ];
-  }
-
-  /**
-   * Formata nome da região AWS
-   */
-  private formatRegionName(region: string): string {
-    if (!region) return 'Unknown';
-    // Mantém o formato original das regiões AWS
-    return region;
-  }
-
-  /**
-   * Calcula percentagem
-   */
-  private calculatePercentage(value: number, total: number): number {
+  getPercentage(value: number, total: number): number {
     if (!total || total === 0) return 0;
     return Math.round((value / total) * 100);
   }
 
-  /**
-   * Obtém recursos recentes
-   */
-  getRecentResources(metric: AWSMetricsModel): any[] {
-    if (!metric.recentResources) return [];
-    
-    try {
-      const resources = typeof metric.recentResources === 'string' 
-        ? JSON.parse(metric.recentResources) 
-        : metric.recentResources;
-      
-      if (Array.isArray(resources)) {
-        return resources.slice(0, 5).map(item => ({
-          type: item.resourceType || item.type || 'Resource',
-          name: item.name || item.resourceName || item.id || 'Unnamed',
-          time: this.formatTimeAgo(item.createdAt || item.updatedAt || new Date().toISOString())
-        }));
-      }
-    } catch (e) {
-      console.error('Error parsing recentResources:', e);
-    }
-    
-    return [];
+  getAccountTotal(): number {
+    if (!this.dashboardData?.accountDistribution) return 0;
+    return this.dashboardData.accountDistribution.reduce((sum, acc) => sum + acc.count, 0);
   }
 
-  /**
-   * Formata tempo relativo (ex: "2 hours ago")
-   */
-  private formatTimeAgo(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-      
-      if (seconds < 60) return 'Just now';
-      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-      if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-      
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    } catch (e) {
-      return 'Recently';
-    }
+  getTopRegions() {
+    if (!this.dashboardData?.regionDistribution) return [];
+    return this.dashboardData.regionDistribution.slice(0, 10);
+  }
+
+  getRecentResources() {
+    if (!this.dashboardData?.recentResources) return [];
+    return this.dashboardData.recentResources.slice(0, 10);
+  }
+
+  getResourceIcon(resourceType: string): string {
+    const iconMap: { [key: string]: string } = {
+      'VPC': 'fas fa-network-wired',
+      'EC2 Instance': 'fas fa-server',
+      'S3 Bucket': 'fas fa-database',
+      'Security Group': 'fas fa-shield-alt',
+      'Load Balancer': 'fas fa-balance-scale',
+      'RDS Instance': 'fas fa-database',
+      'Route Table': 'fas fa-route',
+      'Subnet': 'fas fa-project-diagram',
+      'Internet Gateway': 'fas fa-globe',
+      'VPN Connection': 'fas fa-key',
+      'Network ACL': 'fas fa-list',
+      'Transit Gateway': 'fas fa-exchange-alt',
+      'Direct Connect': 'fas fa-link',
+      'EBS Volume': 'fas fa-hdd',
+      'EBS Snapshot': 'fas fa-camera',
+      'AMI': 'fas fa-compact-disc'
+    };
+
+    return iconMap[resourceType] || 'fas fa-cube';
+  }
+
+  getRelativeTime(date: Date | string): string {
+    const now = new Date();
+    const targetDate = new Date(date);
+    const diff = now.getTime() - targetDate.getTime();
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return 'Just now';
   }
 }

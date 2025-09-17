@@ -7,24 +7,24 @@
 /* DARK (default) */
 :root {
   /* Base surfaces & text (DARK) */
-  --ov-bg: #0f1114;
+  --ov-bg: #1a1d23;
   --ov-surface: #1a1d23;
-  --ov-surface-raised: #22262e;
-  --ov-surface-overlay: #2a2f39;
-  --ov-text: #e1e4e8;
+  --ov-surface-raised: #2d3748;
+  --ov-surface-overlay: #1f2937;
+  --ov-text: #e2e8f0;
   --ov-text-secondary: #9ca3af;
   --ov-muted: #6b7280;
-  --ov-border: #2d3340;
-  --ov-border-strong: #404754;
+  --ov-border: #374151;
+  --ov-border-strong: #4b5563;
 
   /* Brand & Accent (comuns aos temas) */
-  --ov-accent: #6366f1;
-  --ov-accent-hover: #5558e3;
+  --ov-accent: #3b82f6;
+  --ov-accent-hover: #2563eb;
   --ov-accent-contrast: #ffffff;
   --ov-success: #10b981;
   --ov-warning: #f59e0b;
   --ov-danger:  #ef4444;
-  --ov-info:    #3b82f6;
+  --ov-info:    #06b6d4;
 
   /* Status (comuns aos temas) */
   --ov-status-running:    #10b981;
@@ -68,8 +68,8 @@
   --ov-btn-bg: var(--ov-accent);
   --ov-btn-bg-hover: var(--ov-accent-hover);
   --ov-btn-text: var(--ov-accent-contrast);
-  --ov-btn-bg-subtle: var(--ov-surface-raised);
-  --ov-btn-bg-subtle-hover: var(--ov-surface-overlay);
+  --ov-btn-bg-subtle: #2d3748;
+  --ov-btn-bg-subtle-hover: #374151;
   --ov-btn-text-subtle: var(--ov-text);
 
   /* Motion (comum) */
@@ -155,10 +155,37 @@
    4. LAYOUT COMPONENTS
    ======================================== */
 
-/* Header */
+/* ============== NEW: Wrapper para alinhar header + tabela ============== */
+.ov-section{
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 var(--ov-space-4);
+}
+/* Faz o card ocupar a mesma largura da tabela (cancela padding do .ov-section) */
+.ov-bleed {
+  margin-left: calc(-1 * var(--ov-space-4));
+  margin-right: calc(-1 * var(--ov-space-4));
+}
+
+/* Em telas pequenas, mantenha seguro (sem bleed) */
+@media (max-width: 768px){
+  .ov-bleed { margin-left: 0; margin-right: 0; }
+}
+
+/* (opcional) iguala o raio da tabela ao do card */
+.ov-tablewrap { border-radius: var(--ov-radius-lg); }
+/* ============== UPDATED: Header vira “card” + grid em 2 linhas ============== */
+/* Substitui o bloco atual de .ov-header */
 .ov-header {
-  display: flex;
-  flex-direction: column;        /* title on top, then rows */
+  /* card */
+  background: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius-lg);
+  box-shadow: var(--ov-shadow-1);
+  padding: var(--ov-space-4);
+
+  /* layout */
+  display: grid;
   gap: var(--ov-space-4);
   margin-bottom: var(--ov-space-6);
 }
@@ -169,8 +196,8 @@
   }
 }
 
-/* Filter Bar */
-.ov-filterbar {
+/* Mantém o grid de 6 colunas para os filtros (1ª linha) */
+.ov-filterbar{
   width: 100%;
   display: grid;
   grid-template-columns: repeat(6, minmax(160px, 1fr));
@@ -249,13 +276,14 @@
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.ov-filterbar__actions {
+/* ============== NEW: Linha 2 – busca à esquerda, botões à direita ============== */
+.ov-header-actions,
+.ov-filterbar__actions{                      /* alias p/ compatibilidade */
   width: 100%;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--ov-space-3);
   align-items: center;
-  gap: var(--ov-space-2);
-  /* REMOVE any old margin-left:auto here */
 }
 
 .ov-filterbar__actions .ov-search {
@@ -263,18 +291,16 @@
   max-width: none;
 }
 
-.ov-filterbar__actions > button:first-of-type {
-  margin-left: auto;   /* this makes all buttons sit on the right */
+/* Botão “primeiro” não precisa mais empurrar (grid cuida disso) */
+.ov-filterbar__actions > button:first-of-type{
+  margin-left: 0;
 }
 
-
-
-/* Search */
-.ov-search {
+/* ================== Search (mantém teu estilo; só garante 100%) ================== */
+.ov-search{
   position: relative;
   display: flex;
   align-items: center;
-  max-width: 400px;
   width: 100%;
 }
 
@@ -466,12 +492,17 @@
   }
 }
 
-.ov-card {
-  background-color: var(--ov-surface);
+.ov-card{
+  background: var(--ov-surface);
   border: 1px solid var(--ov-border);
-  border-radius: var(--ov-radius);
-  padding: var(--ov-space-4);
+  border-radius: var(--ov-radius-lg);
   box-shadow: var(--ov-shadow-1);
+  padding: var(--ov-space-4);
+  margin-bottom: var(--ov-space-6);
+}
+
+.ov-card--header{
+  position: sticky; top: 0; z-index: 20; backdrop-filter: blur(6px);
 }
 
 .ov-card__head {
@@ -481,6 +512,11 @@
   margin-bottom: var(--ov-space-3);
   padding-bottom: var(--ov-space-3);
   border-bottom: 1px solid var(--ov-border);
+}
+
+/* Título dentro do card */
+.ov-card .ov-title{
+  margin: 0 0 var(--ov-space-4);
 }
 
 .ov-card__title {
@@ -589,9 +625,11 @@
    8. ACTIONS
    ======================================== */
 
-.ov-actions {
+/* Grupo dos botões à direita */
+.ov-actions{
   display: flex;
   gap: var(--ov-space-2);
+  flex-wrap: wrap;
   justify-content: flex-end;
 }
 

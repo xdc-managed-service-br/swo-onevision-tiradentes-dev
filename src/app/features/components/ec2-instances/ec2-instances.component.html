@@ -1,80 +1,88 @@
 <!-- src/app/features/components/ec2-resources/ec2-resources.component.html -->
 <article class="ov-container" aria-labelledby="ec2-title">
-  
-  <!-- Header -->
-  <div class="ov-header">
-    <h1 id="ec2-title" class="ov-title">EC2 Instances</h1>
+  <!-- Page section wrapper (use o mesmo para a tabela) -->
+  <div class="ov-section">
+    <!-- Header card -->
+    <div class="ov-header ov-bleed">
+      <h1 id="ec2-title" class="ov-title">EC2 Instances</h1>
 
-    <!-- Filters (grid) -->
-    <div class="ov-filterbar">
-      <div class="ov-filter">
-        <label for="accountFilter">Account</label>
-        <select id="accountFilter" (change)="filterByAccount($event)">
-          <option value="">All Accounts</option>
-          <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
-        </select>
-      </div>
-      <div class="ov-filter">
-        <label for="regionFilter">Region</label>
-        <select id="regionFilter" (change)="filterByRegion($event)">
-          <option value="">All Regions</option>
-          <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
-        </select>        
-      </div>
-      <div class="ov-filter">
-        <label for="stateFilter">State</label>
-        <select id="stateFilter" (change)="filterByState($event)">
-          <option value="">All States</option>
-          <option *ngFor="let state of uniqueStates" [value]="state">{{ state }}</option>
-        </select>          
-      </div>
-
-      <div class="ov-filter">
-        <label for="cwAgentFilter">CloudWatch Monitoring</label>
-        <select id="cwAgentFilter" (change)="filterByCWAgent($event)">
-          <option value="">All</option>
-          <option value="true">Enabled</option>
-          <option value="false">Disabled</option>
-        </select>
-      </div>
-
-      <div class="ov-filter">
-        <label for="typeFilter">Instance Type</label>
-        <select id="typeFilter" (change)="filterByType($event)">
-          <option value="">All Types</option>
-          <option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</option>
-        </select>      
-      </div>
-
-      <div class="ov-filter">
-        <label for="typeFilter">SWO Patch</label>
-        <select id="typeFilter" (change)="filterBySWOPatch($event)">
-          <option value="">All</option>
-          <option *ngFor="let type of swoPatchFilter" [value]="type">{{ type }}</option>
-        </select>      
-      </div>      
-    </div>
-
-    <!-- Actions + Search (inline) -->
-    <div class="ov-filterbar__actions">
-      <div class="ov-search">
-        <input
-          id="instanceSearch"
-          type="search"
-          placeholder="Search by Instance ID or Name"
-          (input)="searchInstances($event)"
-          #searchInput />
-        <button
-          type="button"
-          class="ov-clear-btn"
-          *ngIf="searchTerm"
-          (click)="clearSearch(searchInput)"            aria-label="Clear search"></button>
+      <!-- Filters (1ª linha) -->
+      <div class="ov-filterbar">
+        <div class="ov-filter">
+          <label for="accountFilter">Account</label>
+          <select id="accountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
+          </select>
         </div>
-      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToCSV()">Export to CSV</button>
-      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToXLSX()">Export to XLSX</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
+
+        <div class="ov-filter">
+          <label for="regionFilter">Region</label>
+          <select id="regionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="stateFilter">State</label>
+          <select id="stateFilter" (change)="filterByState($event)">
+            <option value="">All States</option>
+            <option *ngFor="let state of uniqueStates" [value]="state">{{ state }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="cwAgentFilter">CloudWatch Monitoring</label>
+          <select id="cwAgentFilter" (change)="filterByCWAgent($event)">
+            <option value="">All</option>
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="typeFilter">Instance Type</label>
+          <select id="typeFilter" (change)="filterByType($event)">
+            <option value="">All Types</option>
+            <option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="swoPatchFilter">SWO Patch</label>
+          <select id="swoPatchFilter" (change)="filterBySWOPatch($event)">
+            <option value="">All</option>
+            <option *ngFor="let type of swoPatchFilter" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Search + Actions (2ª linha) -->
+      <div class="ov-header-actions">
+        <div class="ov-search">
+          <input
+            id="instanceSearch"
+            type="search"
+            placeholder="Search by Instance ID or Name"
+            (input)="searchInstances($event)"
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
+        </div>
+
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToCSV()">Export to CSV</button>
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToXLSX()">Export to XLSX</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
+        </div>
+      </div>
     </div>
   </div>
   <!-- Loading State -->

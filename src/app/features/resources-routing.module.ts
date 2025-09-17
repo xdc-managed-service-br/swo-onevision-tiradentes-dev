@@ -4,20 +4,19 @@ import { RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   // Home (All Resources)
   {
-    path: '',
+    path: 'resources',
     loadComponent: () =>
-      import('./components/resources/all-resources.component')  // << era ./components/...
+      import('./components/resources/all-resources.component')
         .then(m => m.ResourcesComponent)
   },
 
-  // Dashboard da feature (se existir)
+  // Dashboard
   {
     path: 'dashboard',
     loadComponent: () =>
-      import('./dashboard/dashboard.component')                // << ajuste relativo
+      import('./dashboard/dashboard.component')
         .then(m => m.DashboardComponent)
   },
-
   // Compute
   {
     path: 'ec2',
@@ -36,26 +35,26 @@ const routes: Routes = [
   {
     path: 's3',
     loadComponent: () =>
-      import('./components/s3-buckets/s3-buckets.component')  // << caminho correto
+      import('./components/s3-buckets/s3-buckets.component')
         .then(m => m.S3BucketsComponent)
   },
  {
     path: 'ebs',
     loadComponent: () =>
-      import('./components/ebs-volumes/ebs-volumes.component')  // << caminho correto
+      import('./components/ebs-volumes/ebs-volumes.component')
         .then(m => m.EBSVolumesComponent)
   },
   {
       path: 'ebs-snapshots',
       loadComponent: () =>
-        import('./components/ebs-snapshots/ebs-snapshots.component')  // << caminho correto
+        import('./components/ebs-snapshots/ebs-snapshots.component')
           .then(m => m.EBSSnapshotsComponent)
   },
   // Databases
   {
     path: 'rds',
     loadComponent: () =>
-      import('./components/rds-resources/rds-instances.component')
+      import('./components/rds-instances/rds-instances.component')
         .then(m => m.RDSInstancesComponent)
   }
 ];

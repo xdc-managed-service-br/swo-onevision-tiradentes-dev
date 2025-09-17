@@ -1,7 +1,8 @@
 <article class="ov-container" aria-labelledby="ami-title">
-  
+    <!-- Page section wrapper (use o mesmo para a tabela) -->
+<div class="ov-section">
   <!-- Header -->
-  <div class="ov-header">
+  <div class="ov-header ov-bleed">
     <h1 id="ami-title" class="ov-title">AMI Snapshots</h1>
     
     <!-- Filters (grid) -->  
@@ -27,32 +28,34 @@
           <option *ngFor="let p of uniquePlatforms" [value]="p">{{ p }}</option>
         </select>
       </div>
-    </div>
-
-    <!-- Actions + Search (inline) -->
-    <div class="ov-filterbar__actions">
-      <div class="ov-search">
-        <input
-          id="amiSearch"
-          type="search"
-          placeholder="Search by Image ID, Name Tag, or AMI Name"
-          [(ngModel)]="searchTerm"
-          (input)="applyFilters()"
-          #searchInput/>
-        <button 
-          type="button" 
-          class="ov-clear-btn" 
-          *ngIf="searchTerm"
-          (click)="clearSearch(searchInput)"
-          aria-label="Clear search"></button>
       </div>
-      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToCSV()">Export to CSV</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
-    </div>        
-  </div>
-  
+
+      <!-- Actions + Search (inline) -->
+      <div class="ov-header-actions">
+        <div class="ov-search">
+          <input
+            id="amiSearch"
+            type="search"
+            placeholder="Search by Image ID, Name Tag, or AMI Name"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            #searchInput/>
+          <button 
+            type="button" 
+            class="ov-clear-btn" 
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
+        </div>
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToCSV()">Export to CSV</button>
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToXLSX()">Export to XLSX</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
+        </div>
+      </div>        
+    </div>
   <!-- Loading/Empty -->
   <div *ngIf="loading" class="ov-loading">Loading AMI snapshots…</div>
   <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
@@ -266,4 +269,6 @@
       <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
     </div>
   </div>
+  <!-- Close ov-section wrapper -->
+</div>
 </article>

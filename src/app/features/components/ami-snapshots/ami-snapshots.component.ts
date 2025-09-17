@@ -429,6 +429,21 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
       filename
     );
   }
+  // AMISnapshotsComponent
+  exportToXLSX(): void {
+    if (!this.filteredResources.length) return;
+
+    const filename = 'ami-snapshots.xlsx';
+    const visibleColumns = this.getVisibleColumns();
+
+    const exportColumns: ExportColumn[] = visibleColumns.map(col => ({
+      key: col.key,
+      label: col.label,
+      transform: col.transform || ((row: any) => row[col.key] ?? '')
+    }));
+
+    this.exportService.exportDataToXLSX(this.filteredResources, exportColumns, filename);
+  }  
 
   // Helpers de navegação
   getPageNumbers(): number[] {

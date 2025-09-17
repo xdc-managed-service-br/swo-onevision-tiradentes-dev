@@ -66,7 +66,7 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  background-color: var(--ov-surface);
+  background-color: var(--ov-surface-raised);
   border-bottom: 1px solid var(--ov-border);
   padding: var(--ov-space-4) var(--ov-space-6);
   display: flex;
@@ -112,7 +112,7 @@
   left: 0;
   height: calc(100vh - 64px);
   width: 260px;
-  background-color: var(--ov-surface);
+  background-color: var(--ov-surface-raised);
   border-right: 1px solid var(--ov-border);
   z-index: 999;
   overflow-y: auto;
@@ -472,7 +472,7 @@
 }
 
 .sidebar::-webkit-scrollbar-track {
-  background: var(--ov-surface);
+  background: var(--ov-surface-raised);
 }
 
 .sidebar::-webkit-scrollbar-thumb {
