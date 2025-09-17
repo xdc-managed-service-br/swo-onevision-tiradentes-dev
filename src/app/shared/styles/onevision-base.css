@@ -173,7 +173,7 @@
 .ov-filterbar {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(6, minmax(160px, 1fr)); /* Account, Region, State, CW, Type, SWO Patch */
+  grid-template-columns: repeat(6, minmax(160px, 1fr));
   gap: var(--ov-space-3);
   align-items: end;
 }
@@ -192,6 +192,31 @@
 
 .ov-filter select {
   width: 100%;
+}
+
+/* selects back to original style */
+.ov-filterbar .ov-filter select {
+  width: 100%;
+  background-color: var(--ov-surface);
+  color: var(--ov-text);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius-sm);
+  padding: var(--ov-space-2) var(--ov-space-3);
+  font-size: var(--ov-text-sm);
+  min-width: 140px;
+  cursor: pointer;
+  transition: var(--ov-transition-fast);
+}
+
+.ov-filterbar .ov-filter select:hover {
+  border-color: var(--ov-border-strong);
+  background-color: var(--ov-surface-raised);
+}
+
+.ov-filterbar .ov-filter select:focus {
+  outline: none;
+  border-color: var(--ov-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 @media (max-width: 1200px) {
