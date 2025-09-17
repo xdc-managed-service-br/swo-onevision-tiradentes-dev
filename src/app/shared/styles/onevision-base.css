@@ -155,16 +155,11 @@
    4. LAYOUT COMPONENTS
    ======================================== */
 
-/* ========================================
-   FIXED HEADER ALIGNMENT FOR EC2 COMPONENT
-   ======================================== */
-
-/* Use flex to perfectly align filters (left) and actions (right) */
+/* Header */
 .ov-header {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;        /* title on top, then rows */
   gap: var(--ov-space-4);
-  justify-content: space-between;
   margin-bottom: var(--ov-space-6);
 }
 
@@ -174,22 +169,14 @@
   }
 }
 
+/* Filter Bar */
 .ov-filterbar {
-  display: flex;
-  flex-wrap: wrap;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(160px, 1fr)); /* Account, Region, State, CW, Type, SWO Patch */
   gap: var(--ov-space-3);
-  align-items: center;
+  align-items: end;
 }
-
-/* Ensure actions (search + buttons) stay right aligned */
-.ov-filterbar__actions {
-  display: flex;
-  gap: var(--ov-space-3);
-  align-items: stretch;
-}
-
-
-
 
 .ov-filter {
   display: flex;
@@ -204,15 +191,26 @@
 }
 
 .ov-filter select {
-  background-color: var(--ov-surface);
-  color: var(--ov-text);
-  border: 1px solid var(--ov-border);
-  border-radius: var(--ov-radius-sm);
-  padding: var(--ov-space-2) var(--ov-space-3);
-  font-size: var(--ov-text-sm);
-  min-width: 140px;
-  cursor: pointer;
-  transition: var(--ov-transition-fast);
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .ov-filterbar { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+}
+@media (max-width: 700px) {
+  .ov-filterbar { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  .ov-filterbar__actions {
+    gap: var(--ov-space-2);
+  }
+  .ov-filterbar__actions .ov-search {
+    flex: 1 1 100%;
+  }
+  .ov-filterbar__actions > button:first-of-type {
+    margin-left: 0;    /* stack buttons under search on very small widths */
+  }
 }
 
 .ov-filter select:hover {
@@ -226,12 +224,27 @@
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
+.ov-filterbar__actions {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ov-space-2);
+  /* REMOVE any old margin-left:auto here */
+}
+
+.ov-filterbar__actions .ov-search {
+  flex: 1 1 420px;   /* grows, but keeps a good min size */
+  max-width: none;
+}
+
+.ov-filterbar__actions > button:first-of-type {
+  margin-left: auto;   /* this makes all buttons sit on the right */
+}
 
 
-/* ========================================
-   SEARCH FIELD ADJUSTMENTS
-   ======================================== */
 
+/* Search */
 .ov-search {
   position: relative;
   display: flex;
@@ -251,6 +264,7 @@
   font-size: var(--ov-text-sm);
   transition: var(--ov-transition-fast);
 }
+
 
 .ov-search input:hover {
   border-color: var(--ov-border-strong);
@@ -282,7 +296,6 @@
 .ov-clear-btn:hover {
   color: var(--ov-text);
 }
-
 
 /* ========================================
    5. TABLE
