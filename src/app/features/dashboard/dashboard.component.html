@@ -23,21 +23,6 @@
     <p>{{ error }}</p>
     <button (click)="refreshData()" class="btn-retry">Retry</button>
   </div>
-
-  <!-- Debug Stats (only in debug mode) -->
-  <div *ngIf="debugMode && !loading" class="debug-panel">
-    <h3>Debug Statistics</h3>
-    <div class="debug-stats">
-      <span>Total Metrics: {{ debugStats.totalMetrics }}</span>
-      <span>Current: {{ debugStats.currentMetrics }}</span>
-      <span>Historical: {{ debugStats.historicalMetrics }}</span>
-      <span>Fields with Data: {{ debugStats.fieldsWithData }}</span>
-      <span>Empty Fields: {{ debugStats.fieldsEmpty }}</span>
-      <span>Numeric Fields: {{ debugStats.numericFieldsCount }}</span>
-      <span>String Fields: {{ debugStats.stringFieldsCount }}</span>
-    </div>
-  </div>
-
   <!-- Main Content -->
   <div *ngIf="!loading && metrics?.length" class="metrics-container">
     
@@ -54,10 +39,6 @@
 
     <!-- Metrics Cards -->
     <div *ngFor="let metric of metrics" class="metric-card" [ngClass]="getMetricTypeClass(metric.id)">
-      <div class="metric-header">
-        <h3>{{ metric.resourceType || 'Metric' }}</h3>
-        <span class="metric-id">{{ metric.id }}</span>
-      </div>
 
       <div class="metric-content">
 

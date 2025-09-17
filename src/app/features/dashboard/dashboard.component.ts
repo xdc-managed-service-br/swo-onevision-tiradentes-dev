@@ -55,6 +55,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     console.info('[Dashboard] ngOnInit - Debug mode:', this.debugMode);
     
+    // Ativa debug no service se necessário
+    if (this.debugMode) {
+      this.metricService.setDebugMode(true);
+    }
+    
     this.fetchMetrics();
     
     // Observa mudanças na data selecionada
@@ -312,7 +317,69 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Força refresh dos dados
+   * Calcula porcentagem de um valor em relação ao total
+   * @param value Valor parcial
+   * @param total Valor total
+   * @returns Porcentagem calculada (0-100)
+   */
+  getPercentage(value: number | undefined, total: number): number {
+    if (!value || !total || total === 0) return 0;
+    return Math.min(100, Math.round((value / total) * 100));
+  }
+
+  /**
+   * Calcula total de SSM para visualização stacked
+   * @param metric Métrica com dados de SSM
+   * @returns Soma total de instâncias SSM
+   */
+  getTotalSSM(metric: AWSMetricsModel): number {
+    return (metric.ssmAgent_connected || 0) + 
+           (metric.ssmAgent_notConnected || 0) + 
+           (metric.ssmAgent_notInstalled || 0);
+  }
+
+  /**
+   * Define classe CSS baseada no valor percentual
+   * @param percentage Valor percentual
+   * @returns Classe CSS apropriada para o nível
+   */
+  getProgressBarClass(percentage: number | undefined): string {
+    if (!percentage) return 'progress-bar-danger';
+    
+    if (percentage >= 80) return 'progress-bar-success';
+    if (percentage >= 60) return 'progress-bar-info';
+    if (percentage >= 40) return 'progress-bar-warning';
+    return 'progress-bar-danger';
+  }
+
+  /**
+   * Define classe CSS para indicador de segurança
+   * @param percentage Porcentagem de exposição
+   * @returns Classe CSS baseada no nível de risco
+   */
+  getSecurityClass(percentage: number | undefined): string {
+    if (!percentage) return '';
+    
+    if (percentage <= 5) return 'status-healthy';
+    if (percentage <= 15) return 'status-warning';
+    return 'status-unhealthy';
+  }
+
+  /**
+   * Define classe CSS para barra de progresso de segurança
+   * @param percentage Porcentagem de exposição
+   * @returns Classe CSS apropriada para o nível de risco
+   */
+  getSecurityProgressClass(percentage: number | undefined): string {
+    if (!percentage) return 'progress-bar-success';
+    
+    if (percentage <= 5) return 'progress-bar-success';
+    if (percentage <= 15) return 'progress-bar-warning';
+    return 'progress-bar-danger';
+  }
+
+  /**
+   * Limpa cache e recarrega dados
    */
   refreshData() {
     console.log('[Dashboard] Forcing data refresh...');
@@ -321,7 +388,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Toggle modo debug
+   * Alterna modo debug
    */
   toggleDebugMode() {
     this.debugMode = !this.debugMode;

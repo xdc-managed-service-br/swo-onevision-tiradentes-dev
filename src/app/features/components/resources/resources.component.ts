@@ -5,14 +5,13 @@ import { takeUntil } from 'rxjs/operators';
 import { ResourceService } from '../../../core/services/resource.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
-import { RouterLink } from '@angular/router';
+
 
 @Component({
   selector: 'app-resources',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, ResourceTagsComponent],
   templateUrl: './resources.component.html',
-  styleUrls: ['./resources.component.css']
 })
 export class ResourcesComponent implements OnInit, OnDestroy {
   resources: any[] = [];

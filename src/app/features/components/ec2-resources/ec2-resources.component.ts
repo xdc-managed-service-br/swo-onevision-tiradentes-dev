@@ -22,9 +22,6 @@ type ColumnKey = keyof EC2Instance | 'instancePrivateIps' | 'instancePublicIps' 
   standalone: true,
   imports: [CommonModule, ResourceTagsComponent],
   templateUrl: './ec2-resources.component.html',
-  styleUrls: [
-    '../../../shared/styles/onevision-base.css'
-  ]
 })
 export class EC2ResourcesComponent implements OnInit, OnDestroy {
   // Data
@@ -212,7 +209,6 @@ export class EC2ResourcesComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Kept for backward template compatibility. Prefer calling searchResources.
   searchInstances(event: Event): void { this.searchResources(event); }
 
   searchResources(event: Event): void {

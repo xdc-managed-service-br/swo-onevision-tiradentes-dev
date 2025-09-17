@@ -1,301 +1,230 @@
-<!-- resources.component.html (complete) -->
-<div class="resources-container">
-  <div class="header-section">
-    <div class="filter-controls">
-      <div class="search-bar">
-        <input
-          type="text"
-          placeholder="Search by ID, Name or Type"
-          (input)="searchResources($event)"
-          id="resourceSearch"
-          #searchInput
-        />
-        <button
-          *ngIf="searchTerm"
-          class="clear-search"
-          (click)="clearSearch(searchInput)"
-        >
-          ✕
-        </button>
+<article class="ov-container" aria-labelledby="resources-title">
+
+  <!-- Header -->
+  <div class="ov-header">
+    <h1 id="ov-title" class="ov-title">All Resources</h1>
+
+    <!-- Filter Bar -->
+    <div class="ov-filterbar">
+      <div class="ov-filter">
+        <label for="resourceTypeFilter">Type</label>
+        <select id="resourceTypeFilter" (change)="filterByResourceType($event)">
+          <option value="">All Types</option>
+          <option *ngFor="let type of uniqueResourceTypes" [value]="type">
+            {{ getResourceTypeDisplay(type) }}
+          </option>
+        </select>
       </div>
-      <div class="filter-group-container">
-        <div class="filter-group">
-          <label for="typeFilter">Resource Type:</label>
-          <select id="typeFilter" (change)="filterByResourceType($event)">
-            <option value="">All Types</option>
-            <option *ngFor="let type of uniqueResourceTypes" [value]="type">
-              {{ getResourceTypeDisplay(type) }}
-            </option>
-          </select>
+
+      <div class="ov-filter">
+        <label for="regionFilter">Region</label>
+        <select id="regionFilter" (change)="filterByRegion($event)">
+          <option value="">All Regions</option>
+          <option *ngFor="let region of uniqueRegions" [value]="region">
+            {{ region }}
+          </option>
+        </select>
+      </div>
+
+      <div class="ov-filter">
+        <label for="accountFilter">Account</label>
+        <select id="accountFilter" (change)="filterByAccount($event)">
+          <option value="">All Accounts</option>
+          <option *ngFor="let acc of uniqueAccounts" [value]="acc">
+            {{ acc }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Actions + Search -->
+      <div class="ov-filterbar__actions">
+        <div class="ov-search">
+          <input
+            id="resourceSearch"
+            type="search"
+            placeholder="Search by ID, Name, or Type"
+            (input)="searchResources($event)"
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
         </div>
-        <div class="filter-group">
-          <label for="regionFilter">Region:</label>
-          <select id="regionFilter" (change)="filterByRegion($event)">
-            <option value="">All Regions</option>
-            <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="accountFilter">Account:</label>
-          <select id="accountFilter" (change)="filterByAccount($event)">
-            <option value="">All Accounts</option>
-            <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
-          </select>
-        </div>
-        <button (click)="resetFilters()" class="reset-button">Reset Filters</button>
+
+        <button
+          class="ov-btn ov-btn--subtle"
+          *ngIf="!loading && filteredResources.length > 0"
+          (click)="exportToCSV()">Export to CSV</button>
+        <button
+          type="button"
+          class="ov-btn ov-btn--subtle"
+          (click)="resetFilters()">Reset Filters</button>
       </div>
     </div>
   </div>
-  
-  <div *ngIf="loading" class="loading">
-    Loading resources...
-  </div>
-  
-  <div *ngIf="!loading && filteredResources.length === 0" class="no-data">
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="ov-loading">Loading resources…</div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
     No resources found matching the current filters.
   </div>
-  
-  <!-- Desktop table view -->
-  <table *ngIf="!loading && filteredResources.length > 0" class="resource-table">
-    <thead>
-      <tr>
-        <th (click)="sortData('resourceType')">
-          Type
-          <span *ngIf="sortColumn === 'resourceType'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('identifier')">
-          Identifier
-          <span *ngIf="sortColumn === 'identifier'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('resourceName')">
-          Name
-          <span *ngIf="sortColumn === 'resourceName'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('region')">
-          Region
-          <span *ngIf="sortColumn === 'region'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('accountId')">
-          Account
-          <span *ngIf="sortColumn === 'accountId'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('createdAt')">
-          Created
-          <span *ngIf="sortColumn === 'createdAt'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('state')">
-          State
-          <span *ngIf="sortColumn === 'state'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th (click)="sortData('cost')">
-          Monthly Cost
-          <span *ngIf="sortColumn === 'cost'" class="sort-indicator">
-            {{ sortDirection === 'asc' ? '▲' : '▼' }}
-          </span>
-        </th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let resource of paginatedResources">
-        <td>
-          <a [routerLink]="['/resources', getResourceTypeRoute(resource.resourceType)]" 
-             class="resource-type-link">
-            {{ getResourceTypeDisplay(resource.resourceType) }}
-          </a>
-        </td>
-        <td>{{ getResourceIdentifier(resource) }}</td>
-        <td>{{ resource.resourceName || 'N/A' }}</td>
-        <td>{{ resource.region }}</td>
-        <td>{{ resource.accountName || resource.accountId }}</td>
-        <td>{{ formatDate(resource.createdAt) }}</td>
-        <td>
-          <span [ngClass]="'status-' + (resource.state || 'unknown').toLowerCase()">
-            {{ resource.state || 'N/A' }}
-          </span>
-        </td>
-        <td>{{ resource.cost ? '$' + resource.cost.toFixed(2) : 'N/A' }}</td>
-        <td>
-          <button (click)="showDetails(resource)" class="view-button">View Details</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
 
-  <!-- Mobile card view -->
-  <div *ngIf="!loading && filteredResources.length > 0" class="mobile-cards">
-    <div *ngFor="let resource of paginatedResources" class="resource-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">{{ resource.resourceName || getResourceIdentifier(resource) }}</div>
-          <div class="card-id">{{ getResourceIdentifier(resource) }}</div>
-        </div>
-        <span class="resource-type-badge">{{ getResourceTypeDisplay(resource.resourceType) }}</span>
-      </div>
-      
-      <div class="card-body">
-        <div class="card-field">
-          <span class="card-label">Type</span>
-          <span class="card-value">{{ getResourceTypeDisplay(resource.resourceType) }}</span>
-        </div>
-        
-        <div class="card-field">
-          <span class="card-label">Region</span>
-          <span class="card-value">{{ resource.region }}</span>
-        </div>
-        
-        <div class="card-field">
-          <span class="card-label">Account</span>
-          <span class="card-value">{{ resource.accountName || resource.accountId }}</span>
-        </div>
-        
-        <div class="card-field">
-          <span class="card-label">State</span>
-          <span class="card-value">
-            <span [ngClass]="'status-' + (resource.state || 'unknown').toLowerCase()">
-              {{ resource.state || 'N/A' }}
+  <!-- Desktop Table View -->
+  <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
+    <table class="ov-table" role="table" aria-label="Resources table">
+      <thead>
+        <tr>
+          <th (click)="sortData('resourceType')" class="sortable">
+            Type
+            <span *ngIf="sortColumn === 'resourceType'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
-          </span>
+          </th>
+          <th (click)="sortData('identifier')" class="sortable">
+            Identifier
+            <span *ngIf="sortColumn === 'identifier'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th (click)="sortData('resourceName')" class="sortable">
+            Name
+            <span *ngIf="sortColumn === 'resourceName'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th (click)="sortData('region')" class="sortable">
+            Region
+            <span *ngIf="sortColumn === 'region'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th (click)="sortData('accountId')" class="sortable">
+            Account
+            <span *ngIf="sortColumn === 'accountId'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th (click)="sortData('createdAt')" class="sortable">
+            Created
+            <span *ngIf="sortColumn === 'createdAt'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th (click)="sortData('state')" class="sortable">
+            State
+            <span *ngIf="sortColumn === 'state'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th (click)="sortData('cost')" class="sortable">
+            Monthly Cost
+            <span *ngIf="sortColumn === 'cost'" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="ov-cell--right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let resource of paginatedResources">
+          <td>{{ getResourceTypeDisplay(resource.resourceType) }}</td>
+          <td>{{ getResourceIdentifier(resource) }}</td>
+          <td>{{ resource.resourceName || 'N/A' }}</td>
+          <td>{{ resource.region }}</td>
+          <td>{{ resource.accountName || resource.accountId }}</td>
+          <td>{{ formatDate(resource.createdAt) }}</td>
+          <td>{{ resource.state || 'N/A' }}</td>
+          <td>{{ resource.cost ? ('$' + resource.cost.toFixed(2)) : 'N/A' }}</td>
+          <td>
+            <div class="ov-actions">
+              <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">
+                View Details
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Mobile Cards View -->
+  <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
+    <article class="ov-card" *ngFor="let resource of paginatedResources">
+      <header class="ov-card__head">
+        <div>
+          <div class="ov-card__title">{{ getResourceTypeDisplay(resource.resourceType) }}</div>
+          <div class="ov-card__sub">{{ getResourceIdentifier(resource) }}</div>
         </div>
-        
-        <div class="card-field">
-          <span class="card-label">Created</span>
-          <span class="card-value">{{ formatDate(resource.createdAt) }}</span>
-        </div>
-        
-        <div class="card-field">
-          <span class="card-label">Monthly Cost</span>
-          <span class="card-value">{{ resource.cost ? '$' + resource.cost.toFixed(2) : 'N/A' }}</span>
+        <span>{{ resource.state || 'N/A' }}</span>
+      </header>
+
+      <div class="ov-card__grid">
+        <div><div class="ov-k">Region</div><div class="ov-v">{{ resource.region }}</div></div>
+        <div><div class="ov-k">Account</div><div class="ov-v">{{ resource.accountName || resource.accountId }}</div></div>
+        <div><div class="ov-k">Created</div><div class="ov-v">{{ formatDate(resource.createdAt) }}</div></div>
+        <div><div class="ov-k">Cost</div><div class="ov-v">{{ resource.cost ? ('$' + resource.cost.toFixed(2)) : 'N/A' }}</div></div>
+      </div>
+
+      <div>
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
         </div>
       </div>
-      
-      <div class="card-actions">
-        <button (click)="showDetails(resource)" class="view-button">
-          View Details
-        </button>
+    </article>
+  </div>
+
+  <!-- Resource Details Modal -->
+  <div class="ov-modal" *ngIf="selectedResource" (click)="closeDetails()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="resource-details-title" (click)="$event.stopPropagation()">
+      <div class="ov-modal__head">
+        <h2 id="resource-details-title" class="ov-modal__title">
+          {{ getResourceTypeDisplay(selectedResource.resourceType) }} — {{ getResourceIdentifier(selectedResource) }}
+        </h2>
+        <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
+      </div>
+      <div class="ov-modal__body">
+        <table class="ov-details-table">
+          <tr><th>Type</th><td>{{ getResourceTypeDisplay(selectedResource.resourceType) }}</td></tr>
+          <tr><th>Identifier</th><td>{{ getResourceIdentifier(selectedResource) }}</td></tr>
+          <tr><th>Name</th><td>{{ selectedResource.resourceName || 'N/A' }}</td></tr>
+          <tr><th>Region</th><td>{{ selectedResource.region }}</td></tr>
+          <tr><th>Account</th><td>{{ selectedResource.accountName || selectedResource.accountId }}</td></tr>
+          <tr><th>Created</th><td>{{ formatDate(selectedResource.createdAt) }}</td></tr>
+          <tr><th>State</th><td>{{ selectedResource.state || 'N/A' }}</td></tr>
+          <tr><th>Cost</th><td>{{ selectedResource.cost ? ('$' + selectedResource.cost.toFixed(2)) : 'N/A' }}</td></tr>
+        </table>
+        <div *ngIf="selectedResource.tags">
+          <h3>Tags</h3>
+          <app-resource-tags [tags]="selectedResource.tags"></app-resource-tags>
+        </div>
+      </div>
+      <div class="ov-modal__foot">
+        <button class="ov-btn ov-btn--primary" (click)="closeDetails()">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- Pagination Controls -->
-  <div *ngIf="!loading && filteredResources.length > 0" class="pagination-controls">
-    <div class="pagination-info">
+  <!-- Pagination -->
+  <div class="ov-pagination" *ngIf="!loading && filteredResources.length > 0">
+    <div class="ov-pagination__info">
       Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, filteredResources.length) }} of {{ filteredResources.length }} items
     </div>
-    <div class="pagination-buttons">
-      <button (click)="goToFirstPage()" [disabled]="currentPage === 1" class="pagination-btn">
-        First
-      </button>
-      <button (click)="goToPreviousPage()" [disabled]="currentPage === 1" class="pagination-btn">
-        Previous
-      </button>
-      
-      <span class="page-numbers">
-        <button *ngFor="let page of getPageNumbers()" 
-                (click)="goToPage(page)" 
-                [class.active]="page === currentPage"
-                class="page-number-btn">
-          {{ page }}
-        </button>
+    <div class="ov-pagination__controls">
+      <button class="ov-btn ov-btn--subtle" (click)="goToFirstPage()" [disabled]="currentPage === 1">First</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToPreviousPage()" [disabled]="currentPage === 1">Previous</button>
+      <span class="ov-pagination__pages">
+        <button
+          class="ov-btn"
+          *ngFor="let page of getPageNumbers()"
+          (click)="goToPage(page)"
+          [class.is-active]="page === currentPage">{{ page }}</button>
       </span>
-      
-      <button (click)="goToNextPage()" [disabled]="currentPage === totalPages" class="pagination-btn">
-        Next
-      </button>
-      <button (click)="goToLastPage()" [disabled]="currentPage === totalPages" class="pagination-btn">
-        Last
-      </button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToNextPage()" [disabled]="currentPage === totalPages">Next</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
     </div>
   </div>
-
-  <div *ngIf="!loading && filteredResources.length > 0" class="export-controls">
-    <button (click)="exportToCSV()" class="export-button" [disabled]="isExporting">Export to CSV</button>
-  </div>
-  
-  <!-- Resource Details Modal -->
-  <div *ngIf="selectedResource" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>{{ getResourceTypeDisplay(selectedResource.resourceType) }} Details</h2>
-        <button (click)="closeDetails()" class="close-footer-button">Close</button>
-      </div>
-      <div class="modal-body">
-        <div class="detail-section">
-          <h3>Basic Information</h3>
-          <table class="details-table">
-            <tr>
-              <th>Resource ID</th>
-              <td>{{ getResourceIdentifier(selectedResource) }}</td>
-            </tr>
-            <tr>
-              <th>Resource Name</th>
-              <td>{{ selectedResource.resourceName || 'N/A' }}</td>
-            </tr>
-            <tr>
-              <th>Resource Type</th>
-              <td>{{ getResourceTypeDisplay(selectedResource.resourceType) }}</td>
-            </tr>
-            <tr>
-              <th>State</th>
-              <td>{{ selectedResource.state || 'N/A' }}</td>
-            </tr>
-            <tr>
-              <th>Created</th>
-              <td>{{ formatDate(selectedResource.createdAt) }}</td>
-            </tr>
-          </table>
-        </div>
-
-        <div class="detail-section">
-          <h3>Location & Cost</h3>
-          <table class="details-table">
-            <tr>
-              <th>Region</th>
-              <td>{{ selectedResource.region }}</td>
-            </tr>
-            <tr>
-              <th>Account</th>
-              <td>{{ selectedResource.accountName || selectedResource.accountId }}</td>
-            </tr>
-            <tr>
-              <th>Monthly Cost</th>
-              <td>{{ selectedResource.cost ? '$' + selectedResource.cost.toFixed(2) : 'N/A' }}</td>
-            </tr>
-          </table>
-        </div>
-
-        <div class="detail-section" *ngIf="selectedResource.tags && selectedResource.tags.length">
-          <h3>Tags</h3>
-          <table class="details-table">
-            <thead>
-              <tr>
-                <th>Key</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let tag of selectedResource.tags">
-                <td class="tag-key">{{ tag.key }}</td>
-                <td class="tag-value">{{ tag.value }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+</article>

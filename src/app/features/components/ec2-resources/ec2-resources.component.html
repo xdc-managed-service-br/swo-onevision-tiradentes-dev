@@ -1,28 +1,26 @@
 <!-- src/app/features/components/ec2-resources/ec2-resources.component.html -->
 <article class="ov-container" aria-labelledby="ec2-title">
   
-  <div class="resource-header">
-    <h1 class="resource-header__title">EC2 Instances</h1>
+  <div class="ov-header">
+    <h1 id="ec2-title" class="ov-title">EC2 Instances</h1>
 
-    <!-- Filtros (grid) -->
-    <div class="resource-header__filters">
-      <div class="resource-filter">
+    <!-- Filters (grid) -->
+    <div class="ov-filterbar">
+      <div class="ov-filter">
         <label for="accountFilter">Account</label>
         <select id="accountFilter" (change)="filterByAccount($event)">
           <option value="">All Accounts</option>
           <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
         </select>
       </div>
-
-      <div class="resource-filter">
+      <div class="ov-filter">
         <label for="regionFilter">Region</label>
         <select id="regionFilter" (change)="filterByRegion($event)">
           <option value="">All Regions</option>
           <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
         </select>        
       </div>
-
-      <div class="resource-filter">
+      <div class="ov-filter">
         <label for="stateFilter">State</label>
         <select id="stateFilter" (change)="filterByState($event)">
           <option value="">All States</option>
@@ -30,7 +28,7 @@
         </select>          
       </div>
 
-      <div class="resource-filter">
+      <div class="ov-filter">
         <label for="cwAgentFilter">CloudWatch Monitoring</label>
         <select id="cwAgentFilter" (change)="filterByCWAgent($event)">
           <option value="">All</option>
@@ -39,7 +37,7 @@
         </select>
       </div>
 
-      <div class="resource-filter">
+      <div class="ov-filter">
         <label for="typeFilter">Instance Type</label>
         <select id="typeFilter" (change)="filterByType($event)">
           <option value="">All Types</option>
@@ -47,7 +45,7 @@
         </select>      
       </div>
 
-      <div class="resource-filter">
+      <div class="ov-filter">
         <label for="typeFilter">SWO Patch</label>
         <select id="typeFilter" (change)="filterBySWOPatch($event)">
           <option value="">All</option>
@@ -56,9 +54,9 @@
       </div>      
     </div>
 
-    <!-- Ações + Busca (na mesma linha) -->
-    <div class="resource-header__actions">
-      <div class="resource-search">
+    <!-- Actions + Search (inline) -->
+    <div class="ov-filterbar__actions">
+      <div class="ov-search">
         <input
           id="instanceSearch"
           type="search"
@@ -69,9 +67,8 @@
           type="button"
           class="ov-clear-btn"
           *ngIf="searchTerm"
-          (click)="clearSearch(searchInput)"
-          aria-label="Clear search"></button>
-      </div>
+          (click)="clearSearch(searchInput)"            aria-label="Clear search"></button>
+        </div>
       <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToCSV()">Export to CSV</button>
       <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToXLSX()">Export to XLSX</button>
       <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
@@ -148,7 +145,7 @@
         </div>
       </div>
       
-      <div style="margin-top: 12px;">
+      <div>
         <div class="ov-actions">
           <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">
             View Details
@@ -201,7 +198,7 @@
     </div>
   </div>
 
-  <!-- Resource Details Modal -->
+  <!-- x -->
   <div class="ov-modal" *ngIf="selectedResource" (click)="closeDetails()">
     <div class="ov-modal__dialog" 
          role="dialog" 
@@ -222,7 +219,7 @@
         <!-- Instance Information -->
         <section aria-labelledby="instance-info">
           <h3 id="instance-info">Instance Information</h3>
-          <table class="details-table">
+          <table class="ov-details-table">
             <tr>
               <th>Instance ID</th>
               <td>{{ selectedResource.instanceId }}</td>
@@ -269,7 +266,7 @@
         <!-- Network Interfaces -->
         <section aria-labelledby="network-info">
           <h3 id="network-info">Network Interfaces</h3>
-          <table class="details-table">
+          <table class="ov-details-table">
             <tr>
               <th>Private IPs</th>
               <td>
@@ -298,7 +295,7 @@
         <!-- Health Status -->
         <section aria-labelledby="health-info">
           <h3 id="health-info">Health Status</h3>
-          <table class="details-table">
+          <table class="ov-details-table">
             <tr>
               <th>Health Status</th>
               <td>{{ selectedResource.healthStatus || 'N/A' }}</td>
@@ -325,7 +322,7 @@
         <!-- Monitoring Status -->
         <section aria-labelledby="monitoring-info">
           <h3 id="monitoring-info">Monitoring Status</h3>
-          <table class="details-table">
+          <table class="ov-details-table">
             <tr>
               <th>SSM Status</th>
               <td>{{ selectedResource.ssmStatus || 'N/A' }}</td>
@@ -364,7 +361,7 @@
         <!-- SWO Configuration -->
         <section aria-labelledby="swo-info">
           <h3 id="swo-info">SWO Configuration</h3>
-          <table class="details-table">
+          <table class="ov-details-table">
             <tr>
               <th>SWO Monitor</th>
               <td>{{ selectedResource.swoMonitor || 'Not configured' }}</td>
@@ -391,7 +388,7 @@
         <!-- Auto Scheduling -->
         <section aria-labelledby="scheduling-info">
           <h3 id="scheduling-info">Auto Scheduling</h3>
-          <table class="details-table">
+          <table class="ov-details-table">
             <tr>
               <th>Auto Start</th>
               <td>{{ selectedResource.autoStart || 'Not configured' }}</td>
@@ -414,7 +411,7 @@
         <!-- Location Information -->
         <section aria-labelledby="location-info">
           <h3 id="location-info">Location Information</h3>
-          <table class="details-table">
+          <table class="ov-details-table">
             <tr>
               <th>Region</th>
               <td>{{ selectedResource.region }}</td>
@@ -438,6 +435,7 @@
       </div>
     </div>
   </div>
+
   <!-- Pagination Controls -->
   <div class="ov-pagination" *ngIf="!loading && filteredResources.length > 0">
     <div class="ov-pagination__info">
@@ -462,5 +460,4 @@
       <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
     </div>
   </div>
-
 </article>

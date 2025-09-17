@@ -1,45 +1,42 @@
 <!-- src/app/features/components/ami-snapshots/ami-snapshots.component.html -->
 <article class="ov-container" aria-labelledby="ami-title">
   
-  <div class="resource-header">
-    <h1 class="resource-header__title">AMI Snapshots</h1>
+  <div class="ov-header">
+    <h1 id="ami-title" class="ov-title">AMI Snapshots</h1>
     
-    <!-- Filtros (grid) -->
-    <div class="resource-header__filters">
-      <div class="resource-filter">
+    <!-- Filters (grid) -->  
+    <div class="ov-filterbar">
+      <div class="ov-filter">
+        <label for="accountFilter">Account</label>
+        <select id="accountFilter" (change)="filterByAccount($event)">
+          <option value="">All Accounts</option>
+          <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
+        </select>
+      </div>  
+      <div class="ov-filter">
+        <label for="regionFilter">Region</label>
+        <select id="regionFilter" (change)="filterByRegion($event)">
+          <option value="">All Regions</option>
+          <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+        </select>
+      </div>         
+      <div class="ov-filter">
         <label for="platformFilter">Platform</label>
         <select id="platformFilter" (change)="filterByPlatform($event)">
           <option value="">All Platforms</option>
           <option *ngFor="let p of uniquePlatforms" [value]="p">{{ p }}</option>
         </select>
       </div>
-
-      <div class="resource-filter">
-        <label for="regionFilter">Region</label>
-        <select id="regionFilter" (change)="filterByRegion($event)">
-          <option value="">All Regions</option>
-          <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
-        </select>
-      </div>
-
-      <div class="resource-filter">
-        <label for="accountFilter">Account</label>
-        <select id="accountFilter" (change)="filterByAccount($event)">
-          <option value="">All Accounts</option>
-          <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
-        </select>
-      </div>
     </div>
 
-    <!-- Ações + Busca (na mesma linha) -->
-    <div class="resource-header__actions">
-      <div class="resource-search">
+    <!-- Actions + Search (inline) -->
+    <div class="ov-filterbar__actions">
+      <div class="ov-search">
         <input
           id="amiSearch"
           type="search"
           placeholder="Search by Image ID, Name Tag, or AMI Name"
           (input)="applyFilters()"
-          name="amiSearchBox" 
           #searchInput/>
         <button 
           type="button" 
@@ -54,6 +51,7 @@
       <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
     </div>        
   </div>
+  
   <!-- Loading/Empty -->
   <div *ngIf="loading" class="ov-loading">Loading AMI snapshots…</div>
   <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
@@ -120,12 +118,43 @@
     </article>
   </div>
 
+    <!-- Modal: Customize Columns -->
+  <div class="ov-modal" *ngIf="showColumnCustomizer" (click)="closeColumnCustomizer()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="ami-col-title" (click)="$event.stopPropagation()">
+      <div class="ov-modal__head">
+        <h2 id="ami-col-title" class="ov-modal__title">Customize Columns</h2>
+        <button class="ov-btn" (click)="closeColumnCustomizer()" aria-label="Close dialog">×</button>
+      </div>
+      <div class="ov-modal__body">
+        <div class="ov-actions" style="justify-content:flex-start; margin-bottom: var(--ov-space-4);">
+          <button class="ov-btn" (click)="selectAllColumns()">Select All</button>
+          <button class="ov-btn" (click)="deselectAllColumns()">Deselect All</button>
+        </div>
+        <div class="column-list">
+          <label *ngFor="let column of availableColumns">
+            <input type="checkbox"
+                   [checked]="isColumnSelected(column.key)"
+                   [disabled]="isRequiredColumn(column.key)" />
+            <span [class.required]="isRequiredColumn(column.key)">
+              {{ column.label }}
+              <span *ngIf="isRequiredColumn(column.key)" class="required-badge">Required</span>
+            </span>
+          </label>
+        </div>
+      </div>
+      <div class="ov-modal__foot">
+        <button class="ov-btn" (click)="applyColumnSelection()">Apply</button>
+        <button class="ov-btn ov-btn--primary" (click)="closeColumnCustomizer()">Done</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Resource Details Modal -->
   <div class="ov-modal" *ngIf="selectedResource" (click)="closeDetails()">
     <div class="ov-modal__dialog" 
          role="dialog" 
-         aria-modal="true"
-         aria-labelledby="ami-details-title" 
+         aria-modal="true" 
+         aria-labelledby="ec2-details-title" 
          (click)="$event.stopPropagation()"
          style="max-width: 800px;">
       <!-- Modal Header -->
@@ -201,38 +230,6 @@
     </div>
   </div>
 
-  <!-- Modal: Customize Columns -->
-  <div class="ov-modal" *ngIf="showColumnCustomizer" (click)="closeColumnCustomizer()">
-    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="ami-col-title" (click)="$event.stopPropagation()">
-      <div class="ov-modal__head">
-        <h2 id="ami-col-title" class="ov-modal__title">Customize Columns</h2>
-        <button class="ov-btn" (click)="closeColumnCustomizer()" aria-label="Close dialog">×</button>
-      </div>
-      <div class="ov-modal__body">
-        <div class="ov-actions" style="justify-content:flex-start; margin-bottom: var(--ov-space-4);">
-          <button class="ov-btn" (click)="selectAllColumns()">Select All</button>
-          <button class="ov-btn" (click)="deselectAllColumns()">Deselect All</button>
-        </div>
-        <div class="column-list">
-          <label *ngFor="let column of availableColumns">
-            <input type="checkbox"
-                   [checked]="isColumnSelected(column.key)"
-                   (change)="toggleColumn(column.key)"
-                   [disabled]="isRequiredColumn(column.key)" />
-            <span [class.required]="isRequiredColumn(column.key)">
-              {{ column.label }}
-              <span *ngIf="isRequiredColumn(column.key)" class="required-badge">Required</span>
-            </span>
-          </label>
-        </div>
-      </div>
-      <div class="ov-modal__foot">
-        <button class="ov-btn" (click)="applyColumnSelection()">Apply</button>
-        <button class="ov-btn ov-btn--primary" (click)="closeColumnCustomizer()">Done</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Pagination Controls -->
   <div class="ov-pagination" *ngIf="!loading && filteredResources.length > 0">
     <div class="ov-pagination__info">
@@ -248,7 +245,7 @@
           class="ov-btn"
           *ngFor="let page of getPageNumbers()"
           (click)="goToPage(page)"
-          [class.active]="page === currentPage">
+          [class.is-active]="page === currentPage">
           {{ page }}
         </button>
       </span>
@@ -256,5 +253,5 @@
       <button class="ov-btn ov-btn--subtle" (click)="goToNextPage()" [disabled]="currentPage === totalPages">Next</button>
       <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
     </div>
-  </div> 
+  </div>
 </article>

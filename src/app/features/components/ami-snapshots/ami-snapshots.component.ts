@@ -25,9 +25,6 @@ interface ColumnDefinition {
   standalone: true,
   imports: [CommonModule, FormsModule, ResourceTagsComponent],
   templateUrl: './ami-snapshots.component.html',
-  styleUrls: [
-    '../../../shared/styles/onevision-base.css'
-  ]
 })
 export class AMISnapshotsComponent implements OnInit, OnDestroy {
   resources: any[] = [];
