@@ -1,75 +1,292 @@
 <!-- src/app/features/dashboard/dashboard.component.html -->
 <div class="dashboard">
-  <h2>Metrics Dashboard</h2>
-
-  <div *ngIf="loading">Loading metrics...</div>
-  <div *ngIf="error">{{ error }}</div>
-
-  <div *ngIf="!loading && metrics?.length">
-    <div *ngFor="let metric of metrics" class="metric-card">
-      <h3>{{ metric.resourceType }}</h3>
-      <ul>
-        <li>ID: {{ metric.id }}</li>
-        <li>Metric Date: {{ metric.metricDate }}</li>
-        <li>Created At: {{ metric.createdAt }}</li>
-        <li>Updated At: {{ metric.updatedAt }}</li>
-        <li>Total Resources: {{ metric.totalResources }}</li>
-        <li>Resource Regions Found: {{ metric.resourceRegionsFound }}</li>
-        <li>Regions Collected: {{ metric.regionsCollected }}</li>
-        <li>ByState Running: {{ metric.byState_running }}</li>
-        <li>ByState Stopped: {{ metric.byState_stopped }}</li>
-        <li>HealthStatus Healthy: {{ metric.healthStatus_Healthy }}</li>
-        <li>HealthStatus Stopped: {{ metric.healthStatus_Stopped }}</li>
-        <li>Cloudwatch Agent Both Enabled: {{ metric.cloudwatchAgent_bothEnabled }}</li>
-        <li>Cloudwatch Agent Disk Monitoring: {{ metric.cloudwatchAgent_diskMonitoring }}</li>
-        <li>Cloudwatch Agent Memory Monitoring: {{ metric.cloudwatchAgent_memoryMonitoring }}</li>
-        <li>Cloudwatch Agent None Enabled: {{ metric.cloudwatchAgent_noneEnabled }}</li>
-        <li>Cloudwatch Agent % Disk: {{ metric.cloudwatchAgent_percentageWithDisk }}</li>
-        <li>Cloudwatch Agent % Memory: {{ metric.cloudwatchAgent_percentageWithMemory }}</li>
-        <li>SSM Connected: {{ metric.ssmAgent_connected }}</li>
-        <li>SSM Not Connected: {{ metric.ssmAgent_notConnected }}</li>
-        <li>SSM Not Installed: {{ metric.ssmAgent_notInstalled }}</li>
-        <li>SSM % Connected: {{ metric.ssmAgent_percentageConnected }}</li>
-        <li>Potential Monthly Savings: {{ metric.potentialMonthlySavings }}</li>
-        <li>Unassociated EIPs: {{ metric.unassociatedElasticIPs }}</li>
-        <li>Unattached EBS Volumes: {{ metric.unattachedEBSVolumes }}</li>
-        <li>Exposed Security Groups: {{ metric.exposedSecurityGroups }}</li>
-        <li>% Exposed: {{ metric.percentageExposed }}</li>
-        <li>RDS Total: {{ metric.total }}</li>
-        <li>RDS Available: {{ metric.available }}</li>
-        <li>Aurora MySQL Engines: {{ metric.engines_aurora_mysql }}</li>
-        <li>MultiAZ: {{ metric.multiAZ }}</li>
-        <li>% MultiAZ: {{ metric.percentageMultiAZ }}</li>
-        <li>Performance Insights: {{ metric.performanceInsights }}</li>
-        <li>% With Perf Insights: {{ metric.percentageWithPerfInsights }}</li>
-        <li>AMI Snapshots: {{ metric.amiSnapshots }}</li>
-        <li>EBS Snapshots: {{ metric.ebsSnapshots }}</li>
-        <li>EBS Volumes: {{ metric.ebsVolumes }}</li>
-        <li>S3 Buckets: {{ metric.s3Buckets }}</li>
-        <li>S3 With Lifecycle: {{ metric.s3WithLifecycle }}</li>
-        <li>ResourceCounts AMI: {{ metric.resourceCounts_AMI }}</li>
-        <li>ResourceCounts AutoScalingGroup: {{ metric.resourceCounts_AutoScalingGroup }}</li>
-        <li>ResourceCounts DirectConnectConnection: {{ metric.resourceCounts_DirectConnectConnection }}</li>
-        <li>ResourceCounts DirectConnectVirtualInterface: {{ metric.resourceCounts_DirectConnectVirtualInterface }}</li>
-        <li>ResourceCounts EBSSnapshot: {{ metric.resourceCounts_EBSSnapshot }}</li>
-        <li>ResourceCounts EBSVolume: {{ metric.resourceCounts_EBSVolume }}</li>
-        <li>ResourceCounts EC2Instance: {{ metric.resourceCounts_EC2Instance }}</li>
-        <li>ResourceCounts ElasticIP: {{ metric.resourceCounts_ElasticIP }}</li>
-        <li>ResourceCounts InternetGateway: {{ metric.resourceCounts_InternetGateway }}</li>
-        <li>ResourceCounts LoadBalancer: {{ metric.resourceCounts_LoadBalancer }}</li>
-        <li>ResourceCounts NetworkACL: {{ metric.resourceCounts_NetworkACL }}</li>
-        <li>ResourceCounts RDSClusterSnapshot: {{ metric.resourceCounts_RDSClusterSnapshot }}</li>
-        <li>ResourceCounts RDSInstance: {{ metric.resourceCounts_RDSInstance }}</li>
-        <li>ResourceCounts RouteTable: {{ metric.resourceCounts_RouteTable }}</li>
-        <li>ResourceCounts S3Bucket: {{ metric.resourceCounts_S3Bucket }}</li>
-        <li>ResourceCounts SecurityGroup: {{ metric.resourceCounts_SecurityGroup }}</li>
-        <li>ResourceCounts Subnet: {{ metric.resourceCounts_Subnet }}</li>
-        <li>ResourceCounts TransitGateway: {{ metric.resourceCounts_TransitGateway }}</li>
-        <li>ResourceCounts TransitGatewayAttachment: {{ metric.resourceCounts_TransitGatewayAttachment }}</li>
-        <li>ResourceCounts VPC: {{ metric.resourceCounts_VPC }}</li>
-        <li>ResourceCounts VPCEndpoint: {{ metric.resourceCounts_VPCEndpoint }}</li>
-        <li>ResourceCounts VPNConnection: {{ metric.resourceCounts_VPNConnection }}</li>
-      </ul>
+  <div class="dashboard-header">
+    <h2>Metrics Dashboard</h2>
+    <div class="dashboard-controls">
+      <button (click)="refreshData()" class="btn-refresh">🔄 Refresh</button>
+      <button (click)="onTriggerCollector()" class="btn-trigger">
+        ⚡ Trigger Collector
+      </button>
     </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="ov-loading">
+    <div class="ov-loading-spinner"></div>
+    <p>Loading metrics...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="ov-error">
+    <div class="ov-error-icon">⚠️</div>
+    <h3>Error Loading Metrics</h3>
+    <p>{{ error }}</p>
+    <button (click)="refreshData()" class="btn-retry">Retry</button>
+  </div>
+
+  <!-- Debug Stats (only in debug mode) -->
+  <div *ngIf="debugMode && !loading" class="debug-panel">
+    <h3>Debug Statistics</h3>
+    <div class="debug-stats">
+      <span>Total Metrics: {{ debugStats.totalMetrics }}</span>
+      <span>Current: {{ debugStats.currentMetrics }}</span>
+      <span>Historical: {{ debugStats.historicalMetrics }}</span>
+      <span>Fields with Data: {{ debugStats.fieldsWithData }}</span>
+      <span>Empty Fields: {{ debugStats.fieldsEmpty }}</span>
+      <span>Numeric Fields: {{ debugStats.numericFieldsCount }}</span>
+      <span>String Fields: {{ debugStats.stringFieldsCount }}</span>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && metrics?.length" class="metrics-container">
+    
+    <!-- Date Selector for Historical Data -->
+    <div class="date-selector">
+      <label for="dateSelect">View Historical Data:</label>
+      <input 
+        type="date" 
+        id="dateSelect"
+        [formControl]="selectedDate"
+        class="date-input"
+      />
+    </div>
+
+    <!-- Metrics Cards -->
+    <div *ngFor="let metric of metrics" class="metric-card" [ngClass]="getMetricTypeClass(metric.id)">
+      <div class="metric-header">
+        <h3>{{ metric.resourceType || 'Metric' }}</h3>
+        <span class="metric-id">{{ metric.id }}</span>
+      </div>
+
+      <div class="metric-content">
+
+        <!-- Summary Section -->
+        <div class="metric-section" *ngIf="hasValue(metric.totalResources) || hasValue(metric.resourceRegionsFound)">
+          <h4>Summary</h4>
+          <div class="metric-grid">
+            <div class="metric-item" *ngIf="hasValue(metric.totalResources)">
+              <span class="label">Total Resources:</span>
+              <span class="value highlight">{{ formatValue(metric.totalResources) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.resourceRegionsFound)">
+              <span class="label">Regions Found:</span>
+              <span class="value">{{ formatValue(metric.resourceRegionsFound) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.regionsCollected)">
+              <span class="label">Regions Collected:</span>
+              <span class="value">{{ formatValue(metric.regionsCollected) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- EC2 Health Section -->
+        <div class="metric-section" *ngIf="hasValue(metric.byState_running) || hasValue(metric.byState_stopped)">
+          <h4>EC2 Health</h4>
+          <div class="metric-grid">
+            <div class="metric-item" *ngIf="hasValue(metric.byState_running)">
+              <span class="label">Running:</span>
+              <span class="value status-running">{{ formatValue(metric.byState_running) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.byState_stopped)">
+              <span class="label">Stopped:</span>
+              <span class="value status-stopped">{{ formatValue(metric.byState_stopped) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.healthStatus_Healthy)">
+              <span class="label">Healthy:</span>
+              <span class="value status-healthy">{{ formatValue(metric.healthStatus_Healthy) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.healthStatus_Stopped)">
+              <span class="label">Unhealthy:</span>
+              <span class="value status-unhealthy">{{ formatValue(metric.healthStatus_Stopped) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CloudWatch Agent Section -->
+        <div class="metric-section" *ngIf="hasValue(metric.cloudwatchAgent_memoryMonitoring) || hasValue(metric.cloudwatchAgent_diskMonitoring)">
+          <h4>CloudWatch Agent</h4>
+          <div class="metric-grid">
+            <div class="metric-item" *ngIf="hasValue(metric.cloudwatchAgent_bothEnabled)">
+              <span class="label">Both Enabled:</span>
+              <span class="value">{{ formatValue(metric.cloudwatchAgent_bothEnabled) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.cloudwatchAgent_diskMonitoring)">
+              <span class="label">Disk Monitoring:</span>
+              <span class="value">{{ formatValue(metric.cloudwatchAgent_diskMonitoring) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.cloudwatchAgent_memoryMonitoring)">
+              <span class="label">Memory Monitoring:</span>
+              <span class="value">{{ formatValue(metric.cloudwatchAgent_memoryMonitoring) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.cloudwatchAgent_noneEnabled)">
+              <span class="label">None Enabled:</span>
+              <span class="value">{{ formatValue(metric.cloudwatchAgent_noneEnabled) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.cloudwatchAgent_percentageWithDisk)">
+              <span class="label">% with Disk:</span>
+              <span class="value">{{ formatValue(metric.cloudwatchAgent_percentageWithDisk) }}%</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.cloudwatchAgent_percentageWithMemory)">
+              <span class="label">% with Memory:</span>
+              <span class="value">{{ formatValue(metric.cloudwatchAgent_percentageWithMemory) }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SSM Agent Section -->
+        <div class="metric-section" *ngIf="hasValue(metric.ssmAgent_connected) || hasValue(metric.ssmAgent_notConnected)">
+          <h4>SSM Agent</h4>
+          <div class="metric-grid">
+            <div class="metric-item" *ngIf="hasValue(metric.ssmAgent_connected)">
+              <span class="label">Connected:</span>
+              <span class="value status-connected">{{ formatValue(metric.ssmAgent_connected) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.ssmAgent_notConnected)">
+              <span class="label">Not Connected:</span>
+              <span class="value status-disconnected">{{ formatValue(metric.ssmAgent_notConnected) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.ssmAgent_notInstalled)">
+              <span class="label">Not Installed:</span>
+              <span class="value">{{ formatValue(metric.ssmAgent_notInstalled) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.ssmAgent_percentageConnected)">
+              <span class="label">% Connected:</span>
+              <span class="value">{{ formatValue(metric.ssmAgent_percentageConnected) }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cost Optimization Section -->
+        <div class="metric-section" *ngIf="hasValue(metric.potentialMonthlySavings)">
+          <h4>Cost Optimization</h4>
+          <div class="metric-grid">
+            <div class="metric-item" *ngIf="hasValue(metric.potentialMonthlySavings)">
+              <span class="label">Potential Monthly Savings:</span>
+              <span class="value highlight-cost">${{ formatValue(metric.potentialMonthlySavings) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.unassociatedElasticIPs)">
+              <span class="label">Unassociated EIPs:</span>
+              <span class="value">{{ formatValue(metric.unassociatedElasticIPs) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.unattachedEBSVolumes)">
+              <span class="label">Unattached EBS Volumes:</span>
+              <span class="value">{{ formatValue(metric.unattachedEBSVolumes) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Section -->
+        <div class="metric-section" *ngIf="hasValue(metric.exposedSecurityGroups)">
+          <h4>Security</h4>
+          <div class="metric-grid">
+            <div class="metric-item" *ngIf="hasValue(metric.exposedSecurityGroups)">
+              <span class="label">Exposed Security Groups:</span>
+              <span class="value status-warning">{{ formatValue(metric.exposedSecurityGroups) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.percentageExposed)">
+              <span class="label">% Exposed:</span>
+              <span class="value">{{ formatValue(metric.percentageExposed) }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RDS Section -->
+        <div class="metric-section" *ngIf="hasValue(metric.total) && metric.id?.includes('RDS')">
+          <h4>RDS Metrics</h4>
+          <div class="metric-grid">
+            <div class="metric-item" *ngIf="hasValue(metric.total)">
+              <span class="label">Total Instances:</span>
+              <span class="value">{{ formatValue(metric.total) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.available)">
+              <span class="label">Available:</span>
+              <span class="value">{{ formatValue(metric.available) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.multiAZ)">
+              <span class="label">Multi-AZ:</span>
+              <span class="value">{{ formatValue(metric.multiAZ) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.performanceInsights)">
+              <span class="label">Performance Insights:</span>
+              <span class="value">{{ formatValue(metric.performanceInsights) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Storage Section -->
+        <div class="metric-section" *ngIf="hasValue(metric.amiSnapshots) || hasValue(metric.ebsSnapshots)">
+          <h4>Storage Metrics</h4>
+          <div class="metric-grid">
+            <div class="metric-item" *ngIf="hasValue(metric.amiSnapshots)">
+              <span class="label">AMI Snapshots:</span>
+              <span class="value">{{ formatValue(metric.amiSnapshots) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.ebsSnapshots)">
+              <span class="label">EBS Snapshots:</span>
+              <span class="value">{{ formatValue(metric.ebsSnapshots) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.ebsVolumes)">
+              <span class="label">EBS Volumes:</span>
+              <span class="value">{{ formatValue(metric.ebsVolumes) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.s3Buckets)">
+              <span class="label">S3 Buckets:</span>
+              <span class="value">{{ formatValue(metric.s3Buckets) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.s3WithLifecycle)">
+              <span class="label">S3 with Lifecycle:</span>
+              <span class="value">{{ formatValue(metric.s3WithLifecycle) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resource Counts Section -->
+        <div class="metric-section">
+          <h4>Resource Counts</h4>
+          <div class="metric-grid">
+            <div class="metric-item" *ngIf="hasValue(metric.resourceCounts_EC2Instance)">
+              <span class="label">EC2 Instances:</span>
+              <span class="value">{{ formatValue(metric.resourceCounts_EC2Instance) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.resourceCounts_S3Bucket)">
+              <span class="label">S3 Buckets:</span>
+              <span class="value">{{ formatValue(metric.resourceCounts_S3Bucket) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.resourceCounts_VPC)">
+              <span class="label">VPCs:</span>
+              <span class="value">{{ formatValue(metric.resourceCounts_VPC) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.resourceCounts_SecurityGroup)">
+              <span class="label">Security Groups:</span>
+              <span class="value">{{ formatValue(metric.resourceCounts_SecurityGroup) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.resourceCounts_RDSInstance)">
+              <span class="label">RDS Instances:</span>
+              <span class="value">{{ formatValue(metric.resourceCounts_RDSInstance) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.resourceCounts_LoadBalancer)">
+              <span class="label">Load Balancers:</span>
+              <span class="value">{{ formatValue(metric.resourceCounts_LoadBalancer) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.resourceCounts_EBSVolume)">
+              <span class="label">EBS Volumes:</span>
+              <span class="value">{{ formatValue(metric.resourceCounts_EBSVolume) }}</span>
+            </div>
+            <div class="metric-item" *ngIf="hasValue(metric.resourceCounts_EBSSnapshot)">
+              <span class="label">EBS Snapshots:</span>
+              <span class="value">{{ formatValue(metric.resourceCounts_EBSSnapshot) }}</span>
+            </div>
+            <!-- Add more resource counts as needed -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && metrics?.length === 0" class="empty-state">
+    <h3>No metrics available</h3>
+    <p>Click "Trigger Collector" to start collecting AWS metrics.</p>
   </div>
 </div>

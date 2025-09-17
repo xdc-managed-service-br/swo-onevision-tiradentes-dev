@@ -6,19 +6,15 @@ import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
-
   ],
   imports: [
     CommonModule,
     RouterModule,
     FormsModule,
-
   ],
   providers: [
-
   ],
   exports: [
-
   ]
 })
 export class CoreModule {
