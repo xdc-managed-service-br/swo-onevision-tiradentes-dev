@@ -39,6 +39,12 @@ const routes: Routes = [
       import('./components/s3-buckets/s3-buckets.component')  // << caminho correto
         .then(m => m.S3BucketsComponent)
   },
+ {
+    path: 'ebs',
+    loadComponent: () =>
+      import('./components/ebs-volumes/ebs-volumes.component')  // << caminho correto
+        .then(m => m.EBSVolumesComponent)
+  },
 ];
 
 @NgModule({
