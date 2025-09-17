@@ -153,32 +153,32 @@
   </div>
 
   <!-- Modal de detalhes -->
-  <div class="ov-modal" *ngIf="selectedResource" (click)="closeDetails()">
+  <div class="ov-modal" *ngIf="selectedResource as resource" (click)="closeDetails()">
     <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="rds-details-title" (click)="$event.stopPropagation()" style="max-width:800px;">
       <div class="ov-modal__head">
         <h2 id="rds-details-title" class="ov-modal__title">
-          RDS Instance — {{ selectedResource?.dbInstanceId }}
+          RDS Instance — {{ resource.dbInstanceId }}
         </h2>
         <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
       </div>
       <div class="ov-modal__body">
         <table class="ov-details-table">
-          <tr><th>DB Identifier</th><td>{{ selectedResource?.dbInstanceId }}</td></tr>
-          <tr><th>Name</th><td>{{ selectedResource?.dbInstanceName || 'N/A' }}</td></tr>
-          <tr><th>Status</th><td><span [ngClass]="getStatusClass(selectedResource?.status)">{{ selectedResource?.status || 'N/A' }}</span></td></tr>
-          <tr><th>Engine</th><td>{{ selectedResource?.engine }} {{ selectedResource?.engineVersion }}</td></tr>
-          <tr><th>Class</th><td>{{ selectedResource?.instanceClass }}</td></tr>
-          <tr><th>Allocated Storage</th><td>{{ selectedResource?.allocatedStorage || 'N/A' }}</td></tr>
-          <tr><th>Storage Type</th><td>{{ selectedResource?.storageType || 'N/A' }}</td></tr>
-          <tr><th>Region</th><td>{{ selectedResource?.region }}</td></tr>
-          <tr><th>Account</th><td>{{ selectedResource?.accountName || selectedResource?.accountId }}</td></tr>
-          <tr><th>Created</th><td>{{ formatDate(selectedResource?.createdAt) }}</td></tr>
+          <tr><th>DB Identifier</th><td>{{ resource.dbInstanceId }}</td></tr>
+          <tr><th>Name</th><td>{{ resource.dbInstanceName || 'N/A' }}</td></tr>
+          <tr><th>Status</th><td><span [ngClass]="getStatusClass(resource.status)">{{ resource.status || 'N/A' }}</span></td></tr>
+          <tr><th>Engine</th><td>{{ resource.engine }} {{ resource.engineVersion }}</td></tr>
+          <tr><th>Class</th><td>{{ resource.instanceClass }}</td></tr>
+          <tr><th>Allocated Storage</th><td>{{ resource.allocatedStorage || 'N/A' }}</td></tr>
+          <tr><th>Storage Type</th><td>{{ resource.storageType || 'N/A' }}</td></tr>
+          <tr><th>Region</th><td>{{ resource.region }}</td></tr>
+          <tr><th>Account</th><td>{{ resource.accountName || resource.accountId }}</td></tr>
+          <tr><th>Created</th><td>{{ formatDate(resource.createdAt) }}</td></tr>
         </table>
 
         <!-- ✅ usa ResourceTagsComponent, elimina o warning -->
-        <section *ngIf="selectedResource?.tags">
+        <section *ngIf="resource.tags">
           <h3>Tags</h3>
-          <app-resource-tags [tags]="selectedResource?.tags"></app-resource-tags>
+          <app-resource-tags [tags]="resource.tags"></app-resource-tags>
         </section>
       </div>
       <div class="ov-modal__foot">

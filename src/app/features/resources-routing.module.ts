@@ -50,7 +50,14 @@ const routes: Routes = [
       loadComponent: () =>
         import('./components/ebs-snapshots/ebs-snapshots.component')  // << caminho correto
           .then(m => m.EBSSnapshotsComponent)
-    },
+  },
+  // Databases
+  {
+    path: 'rds',
+    loadComponent: () =>
+      import('./components/rds-resources/rds-instances.component')
+        .then(m => m.RDSInstancesComponent)
+  }
 ];
 
 @NgModule({

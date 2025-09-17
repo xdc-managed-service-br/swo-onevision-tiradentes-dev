@@ -110,9 +110,11 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
           // Nada de parse/conversão aqui — mantemos storageBytes como veio
           this.resources = (data || []) as S3Bucket[];
 
+          const nonEmpty = (value: string | null | undefined): value is string => !!value && value.trim().length > 0;
+
           this.filteredResources = [...this.resources];
-          this.uniqueRegions = [...new Set(this.resources.map(r => r.region).filter(Boolean))].sort();
-          this.uniqueAccounts = [...new Set(this.resources.map(r => r.accountName || r.accountId).filter(Boolean))].sort();
+          this.uniqueRegions = [...new Set(this.resources.map(r => r.region).filter(nonEmpty))].sort();
+          this.uniqueAccounts = [...new Set(this.resources.map(r => r.accountName || r.accountId).filter(nonEmpty))].sort();
           this.recomputePagination();
           this.loading = false;
         },

@@ -109,11 +109,13 @@ export class RDSInstancesComponent implements OnInit, OnDestroy {
             tags: r.tags
           }));
 
-          this.uniqueRegions = [...new Set(this.resources.map(x => x.region))].filter(Boolean).sort();
-          this.uniqueAccounts = [...new Set(this.resources.map(x => x.accountName || x.accountId))].filter(Boolean).sort();
-          this.uniqueEngines = [...new Set(this.resources.map(x => x.engine))].filter(Boolean).sort();
-          this.uniqueStatuses = [...new Set(this.resources.map(x => x.status))].filter(Boolean).sort();
-          this.uniqueStorageTypes = [...new Set(this.resources.map(x => x.storageType))].filter(Boolean).sort();
+          const nonEmpty = (value: string | null | undefined): value is string => !!value && value.trim().length > 0;
+
+          this.uniqueRegions = [...new Set(this.resources.map(x => x.region))].filter(nonEmpty).sort();
+          this.uniqueAccounts = [...new Set(this.resources.map(x => x.accountName || x.accountId))].filter(nonEmpty).sort();
+          this.uniqueEngines = [...new Set(this.resources.map(x => x.engine))].filter(nonEmpty).sort();
+          this.uniqueStatuses = [...new Set(this.resources.map(x => x.status))].filter(nonEmpty).sort();
+          this.uniqueStorageTypes = [...new Set(this.resources.map(x => x.storageType))].filter(nonEmpty).sort();
 
           this.applyFilters();
           this.loading = false;
@@ -166,8 +168,13 @@ export class RDSInstancesComponent implements OnInit, OnDestroy {
   resetFilters(): void {
     this.regionFilter = this.accountFilter = this.engineFilter = this.statusFilter = this.storageTypeFilter = '';
     this.searchTerm = '';
-    (document.getElementById('rdsSearch') as HTMLInputElement | null)?.value = '';
-    document.querySelectorAll('select').forEach(s => (s as HTMLSelectElement).value = '');
+
+    const searchInput = document.getElementById('rdsSearch') as HTMLInputElement | null;
+    if (searchInput) searchInput.value = '';
+
+    document.querySelectorAll<HTMLSelectElement>('select').forEach((selectEl) => {
+      selectEl.value = '';
+    });
     this.filteredResources = [...this.resources];
     this.updatePaginationAfterChange();
   }
