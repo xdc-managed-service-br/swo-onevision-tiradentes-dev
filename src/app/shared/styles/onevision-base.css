@@ -159,22 +159,21 @@
    FIXED HEADER ALIGNMENT FOR EC2 COMPONENT
    ======================================== */
 
-/* Use grid to perfectly align filters (left) and actions (right) */
+/* Use flex to perfectly align filters (left) and actions (right) */
 .ov-header {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* left half for filters, right half for search+actions */
-  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--ov-space-4);
+  justify-content: space-between;
   margin-bottom: var(--ov-space-6);
 }
 
 @media (max-width: 900px) {
   .ov-header {
-    grid-template-columns: 1fr; /* stack on mobile */
+    flex-direction: column;
   }
 }
 
-/* Ensure filterbar stays left aligned */
 .ov-filterbar {
   display: flex;
   flex-wrap: wrap;
@@ -185,9 +184,8 @@
 /* Ensure actions (search + buttons) stay right aligned */
 .ov-filterbar__actions {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: var(--ov-space-2);
+  gap: var(--ov-space-3);
+  align-items: stretch;
 }
 
 
@@ -238,14 +236,13 @@
   position: relative;
   display: flex;
   align-items: center;
-  flex: 1 1 50%;       /* take half of header right column */
-  max-width: 50%;
-  min-width: 300px;    /* don't shrink too small */
+  max-width: 400px;
+  width: 100%;
 }
 
 .ov-search input {
   width: 100%;
-  background-color: var(--ov-surface) !important; /* force correct background */
+  background-color: var(--ov-surface);
   color: var(--ov-text);
   border: 1px solid var(--ov-border);
   border-radius: var(--ov-radius-sm);
@@ -255,9 +252,12 @@
   transition: var(--ov-transition-fast);
 }
 
-.ov-search input:hover,
+.ov-search input:hover {
+  border-color: var(--ov-border-strong);
+  background-color: var(--ov-surface-raised);
+}
+
 .ov-search input:focus {
-  background-color: var(--ov-surface-raised) !important; /* keep dark bg on hover/focus */
   outline: none;
   border-color: var(--ov-accent);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
