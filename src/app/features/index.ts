@@ -4,7 +4,7 @@
 export * from './resources.module';
 
 // Component exports
-export * from './components/resources/all-rresources.component';
+export * from './components/resources/all-resources.component';
 export * from './dashboard/dashboard.component';
 export * from './components/ec2-resources/ec2-instances.component';
 export * from './components/ami-snapshots/ami-snapshots.component';

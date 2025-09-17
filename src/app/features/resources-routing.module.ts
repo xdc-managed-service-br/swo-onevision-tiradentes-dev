@@ -1,18 +1,44 @@
-// src/app/features/resources/resources-routing.module.ts
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
-  // Home
-  { path: '', loadComponent: () => import('./components/resources/all-rresources.component').then(m => m.ResourcesComponent) },
-  // Dashboard
-  { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent) },
+  // Home (All Resources)
+  {
+    path: '',
+    loadComponent: () =>
+      import('./components/resources/all-resources.component')  // << era ./components/...
+        .then(m => m.ResourcesComponent)
+  },
+
+  // Dashboard da feature (se existir)
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./dashboard/dashboard.component')                // << ajuste relativo
+        .then(m => m.DashboardComponent)
+  },
+
   // Compute
-  { path: 'ec2',            loadComponent: () => import('./components/ec2-resources/ec2-instances.component').then(m => m.EC2InstancesComponent) },
-  { path: 'ami-snapshots',  loadComponent: () => import('./components/ami-snapshots/ami-snapshots.component').then(m => m.AMISnapshotsComponent) },
+  {
+    path: 'ec2',
+    loadComponent: () =>
+      import('./components/ec2-resources/ec2-instances.component')
+        .then(m => m.EC2InstancesComponent)
+  },
+  {
+    path: 'ami-snapshots',
+    loadComponent: () =>
+      import('./components/ami-snapshots/ami-snapshots.component')
+        .then(m => m.AMISnapshotsComponent)
+  },
 
   // Storage
-
+  {
+    path: 's3',
+    loadComponent: () =>
+      import('./components/s3-buckets/s3-buckets.component')  // << caminho correto
+        .then(m => m.S3BucketsComponent)
+  },
 ];
 
 @NgModule({

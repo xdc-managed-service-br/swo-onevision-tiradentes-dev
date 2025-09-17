@@ -44,11 +44,11 @@ src/
 │   ├── features/               # Módulos de features específicas
 │   │   ├── components/         # Componentes de recursos AWS (AMI, EBS, EC2, RDS, S3)
 │   │   │   ├── ami-snapshots/
-│   │   │   ├── ebs-resources/
+│   │   │   ├── ebs-volumes/
 │   │   │   ├── ebs-snapshots/
-│   │   │   ├── ec2-resources/
+│   │   │   ├── ec2-instances/
 │   │   │   ├── rds-resources/
-│   │   │   ├── s3-resources/
+│   │   │   ├── s3-buckets/
 │   │   │   └── resources/      # Outros recursos genéricos
 │   │   └── dashboard/          # Funcionalidades de dashboard
 │   │       ├── cloudwatch-monitoring/
