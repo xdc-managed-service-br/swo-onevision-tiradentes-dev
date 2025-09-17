@@ -1,5 +1,5 @@
 // src/app/core/services/export.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ErrorService } from './error.service';
 import * as XLSX from 'xlsx';
 
@@ -13,10 +13,8 @@ export interface ExportColumn {
   providedIn: 'root'
 })
 export class ExportService {
-  constructor(private errorService: ErrorService) {}
-  /**
-   * Exporta dados para um arquivo XLSX (Excel)
-   */
+  private errorService = inject(ErrorService);
+
   exportDataToXLSX(data: any[], columns: ExportColumn[], filename: string): void {
     if (!data || !data.length) {
       this.errorService.handleError({
@@ -49,12 +47,6 @@ export class ExportService {
     }
   }
 
-  /**
-   * Export data to CSV with specified columns
-   * @param data Array of objects to export
-   * @param columns Columns to export (including key, label, and optional transform function)
-   * @param filename Filename for the CSV file
-   */
   exportDataToCSV(data: any[], columns: ExportColumn[], filename: string): void {
     if (!data || !data.length) {
       this.errorService.handleError({
@@ -91,8 +83,7 @@ export class ExportService {
         
         csvContent += row.join(',') + '\n';
       });
-      
-      // Create and download the file
+
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');

@@ -1,129 +1,9 @@
 // src/app/models/resource.model.ts
-
 import { Schema } from "../../../amplify/data/resource";
-
 // ========================================
-// METRICS INTERFACES
+// RESOURCE INTERFACES
 // ========================================
-
-export interface BaseMetric {
-  id: string;
-  resourceType: string;
-  isMetric?: boolean;
-  metricDate?: string;
-  lastUpdated?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface MetricGlobalSummary extends BaseMetric {
-  // Campos principais
-  totalResources?: number;
-  resourceRegionsFound?: number;
-  regionsCollected?: number;
-  
-  // Distribuições (JSON fields)
-  accountDistribution?: any;  // JSON field
-  regionDistribution?: any;   // JSON field
-  recentResources?: any;      // JSON field
-  
-  // Resource counts
-  resourceCounts_AMI?: number;
-  resourceCounts_AutoScalingGroup?: number;
-  resourceCounts_DirectConnectConnection?: number;
-  resourceCounts_DirectConnectVirtualInterface?: number;
-  resourceCounts_EBSSnapshot?: number;
-  resourceCounts_EBSVolume?: number;
-  resourceCounts_EC2Instance?: number;
-  resourceCounts_ElasticIP?: number;
-  resourceCounts_InternetGateway?: number;
-  resourceCounts_LoadBalancer?: number;
-  resourceCounts_NetworkACL?: number;
-  resourceCounts_RDSClusterSnapshot?: number;
-  resourceCounts_RDSInstance?: number;
-  resourceCounts_RouteTable?: number;
-  resourceCounts_S3Bucket?: number;
-  resourceCounts_SecurityGroup?: number;
-  resourceCounts_Subnet?: number;
-  resourceCounts_TransitGateway?: number;
-  resourceCounts_TransitGatewayAttachment?: number;
-  resourceCounts_VPC?: number;
-  resourceCounts_VPCEndpoint?: number;
-  resourceCounts_VPNConnection?: number;
-}
-
-export interface MetricEC2Health extends BaseMetric {
-  // Totais e estados
-  total?: number;
-  byState_running?: number;
-  byState_stopped?: number;
-  
-  // Health status
-  healthStatus_Healthy?: number;
-  healthStatus_Stopped?: number;
-  
-  // CloudWatch Agent
-  cloudwatchAgent_bothEnabled?: number;
-  cloudwatchAgent_diskMonitoring?: number;
-  cloudwatchAgent_memoryMonitoring?: number;
-  cloudwatchAgent_noneEnabled?: number;
-  cloudwatchAgent_percentageWithDisk?: number;
-  cloudwatchAgent_percentageWithMemory?: number;
-  
-  // SSM Agent
-  ssmAgent_connected?: number;
-  ssmAgent_notConnected?: number;
-  ssmAgent_notInstalled?: number;
-  ssmAgent_percentageConnected?: number;
-}
-
-export interface MetricCostOptimization extends BaseMetric {
-  potentialMonthlySavings?: number;
-  unassociatedElasticIPs?: number;
-  unattachedEBSVolumes?: number;
-}
-
-export interface MetricSecurity extends BaseMetric {
-  exposedSecurityGroups?: number;
-  percentageExposed?: number;
-}
-
-export interface MetricRDS extends BaseMetric {
-  total?: number;
-  available?: number;
-  engines_aurora_mysql?: number;
-  multiAZ?: number;
-  percentageMultiAZ?: number;
-  performanceInsights?: number;
-  percentageWithPerfInsights?: number;
-}
-
-export interface MetricStorage extends BaseMetric {
-  amiSnapshots?: number;
-  ebsSnapshots?: number;
-  ebsVolumes?: number;
-  s3Buckets?: number;
-  s3WithLifecycle?: number;
-}
-
-export type AWSMetric = 
-  | MetricGlobalSummary
-  | MetricEC2Health
-  | MetricCostOptimization
-  | MetricSecurity
-  | MetricRDS
-  | MetricStorage;
-
-export type MetricByType<T extends string> = 
-  T extends 'METRIC-SUMMARY' ? MetricGlobalSummary :
-  T extends 'METRIC-EC2_HEALTH' ? MetricEC2Health :
-  T extends 'METRIC-COST' ? MetricCostOptimization :
-  T extends 'METRIC-SECURITY' ? MetricSecurity :
-  T extends 'METRIC-RDS' ? MetricRDS :
-  T extends 'METRIC-STORAGE' ? MetricStorage :
-  BaseMetric;
 export interface BaseResource {
-  // Base fields
   id: string;
   resourceType: string;
   accountId: string;
@@ -131,11 +11,10 @@ export interface BaseResource {
   createdAt: string;
   updatedAt: string;
   
-  // Base optional fields
   accountName?: string;
   tags?: any; // JSON object
   availabilityZones?: string[];
-  resourceTypeRegionId?: string; // Mantido para compatibilidade
+  resourceTypeRegionId?: string;
 }
 
 // AMI
@@ -218,11 +97,9 @@ export interface EC2Instance extends BaseResource {
   isWindows?: boolean;
   patchGroup?: string;
   
-  // Networking
   instancePrivateIps?: string[];
   instancePublicIps?: string[];
   
-  // Health
   healthStatus?: string;
   healthChecksPassed?: number;
   healthChecksTotal?: number;
@@ -230,23 +107,19 @@ export interface EC2Instance extends BaseResource {
   instanceStatus?: string;
   ebsStatus?: string;
   
-  // SSM
   ssmStatus?: string;
   ssmPingStatus?: string;
   ssmVersion?: string;
   ssmLastPingTime?: string;
   
-  // CloudWatch Agent
   cwAgentMemoryDetected?: boolean;
   cwAgentDiskDetected?: boolean;
   
-  // SWO
   swoMonitor?: string;
   swoPatch?: string;
   swoBackup?: string;
   swoRiskClass?: string;
   
-  // Generic field
   instanceId?: string;
   autoStart?: number;
   autoShutdown?: number;

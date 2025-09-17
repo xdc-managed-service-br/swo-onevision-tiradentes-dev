@@ -147,81 +147,6 @@ const schema = a.schema({
     networkAclName: a.string(),
     customDenyRuleCount: a.integer(),
 
-    // ===== Metric Cost FIELDS =====
-    isMetric: a.boolean(),
-    metricDate: a.string(),
-    potentialMonthlySavings: a.float(),
-    unassociatedElasticIPs: a.integer(),
-    unattachedEBSVolumes: a.integer(),
-
-    // ===== Metric EC2 Health FIELDS =====
-    total: a.integer(),
-    byState_running: a.integer(),
-    byState_stopped: a.integer(),
-    healthStatus_Healthy: a.integer(),
-    healthStatus_Stopped: a.integer(),
-    cloudwatchAgent_bothEnabled: a.integer(),
-    cloudwatchAgent_diskMonitoring: a.integer(),
-    cloudwatchAgent_memoryMonitoring: a.integer(),
-    cloudwatchAgent_noneEnabled: a.integer(),
-    cloudwatchAgent_percentageWithDisk: a.integer(),
-    cloudwatchAgent_percentageWithMemory: a.integer(),
-    ssmAgent_connected: a.integer(),
-    ssmAgent_notConnected: a.integer(),
-    ssmAgent_notInstalled: a.integer(),
-    ssmAgent_percentageConnected: a.integer(),
-
-    // ===== Metric RDS FIELDS =====
-    available: a.integer(),
-    engines_aurora_mysql: a.integer(),
-    multiAZ: a.integer(),
-    percentageMultiAZ: a.integer(),
-    performanceInsights: a.integer(),
-    percentageWithPerfInsights: a.integer(),
-
-    // ===== Metric Security FIELDS =====
-    exposedSecurityGroups: a.integer(),
-    percentageExposed: a.integer(),
-
-    // ===== Metric Storage FIELDS =====
-    amiSnapshots: a.integer(),
-    ebsSnapshots: a.integer(),
-    ebsVolumes: a.integer(),
-    s3Buckets: a.integer(),
-    s3WithLifecycle: a.integer(),
-
-    // ===== Metric Global Summary FIELDS =====
-    totalResources: a.integer(),
-    resourceRegionsFound: a.integer(),
-    regionsCollected: a.integer(),
-    accountDistribution: a.json(),
-    regionDistribution: a.json(),
-    recentResources: a.json(),
-
-    // Resource counts by type
-    resourceCounts_AMI: a.integer(),
-    resourceCounts_AutoScalingGroup: a.integer(),
-    resourceCounts_DirectConnectConnection: a.integer(),
-    resourceCounts_DirectConnectVirtualInterface: a.integer(),
-    resourceCounts_EBSSnapshot: a.integer(),
-    resourceCounts_EBSVolume: a.integer(),
-    resourceCounts_EC2Instance: a.integer(),
-    resourceCounts_ElasticIP: a.integer(),
-    resourceCounts_InternetGateway: a.integer(),
-    resourceCounts_LoadBalancer: a.integer(),
-    resourceCounts_NetworkACL: a.integer(),
-    resourceCounts_RDSClusterSnapshot: a.integer(),
-    resourceCounts_RDSInstance: a.integer(),
-    resourceCounts_RouteTable: a.integer(),
-    resourceCounts_S3Bucket: a.integer(),
-    resourceCounts_SecurityGroup: a.integer(),
-    resourceCounts_Subnet: a.integer(),
-    resourceCounts_TransitGateway: a.integer(),
-    resourceCounts_TransitGatewayAttachment: a.integer(),
-    resourceCounts_VPC: a.integer(),
-    resourceCounts_VPCEndpoint: a.integer(),
-    resourceCounts_VPNConnection: a.integer(),
-    
     // ===== RDS Cluster Snapshot FIELDS =====
     snapshotArn: a.string(),
     snapshotType: a.string(),
@@ -326,6 +251,82 @@ const schema = a.schema({
       .sortKeys(['resourceType'])
   ]),
 
+  AWSMetrics: a.model({
+    id: a.string().required(),
+    createdAt: a.datetime().required(),
+    updatedAt: a.datetime().required(),
+    resourceType: a.string().required(),
+    accountId: a.string().required(),
+    region: a.string().required(),
+
+    isMetric: a.boolean(),
+    metricDate: a.string(),
+    potentialMonthlySavings: a.float(),
+    unassociatedElasticIPs: a.integer(),
+    unattachedEBSVolumes: a.integer(),
+    total: a.integer(),
+    byState_running: a.integer(),
+    byState_stopped: a.integer(),
+    healthStatus_Healthy: a.integer(),
+    healthStatus_Stopped: a.integer(),
+    cloudwatchAgent_bothEnabled: a.integer(),
+    cloudwatchAgent_diskMonitoring: a.integer(),
+    cloudwatchAgent_memoryMonitoring: a.integer(),
+    cloudwatchAgent_noneEnabled: a.integer(),
+    cloudwatchAgent_percentageWithDisk: a.integer(),
+    cloudwatchAgent_percentageWithMemory: a.integer(),
+    ssmAgent_connected: a.integer(),
+    ssmAgent_notConnected: a.integer(),
+    ssmAgent_notInstalled: a.integer(),
+    ssmAgent_percentageConnected: a.integer(),
+    available: a.integer(),
+    engines_aurora_mysql: a.integer(),
+    multiAZ: a.integer(),
+    percentageMultiAZ: a.integer(),
+    performanceInsights: a.integer(),
+    percentageWithPerfInsights: a.integer(),
+    exposedSecurityGroups: a.integer(),
+    percentageExposed: a.integer(),
+    amiSnapshots: a.integer(),
+    ebsSnapshots: a.integer(),
+    ebsVolumes: a.integer(),
+    s3Buckets: a.integer(),
+    s3WithLifecycle: a.integer(),
+    totalResources: a.integer(),
+    resourceRegionsFound: a.integer(),
+    regionsCollected: a.integer(),
+    accountDistribution: a.json(),
+    regionDistribution: a.json(),
+    recentResources: a.json(),
+    resourceCounts_AMI: a.integer(),
+    resourceCounts_AutoScalingGroup: a.integer(),
+    resourceCounts_DirectConnectConnection: a.integer(),
+    resourceCounts_DirectConnectVirtualInterface: a.integer(),
+    resourceCounts_EBSSnapshot: a.integer(),
+    resourceCounts_EBSVolume: a.integer(),
+    resourceCounts_EC2Instance: a.integer(),
+    resourceCounts_ElasticIP: a.integer(),
+    resourceCounts_InternetGateway: a.integer(),
+    resourceCounts_LoadBalancer: a.integer(),
+    resourceCounts_NetworkACL: a.integer(),
+    resourceCounts_RDSClusterSnapshot: a.integer(),
+    resourceCounts_RDSInstance: a.integer(),
+    resourceCounts_RouteTable: a.integer(),
+    resourceCounts_S3Bucket: a.integer(),
+    resourceCounts_SecurityGroup: a.integer(),
+    resourceCounts_Subnet: a.integer(),
+    resourceCounts_TransitGateway: a.integer(),
+    resourceCounts_TransitGatewayAttachment: a.integer(),
+    resourceCounts_VPC: a.integer(),
+    resourceCounts_VPCEndpoint: a.integer(),
+    resourceCounts_VPNConnection: a.integer(),
+  })
+  .authorization(allow => [
+    allow.authenticated().to(['read']),
+    allow.group('Admins').to(['read','create', 'update', 'delete']),
+    allow.publicApiKey().to(['create', 'update'])
+  ]),
+
   PatchRequest: a.model({
     id: a.string().required(),
     instanceId: a.string().required(),
@@ -357,9 +358,6 @@ const schema = a.schema({
 });
 
 export type Schema = ClientSchema<typeof schema>;
-
-export type AWSResourceModel = Schema['AWSResource']['type'];
-export type AWSMetricModel = Pick<AWSResourceModel, 'isMetric' | 'metricDate' | 'potentialMonthlySavings' | 'unassociatedElasticIPs' | 'unattachedEBSVolumes' | 'total' | 'byState_running' | 'byState_stopped' | 'healthStatus_Healthy' | 'healthStatus_Stopped' | 'cloudwatchAgent_bothEnabled' | 'cloudwatchAgent_diskMonitoring' | 'cloudwatchAgent_memoryMonitoring' | 'cloudwatchAgent_noneEnabled' | 'cloudwatchAgent_percentageWithDisk' | 'cloudwatchAgent_percentageWithMemory' | 'ssmAgent_connected' | 'ssmAgent_notConnected' | 'ssmAgent_notInstalled' | 'ssmAgent_percentageConnected' | 'available' | 'engines_aurora_mysql' | 'multiAZ' | 'percentageMultiAZ' | 'performanceInsights' | 'percentageWithPerfInsights' | 'exposedSecurityGroups' | 'percentageExposed' | 'amiSnapshots' | 'ebsSnapshots' | 'ebsVolumes' | 's3Buckets' | 's3WithLifecycle' | 'totalResources' | 'resourceRegionsFound' | 'regionsCollected' | 'accountDistribution' | 'regionDistribution' | 'recentResources' | 'resourceCounts_AMI' | 'resourceCounts_AutoScalingGroup' | 'resourceCounts_DirectConnectConnection' | 'resourceCounts_DirectConnectVirtualInterface' | 'resourceCounts_EBSSnapshot' | 'resourceCounts_EBSVolume' | 'resourceCounts_EC2Instance' | 'resourceCounts_ElasticIP' | 'resourceCounts_InternetGateway' | 'resourceCounts_LoadBalancer' | 'resourceCounts_NetworkACL' | 'resourceCounts_RDSClusterSnapshot' | 'resourceCounts_RDSInstance' | 'resourceCounts_RouteTable' | 'resourceCounts_S3Bucket' | 'resourceCounts_SecurityGroup' | 'resourceCounts_Subnet' | 'resourceCounts_TransitGateway' | 'resourceCounts_TransitGatewayAttachment' | 'resourceCounts_VPC' | 'resourceCounts_VPCEndpoint' | 'resourceCounts_VPNConnection'>;
 
 export const data = defineData({
   schema,

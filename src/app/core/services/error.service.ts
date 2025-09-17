@@ -14,11 +14,7 @@ export interface AppError {
 export class ErrorService {
   private errorSubject = new Subject<AppError>();
   errors$ = this.errorSubject.asObservable();
-  
-  /**
-   * Handle application errors
-   * @param error The error to handle
-   */
+
   handleError(error: any) {
     const appError: AppError = {
       message: error.message || 'An unexpected error occurred',
@@ -30,19 +26,11 @@ export class ErrorService {
     this.errorSubject.next(appError);
   }
   
-  /**
-   * Log an error without emitting it to the UI
-   * @param error The error to log
-   */
   logError(error: any) {
     console.error('Application error (logged only):', error);
   }
   
-  /**
-   * Clear all active errors
-   */
   clearErrors() {
-    // Emitting null or undefined will clear errors in components
     this.errorSubject.next(undefined as any);
   }
 }

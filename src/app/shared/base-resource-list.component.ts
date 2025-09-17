@@ -55,39 +55,12 @@ export abstract class BaseResourceListComponent implements OnInit, OnDestroy {
   ) {}
   
   ngOnInit(): void {
-    this.loadMetricsOnly();
+    this.loadAllResources();
   }
-  
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-  
-  loadResources(): void {
-    this.loadMetricsOnly();
-  }
-
-  loadMetricsOnly(): void {
-    this.loading = true;
-    this.resourceService.getMetricsOnly()
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.loading = false)
-      )
-      .subscribe({
-        next: (data) => {
-          this.resources = data;
-          this.filteredResources = [...this.resources];
-          this.initializeFilters();
-        },
-        error: (error) => {
-          console.error(`Error fetching metrics for ${this.resourceType} resources:`, error);
-          this.errorService.handleError({
-            message: `Failed to load metrics for ${this.resourceType} resources`,
-            details: error
-          });
-        }
-      });
   }
 
   loadAllResources(): void {

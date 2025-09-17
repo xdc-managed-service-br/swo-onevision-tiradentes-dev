@@ -424,9 +424,10 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     items_to_save = []
     
     # Global metrics item - current snapshot
+    # Canonical names for UI matching (use underscores, not hyphens)
     global_item_current = {
         'id': f'METRICS-GLOBAL-CURRENT',
-        'resourceType': 'METRIC-GLOBAL-SUMMARY',
+        'resourceType': 'METRIC_SUMMARY',
         'accountId': 'GLOBAL',
         'accountName': 'Global Metrics',
         'region': 'global',
@@ -460,7 +461,7 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     if metrics.get('ec2'):
         ec2_item_current = {
             'id': f'METRICS-EC2-CURRENT',
-            'resourceType': 'METRIC-EC2-HEALTH',
+            'resourceType': 'METRIC_EC2_HEALTH',
             'accountId': 'GLOBAL',
             'accountName': 'EC2 Health Metrics',
             'region': 'global',
@@ -483,7 +484,7 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     if metrics.get('rds'):
         rds_item_current = {
             'id': f'METRICS-RDS-CURRENT',
-            'resourceType': 'METRIC-RDS',
+            'resourceType': 'METRIC_RDS',
             'accountId': 'GLOBAL',
             'accountName': 'RDS Metrics',
             'region': 'global',
@@ -499,7 +500,7 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     if metrics.get('storage'):
         storage_item_current = {
             'id': f'METRICS-STORAGE-CURRENT',
-            'resourceType': 'METRIC-STORAGE',
+            'resourceType': 'METRIC_STORAGE',
             'accountId': 'GLOBAL',
             'accountName': 'Storage Metrics',
             'region': 'global',
@@ -515,7 +516,7 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     if metrics.get('cost'):
         cost_item_current = {
             'id': f'METRICS-COST-CURRENT',
-            'resourceType': 'METRIC-COST',
+            'resourceType': 'METRIC_COST',
             'accountId': 'GLOBAL',
             'accountName': 'Cost Optimization',
             'region': 'global',
@@ -531,7 +532,7 @@ def save_metrics_to_dynamodb(tables: List, metrics: Dict, processing_duration: f
     if metrics.get('security'):
         security_item_current = {
             'id': f'METRICS-SECURITY-CURRENT',
-            'resourceType': 'METRIC-SECURITY',
+            'resourceType': 'METRIC_SECURITY',
             'accountId': 'GLOBAL',
             'accountName': 'Security Metrics',
             'region': 'global',

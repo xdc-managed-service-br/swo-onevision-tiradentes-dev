@@ -1,7 +1,7 @@
 // src/app/shared/components/resource-list/resource-list.component.ts
 import { Component, Input, ContentChild, TemplateRef, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService } from '../../../core/services/export.service';
 import { ErrorService } from '../../../core/services/error.service';
@@ -76,8 +76,7 @@ export class ResourceListComponent implements OnInit {
   constructor(
     private resourceService: ResourceService,
     private exportService: ExportService,
-    private errorService: ErrorService,
-    private router: Router
+    private errorService: ErrorService
   ) {}
 
   ngOnInit(): void {

@@ -1,190 +1,27 @@
-<!-- src/app/features/dashboard/dashboard.component.html -->
-<div class="ov-container">
-  <h1 class="ov-title">Dashboard</h1>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="ov-loading">
-    <div class="ov-loading-spinner"></div>
-    <p>Loading dashboard data...</p>
+
+
+<div *ngIf="loading">
+  Loading metrics...
+</div>
+<div *ngIf="!loading && error">
+  <div class="error">
+    {{ error }}
   </div>
-
-  <!-- Error State -->
-  <div *ngIf="error && !loading" class="ov-error">
-    <div class="ov-error-icon">⚠️</div>
-    <h3>Error Loading Dashboard</h3>
-    <p>{{ error }}</p>
-    <button class="ov-btn ov-btn-primary" (click)="fetchDashboardData()">Retry</button>
-  </div>
-
-  <!-- Dashboard Content -->
-  <div *ngIf="!loading && !error" class="dashboard-grid">
-    
-    <!-- Summary Cards -->
-    <div class="dashboard-section">
-      <h2 class="dashboard-section-title">Overview</h2>
-      <div class="summary-cards">
-        <div class="summary-card">
-          <div class="summary-card-icon" style="background-color: var(--ov-accent);">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-            </svg>
-          </div>
-          <div class="summary-card-content">
-            <h3>{{ (globalSummary?.totalResources || 0) | number }}</h3>
-            <p>Total Resources</p>
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-card-icon" style="background-color: var(--ov-success);">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-          </div>
-          <div class="summary-card-content">
-            <h3>{{ (ec2Health?.byState_running || 0) | number }}</h3>
-            <p>Running EC2 Instances</p>
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-card-icon" style="background-color: var(--ov-warning);">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-          </div>
-          <div class="summary-card-content">
-            <h3>{{ (security?.exposedSecurityGroups || 0) | number }}</h3>
-            <p>Exposed Security Groups</p>
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-card-icon" style="background-color: var(--ov-danger);">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-            </svg>
-          </div>
-          <div class="summary-card-content">
-            <h3>{{ formatCurrency(costOptimization?.potentialMonthlySavings || 0) }}</h3>
-            <p>Potential Monthly Savings</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Resource Counters (replaces charts; no extra deps required) -->
-    <div class="dashboard-section">
-      <h2 class="dashboard-section-title">Resource Counters</h2>
-      <div class="summary-cards">
-        <div class="summary-card">
-          <div class="summary-card-icon" style="background-color:#6366f1"></div>
-          <div class="summary-card-content">
-            <h3>{{ (globalSummary?.resourceCounts_EC2Instance || 0) | number }}</h3>
-            <p>EC2 Instances</p>
-          </div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-card-icon" style="background-color:#10b981"></div>
-          <div class="summary-card-content">
-            <h3>{{ (globalSummary?.resourceCounts_S3Bucket || 0) | number }}</h3>
-            <p>S3 Buckets</p>
-          </div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-card-icon" style="background-color:#3b82f6"></div>
-          <div class="summary-card-content">
-            <h3>{{ (globalSummary?.resourceCounts_RDSInstance || 0) | number }}</h3>
-            <p>RDS Instances</p>
-          </div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-card-icon" style="background-color:#f59e0b"></div>
-          <div class="summary-card-content">
-            <h3>{{ (globalSummary?.resourceCounts_VPC || 0) | number }}</h3>
-            <p>VPCs</p>
-          </div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-card-icon" style="background-color:#ef4444"></div>
-          <div class="summary-card-content">
-            <h3>{{ (globalSummary?.resourceCounts_SecurityGroup || 0) | number }}</h3>
-            <p>Security Groups</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Account and Region Distribution -->
-    <div class="dashboard-section">
-      <h2 class="dashboard-section-title">Distribution</h2>
-      <div class="distribution-grid">
-        <div class="distribution-card">
-          <h3>By Account</h3>
-          <div class="distribution-list">
-            <div *ngFor="let item of accountDistribution" class="distribution-item">
-              <span class="distribution-label">{{ item.accountName || item.account }}</span>
-              <div class="distribution-bar-container">
-                <div 
-                  class="distribution-bar" 
-                  [style.width.%]="getPercentage(item.count, globalSummary?.totalResources || 1)">
-                </div>
-              </div>
-              <span class="distribution-value">{{ item.count | number }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="distribution-card">
-          <h3>By Region</h3>
-          <div class="distribution-list">
-            <div *ngFor="let item of regionDistribution" class="distribution-item">
-              <span class="distribution-label">{{ item.region }}</span>
-              <div class="distribution-bar-container">
-                <div 
-                  class="distribution-bar" 
-                  [style.width.%]="getPercentage(item.count, globalSummary?.totalResources || 1)">
-                </div>
-              </div>
-              <span class="distribution-value">{{ item.count | number }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recent Resources -->
-    <div class="dashboard-section" *ngIf="recentResources.length > 0">
-      <h2 class="dashboard-section-title">Recent Resources</h2>
-      <div class="recent-resources">
-        <table class="ov-table">
-          <thead>
-            <tr>
-              <th>Resource ID</th>
-              <th>Type</th>
-              <th>Account</th>
-              <th>Region</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let resource of recentResources">
-              <td>{{ resource.resourceId }}</td>
-              <td>{{ resource.resourceType }}</td>
-              <td>{{ resource.accountId }}</td>
-              <td>{{ resource.region }}</td>
-              <td>
-                <span class="status-badge" [class]="'status-' + (resource.status || 'unknown')">
-                  {{ resource.status || 'unknown' }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+</div>
+<div *ngIf="!loading && !error">
+  <table>
+    <thead>
+      <tr>
+        <th>Metric</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let metric of metrics">
+        <td>
+          {{ metric | json }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
