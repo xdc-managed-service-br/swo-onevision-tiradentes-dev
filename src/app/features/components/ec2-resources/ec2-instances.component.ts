@@ -18,12 +18,12 @@ interface ColumnDefinition {
 type ColumnKey = keyof EC2Instance | 'instancePrivateIps' | 'instancePublicIps' | 'autoStart' | 'autoShutdown' | 'saturday' | 'sunday';
 
 @Component({
-  selector: 'app-ec2-resources',
+  selector: 'app-ec2-instances',
   standalone: true,
   imports: [CommonModule, ResourceTagsComponent],
-  templateUrl: './ec2-resources.component.html',
+  templateUrl: './ec2-instances.component.html',
 })
-export class EC2ResourcesComponent implements OnInit, OnDestroy {
+export class EC2InstancesComponent implements OnInit, OnDestroy {
   // Data
   resources: EC2Instance[] = [];
   filteredResources: EC2Instance[] = [];

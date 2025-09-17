@@ -208,7 +208,7 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
 
   // ------- filtros & busca -------
   applyFilters(): void {
-    const term = (this.searchTerm || '').toLowerCase();
+    const term = (this.searchTerm || '').toLowerCase().trim();
 
     this.filteredResources = this.resources
       .filter(r => !this.regionFilter || r.region === this.regionFilter)
@@ -216,15 +216,13 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
       .filter(r => !this.platformFilter || r.platform === this.platformFilter)
       .filter(r => {
         if (!term) return true;
-        return (r.imageId || '').toLowerCase().includes(term)
-            || (r.imageNameTag || '').toLowerCase().includes(term)
-            || (r.amiName || '').toLowerCase().includes(term)
-            || (r.imageName || '').toLowerCase().includes(term)
-            || (r.description || '').toLowerCase().includes(term);
+        const id  = (r.imageId || '').toLowerCase();
+        const tag = (r.imageNameTag || r.tagObject?.Name || r.tagObject?.name || '').toLowerCase();
+        return id.includes(term) || tag.includes(term);
       });
 
     this.sortData(this.sortColumn, false);
-    this.updatePaginationAfterChange(); // Add pagination update
+    this.updatePaginationAfterChange();
   }
 
   resetFilters(): void {
@@ -385,7 +383,13 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
     
     return String(value);
   }
-
+  getAmiStateClass(state?: string): string {
+    const s = (state || '').toLowerCase();
+    if (s === 'available') return 'status-running';   // verdinho (igual RUNNING)
+    if (s === 'pending')   return 'status-pending';   // amarelo (se você usa)
+    if (s === 'failed')    return 'status-stopped';   // vermelho/cinza (igual stopped)
+    return 'status-unknown';                          // fallback neutro
+  }
   // ------- helpers -------
   formatDate(value?: string | number | Date): string {
     if (!value) return 'N/A';

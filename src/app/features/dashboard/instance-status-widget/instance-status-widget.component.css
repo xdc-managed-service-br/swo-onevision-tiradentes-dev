@@ -1,8 +1,0 @@
-/* src/app/dashboard/instance-status-widget/instance-status-widget.component.css */
-.isw-card { padding: var(--ov-space-4); }
-.isw-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: var(--ov-space-3);
-}
-.isw-item .ov-v { font-weight: 700; }

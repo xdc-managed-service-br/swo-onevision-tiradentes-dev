@@ -6,12 +6,11 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 
-
 @Component({
   selector: 'app-resources',
   standalone: true,
   imports: [CommonModule, ResourceTagsComponent],
-  templateUrl: './resources.component.html',
+  templateUrl: './all-resources.component.html',
 })
 export class ResourcesComponent implements OnInit, OnDestroy {
   resources: any[] = [];

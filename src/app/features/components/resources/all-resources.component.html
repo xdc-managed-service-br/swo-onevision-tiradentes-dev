@@ -1,10 +1,10 @@
-<article class="ov-container" aria-labelledby="resources-title">
+<article class="ov-container" aria-labelledby="all-resources-title">
 
   <!-- Header -->
   <div class="ov-header">
-    <h1 id="ov-title" class="ov-title">All Resources</h1>
+    <h1 id="all-resources-title" class="ov-title">All Resources</h1>
 
-    <!-- Filter Bar -->
+    <!-- 1ª linha: filtros (grid full-width) -->
     <div class="ov-filterbar">
       <div class="ov-filter">
         <label for="resourceTypeFilter">Type</label>
@@ -20,9 +20,7 @@
         <label for="regionFilter">Region</label>
         <select id="regionFilter" (change)="filterByRegion($event)">
           <option value="">All Regions</option>
-          <option *ngFor="let region of uniqueRegions" [value]="region">
-            {{ region }}
-          </option>
+          <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
         </select>
       </div>
 
@@ -30,38 +28,36 @@
         <label for="accountFilter">Account</label>
         <select id="accountFilter" (change)="filterByAccount($event)">
           <option value="">All Accounts</option>
-          <option *ngFor="let acc of uniqueAccounts" [value]="acc">
-            {{ acc }}
-          </option>
+          <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
         </select>
       </div>
+    </div>
 
-      <!-- Actions + Search -->
-      <div class="ov-filterbar__actions">
-        <div class="ov-search">
-          <input
-            id="resourceSearch"
-            type="search"
-            placeholder="Search by ID, Name, or Type"
-            (input)="searchResources($event)"
-            #searchInput />
-          <button
-            type="button"
-            class="ov-clear-btn"
-            *ngIf="searchTerm"
-            (click)="clearSearch(searchInput)"
-            aria-label="Clear search"></button>
-        </div>
-
-        <button
-          class="ov-btn ov-btn--subtle"
-          *ngIf="!loading && filteredResources.length > 0"
-          (click)="exportToCSV()">Export to CSV</button>
+    <!-- 2ª linha: search à esquerda, botões à direita -->
+    <div class="ov-filterbar__actions">
+      <div class="ov-search">
+        <input
+          id="resourceSearch"
+          type="search"
+          placeholder="Search by ID, Name, or Type"
+          (input)="searchResources($event)"
+          #searchInput />
         <button
           type="button"
-          class="ov-btn ov-btn--subtle"
-          (click)="resetFilters()">Reset Filters</button>
+          class="ov-clear-btn"
+          *ngIf="searchTerm"
+          (click)="clearSearch(searchInput)"
+          aria-label="Clear search"></button>
       </div>
+
+      <button
+        class="ov-btn ov-btn--subtle"
+        *ngIf="!loading && filteredResources.length > 0"
+        (click)="exportToCSV()">Export to CSV</button>
+      <button
+        type="button"
+        class="ov-btn ov-btn--subtle"
+        (click)="resetFilters()">Reset Filters</button>
     </div>
   </div>
 
