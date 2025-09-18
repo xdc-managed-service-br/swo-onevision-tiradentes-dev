@@ -1,234 +1,113 @@
-    <div class="dashboard-container">
-      <!-- Header Section -->
-      <div class="dashboard-header">
-        <h1>AWS Resources Dashboard</h1>
-        <div class="header-actions">
-          <button class="btn-refresh" (click)="refreshData()">
-            <i class="fas fa-sync-alt" [class.spinning]="isLoading"></i>
-            Refresh
-          </button>
-          <span class="last-updated">
-            Last updated: {{ getFormattedDate(dashboardData?.summary?.lastUpdated) }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Summary Cards -->
-      <div class="summary-cards">
-        <div class="summary-card">
-          <div class="card-icon total-resources">
-            <i class="fas fa-server"></i>
-          </div>
-          <div class="card-content">
-            <div class="card-value">{{ dashboardData?.summary?.totalResources || 0 }}</div>
-            <div class="card-label">Total Resources</div>
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="card-icon total-accounts">
-            <i class="fas fa-users"></i>
-          </div>
-          <div class="card-content">
-            <div class="card-value">{{ dashboardData?.summary?.totalAccounts || 0 }}</div>
-            <div class="card-label">AWS Accounts</div>
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="card-icon total-regions">
-            <i class="fas fa-globe-americas"></i>
-          </div>
-          <div class="card-content">
-            <div class="card-value">{{ dashboardData?.summary?.totalRegions || 0 }}</div>
-            <div class="card-label">Active Regions</div>
-          </div>
-        </div>
-
-        <div class="summary-card" *ngIf="dashboardData?.costOptimization as costOptimization">
-          <div class="card-icon savings">
-            <i class="fas fa-dollar-sign"></i>
-          </div>
-          <div class="card-content">
-            <div class="card-value">
-              {{ formatCurrency(costOptimization.potentialSavings) }}
-            </div>
-            <div class="card-label">Potential Monthly Savings</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Distribution Cards -->
-      <div class="distribution-grid">
-        <!-- Account Distribution Card -->
-        <div class="dashboard-card">
-          <div class="card-header">
-            <h3>Resources by Account</h3>
-            <span class="total-count">{{ getAccountTotal() }} resources</span>
-          </div>
-          
-          <div class="distribution-list">
-            <div *ngFor="let account of dashboardData?.accountDistribution || []" 
-                 class="distribution-item">
-              <div class="item-info">
-                <span class="item-name">{{ account.accountName }}</span>
-                <span class="item-count">{{ account.count }}</span>
-              </div>
-              <div class="progress-bar-container">
-                <div class="progress-bar account-bar" 
-                     [style.width.%]="account.percentage">
-                  <span class="progress-label">{{ account.percentage }}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Region Distribution Card -->
-        <div class="dashboard-card">
-          <div class="card-header">
-            <h3>Resources by Region</h3>
-            <span class="total-count">{{ dashboardData?.regionDistribution?.length || 0 }} regions</span>
-          </div>
-          
-          <div class="distribution-list">
-            <div *ngFor="let region of getTopRegions()" 
-                 class="distribution-item">
-              <div class="item-info">
-                <span class="item-name">{{ region.region }}</span>
-                <span class="item-count">{{ region.count }}</span>
-              </div>
-              <div class="progress-bar-container">
-                <div class="progress-bar region-bar" 
-                     [style.width.%]="region.percentage">
-                  <span class="progress-label">{{ region.percentage }}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Resources Section -->
-      <div class="resources-section">
-        <!-- Recent Resources Card -->
-        <div class="dashboard-card recent-resources-card">
-          <div class="card-header">
-            <h3>Recent Resources</h3>
-            <span class="total-count">Last 10 created</span>
-          </div>
-          
-          <div class="resources-list">
-            <div *ngFor="let resource of getRecentResources()" 
-                 class="resource-item">
-              <div class="resource-icon">
-                <i [class]="getResourceIcon(resource.resourceType)"></i>
-              </div>
-              <div class="resource-details">
-                <div class="resource-name">{{ resource.resourceName }}</div>
-                <div class="resource-info">
-                  <span class="resource-type">{{ resource.resourceType }}</span>
-                  <span class="separator">•</span>
-                  <span class="resource-region">{{ resource.region }}</span>
-                  <span class="separator">•</span>
-                  <span class="resource-time">{{ getRelativeTime(resource.createdAt) }}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div *ngIf="!(dashboardData?.recentResources?.length)" 
-                 class="no-resources">
-              <p>No recent resources found</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Resource Types Distribution -->
-        <div class="dashboard-card resource-types-card">
-          <div class="card-header">
-            <h3>Resource Types</h3>
-            <span class="total-count">{{ resourceTypes.length }} types</span>
-          </div>
-          
-          <div class="resource-types-grid">
-            <div *ngFor="let type of resourceTypes" class="resource-type-item">
-              <span class="type-name">{{ type.name }}</span>
-              <span class="type-count">{{ type.count }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Health & Security Section -->
-      <div class="health-security-grid" *ngIf="dashboardData?.ec2Health || dashboardData?.security">
-        <!-- EC2 Health Card -->
-        <div class="dashboard-card" *ngIf="dashboardData?.ec2Health as ec2Health">
-          <div class="card-header">
-            <h3>EC2 Health</h3>
-          </div>
-          
-          <div class="health-metrics">
-            <div class="health-metric">
-              <div class="metric-label">Running Instances</div>
-              <div class="metric-value">{{ ec2Health.running }}</div>
-              <div class="metric-bar">
-                <div class="bar-fill running" 
-                     [style.width.%]="getPercentage(ec2Health.running, ec2Health.total)">
-                </div>
-              </div>
-            </div>
-
-            <div class="health-metric">
-              <div class="metric-label">CloudWatch Agent Coverage</div>
-              <div class="metric-value">{{ ec2Health.cloudwatchAgentCoverage }}%</div>
-              <div class="metric-bar">
-                <div class="bar-fill coverage" 
-                     [style.width.%]="ec2Health.cloudwatchAgentCoverage">
-                </div>
-              </div>
-            </div>
-
-            <div class="health-metric">
-              <div class="metric-label">SSM Agent Connected</div>
-              <div class="metric-value">{{ ec2Health.ssmAgentCoverage }}%</div>
-              <div class="metric-bar">
-                <div class="bar-fill ssm" 
-                     [style.width.%]="ec2Health.ssmAgentCoverage">
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Security Card -->
-        <div class="dashboard-card" *ngIf="dashboardData?.security as security">
-          <div class="card-header">
-            <h3>Security Groups</h3>
-          </div>
-          
-          <div class="security-metrics">
-            <div class="security-stat">
-              <span class="stat-label">Total Groups</span>
-              <span class="stat-value">{{ security.totalGroups }}</span>
-            </div>
-            <div class="security-stat">
-              <span class="stat-label">Exposed to Internet</span>
-              <span class="stat-value danger">{{ security.exposedGroups }}</span>
-            </div>
-            <div class="security-stat">
-              <span class="stat-label">Exposure Rate</span>
-              <span class="stat-value" 
-                    [class.danger]="security.exposurePercentage">
-                {{ security.exposurePercentage }}%
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Loading Overlay -->
-      <div class="loading-overlay" *ngIf="isLoading">
-        <div class="spinner"></div>
-        <p>Loading metrics data...</p>
-      </div>
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="header-subtitle">AWS environment overview</p>
     </div>
+    <div class="header-actions">
+      <span class="last-updated">Updated {{ getFormattedDate(dashboardData?.summary?.lastUpdated) }}</span>
+      <button class="btn-refresh" (click)="refreshData()" [disabled]="isLoading">
+        <i class="fas fa-sync-alt" [class.spinning]="isLoading"></i>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <section class="summary-grid">
+    <article class="summary-card" *ngFor="let tile of summaryTiles">
+      <span class="summary-value">{{ tile.value }}</span>
+      <span class="summary-label">{{ tile.label }}</span>
+    </article>
+  </section>
+
+  <section class="section-card" *ngIf="resourceHealthCards.length">
+    <header class="section-header">
+      <h2>Resource Health</h2>
+      <span class="section-subtitle">Current status of core services</span>
+    </header>
+    <div class="health-grid">
+      <article class="health-card" *ngFor="let health of resourceHealthCards">
+        <header class="health-head">
+          <div>
+            <h3>{{ health.title }}</h3>
+            <span class="health-total">Total {{ health.badge }}</span>
+          </div>
+        </header>
+        <div class="health-bar">
+          <ng-container *ngFor="let segment of health.segments">
+            <div class="health-segment" [ngClass]="segment.color" [style.width.%]="getPercentage(segment.value, health.total)"
+                 *ngIf="segment.value">
+            </div>
+          </ng-container>
+        </div>
+        <footer class="health-foot">
+          <span class="health-status">{{ health.status }}</span>
+          <span class="health-description">{{ health.description }}</span>
+        </footer>
+      </article>
+    </div>
+  </section>
+
+  <section class="monitoring-grid">
+    <article class="monitor-card">
+      <header>
+        <h3>Resource Monitoring (CloudWatch)</h3>
+      </header>
+      <div class="monitor-row" *ngFor="let metric of monitoringMetrics">
+        <div class="monitor-info">
+          <span class="monitor-label">{{ metric.label }}</span>
+          <span class="monitor-value">{{ metric.value }}%</span>
+        </div>
+        <div class="monitor-bar">
+          <div class="monitor-fill" [style.width.%]="metric.value"></div>
+        </div>
+        <p class="monitor-description">{{ metric.description }}</p>
+      </div>
+    </article>
+
+    <article class="monitor-card">
+      <header>
+        <h3>Instance Status</h3>
+      </header>
+      <div class="instance-status">
+        <div class="status-metric">
+          <span class="status-label">Total</span>
+          <span class="status-value">{{ formatNumber(ec2InstanceStatus.total) }}</span>
+        </div>
+        <div class="status-metric">
+          <span class="status-label">Running</span>
+          <span class="status-value running">{{ formatNumber(ec2InstanceStatus.running) }}</span>
+        </div>
+        <div class="status-metric">
+          <span class="status-label">Stopped</span>
+          <span class="status-value stopped">{{ formatNumber(ec2InstanceStatus.stopped) }}</span>
+        </div>
+      </div>
+      <div class="monitor-bar compact">
+        <div class="monitor-fill success" [style.width.%]="ec2InstanceStatus.runningPercent"></div>
+      </div>
+      <p class="monitor-description">{{ ec2InstanceStatus.runningPercent }}% of instances running</p>
+    </article>
+
+    <article class="monitor-card">
+      <header>
+        <h3>SSM Agent Status</h3>
+      </header>
+      <div class="monitor-row single">
+        <div class="monitor-info">
+          <span class="monitor-label">SSM Agent</span>
+          <span class="monitor-value">{{ ssmCoverage }}%</span>
+        </div>
+        <div class="monitor-bar">
+          <div class="monitor-fill success" [style.width.%]="ssmCoverage"></div>
+        </div>
+        <p class="monitor-description">Instances with SSM Agent connected</p>
+      </div>
+    </article>
+  </section>
+
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading metrics data...</p>
+  </div>
+</div>

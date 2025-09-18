@@ -7,15 +7,15 @@
 /* DARK (default) */
 :root {
   /* Base surfaces & text (DARK) */
-  --ov-bg: #1a1d23;
-  --ov-surface: #1a1d23;
-  --ov-surface-raised: #2d3748;
-  --ov-surface-overlay: #1f2937;
-  --ov-text: #e2e8f0;
-  --ov-text-secondary: #9ca3af;
-  --ov-muted: #6b7280;
-  --ov-border: #374151;
-  --ov-border-strong: #4b5563;
+  --ov-bg: #0f172a;
+  --ov-surface: #111c34;
+  --ov-surface-raised: #13213d;
+  --ov-surface-overlay: rgba(17, 28, 52, 0.75);
+  --ov-text: #f1f5f9;
+  --ov-text-secondary: #94a3b8;
+  --ov-muted: #64748b;
+  --ov-border: #1f2937;
+  --ov-border-strong: #2b384d;
 
   /* Brand & Accent (comuns aos temas) */
   --ov-accent: #3b82f6;
@@ -68,8 +68,8 @@
   --ov-btn-bg: var(--ov-accent);
   --ov-btn-bg-hover: var(--ov-accent-hover);
   --ov-btn-text: var(--ov-accent-contrast);
-  --ov-btn-bg-subtle: #2d3748;
-  --ov-btn-bg-subtle-hover: #374151;
+  --ov-btn-bg-subtle: rgba(17, 24, 39, 0.6);
+  --ov-btn-bg-subtle-hover: rgba(30, 41, 59, 0.75);
   --ov-btn-text-subtle: var(--ov-text);
 
   /* Motion (comum) */
@@ -86,7 +86,7 @@
   --ov-bg: #ffffff;
   --ov-surface: #f9fafb;
   --ov-surface-raised: #ffffff;
-  --ov-surface-overlay: #ffffff;
+  --ov-surface-overlay: #f1f5f9;
   --ov-text: #111827;
   --ov-text-secondary: #6b7280;
   --ov-muted: #9ca3af;

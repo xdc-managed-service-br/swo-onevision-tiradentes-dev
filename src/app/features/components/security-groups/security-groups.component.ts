@@ -327,7 +327,23 @@ export class SecurityGroupsComponent implements OnInit, OnDestroy {
   }
 
   getPageNumbers(): number[] {
-    return Array.from({ length: this.totalPages }, (_, index) => index + 1);
+    const maxVisible = 7;
+    const half = Math.floor(maxVisible / 2);
+
+    if (this.totalPages <= maxVisible) {
+      return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    }
+
+    let start = Math.max(1, this.currentPage - half);
+    let end = Math.min(this.totalPages, this.currentPage + half);
+
+    if (this.currentPage <= half) {
+      end = Math.min(this.totalPages, maxVisible);
+    } else if (this.currentPage >= this.totalPages - half) {
+      start = Math.max(1, this.totalPages - maxVisible + 1);
+    }
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
   goToPage(page: number): void {

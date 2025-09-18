@@ -39,7 +39,7 @@ export class ResourcesComponent implements OnInit, OnDestroy {
   
   // Pagination
   currentPage: number = 1;
-  pageSize: number = 100;
+  pageSize: number = 50;
   totalPages: number = 1;
   
   // Math for template
@@ -356,19 +356,23 @@ exportColumnsCsv: ExportColumn[] = [
   
   // Pagination methods
   updatePagination(): void {
-    this.totalPages = Math.ceil(this.filteredResources.length / this.pageSize);
+    const total = this.filteredResources.length;
+    this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
+    this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);
     this.updatePaginatedResources();
   }
   
   updatePaginatedResources(): void {
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
+    const total = this.filteredResources.length;
+    const startIndex = total === 0 ? 0 : (this.currentPage - 1) * this.pageSize;
+    const endIndex = total === 0 ? 0 : Math.min(startIndex + this.pageSize, total);
     this.paginatedResources = this.filteredResources.slice(startIndex, endIndex);
   }
   
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
+    const clamped = Math.min(Math.max(page, 1), this.totalPages);
+    if (clamped !== this.currentPage) {
+      this.currentPage = clamped;
       this.updatePaginatedResources();
     }
   }
@@ -390,26 +394,23 @@ exportColumnsCsv: ExportColumn[] = [
   }
   
   getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const maxVisiblePages = 5;
-    
-    if (this.totalPages <= maxVisiblePages) {
-      // Show all pages if total is less than max visible
-      for (let i = 1; i <= this.totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Show limited pages with ellipsis
-      const halfVisible = Math.floor(maxVisiblePages / 2);
-      const startPage = Math.max(1, this.currentPage - halfVisible);
-      const endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-      
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
+    const maxVisible = 7;
+    const half = Math.floor(maxVisible / 2);
+
+    if (this.totalPages <= maxVisible) {
+      return Array.from({ length: this.totalPages }, (_, i) => i + 1);
     }
-    
-    return pages;
+
+    let start = Math.max(1, this.currentPage - half);
+    let end = Math.min(this.totalPages, this.currentPage + half);
+
+    if (this.currentPage <= half) {
+      end = Math.min(this.totalPages, maxVisible);
+    } else if (this.currentPage >= this.totalPages - half) {
+      start = Math.max(1, this.totalPages - maxVisible + 1);
+    }
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
   
   // Helper: Get route for resource type

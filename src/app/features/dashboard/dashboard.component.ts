@@ -159,4 +159,133 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (minutes > 0) return `${minutes}m ago`;
     return 'Just now';
   }
+
+  get summaryTiles() {
+    return [
+      {
+        label: 'Total Resources',
+        value: this.formatNumber(this.dashboardData?.summary?.totalResources || 0)
+      },
+      {
+        label: 'EC2 Instances',
+        value: this.formatNumber(this.getResourceCount('EC2Instance'))
+      },
+      {
+        label: 'RDS Instances',
+        value: this.formatNumber(this.getResourceCount('RDSInstance'))
+      },
+      {
+        label: 'S3 Buckets',
+        value: this.formatNumber(this.getResourceCount('S3Bucket'))
+      },
+      {
+        label: 'EBS Volumes',
+        value: this.formatNumber(this.getResourceCount('EBSVolume'))
+      },
+      {
+        label: 'Snapshots',
+        value: this.formatNumber(
+          this.dashboardData?.storage?.totalSnapshots ||
+          (this.getResourceCount('EBSSnapshot') + this.getResourceCount('AMI'))
+        )
+      }
+    ];
+  }
+
+  get resourceHealthCards() {
+    const ec2 = this.dashboardData?.ec2Health;
+    const ec2Total = ec2?.total || this.getResourceCount('EC2Instance');
+    const ec2Running = ec2?.running || 0;
+    const ec2Stopped = ec2?.stopped || 0;
+    const ec2Other = Math.max(ec2Total - ec2Running - ec2Stopped, 0);
+
+    const cards = [
+      {
+        key: 'ec2',
+        title: 'EC2 Instances',
+        total: ec2Total,
+        badge: ec2Total,
+        segments: [
+          { value: ec2Running, color: 'good' },
+          { value: ec2Other, color: 'warn' },
+          { value: ec2Stopped, color: 'critical' }
+        ],
+        status: ec2Total > 0 ? `${this.getPercentage(ec2Running, ec2Total)}% Running` : 'No data',
+        description: ec2Total > 0 ? `${ec2Running} running / ${ec2Stopped} stopped` : 'No instances found'
+      },
+      {
+        key: 'rds',
+        title: 'RDS Instances',
+        total: this.getResourceCount('RDSInstance'),
+        badge: this.getResourceCount('RDSInstance'),
+        segments: [
+          { value: this.getResourceCount('RDSInstance'), color: 'good' }
+        ],
+        status: this.getResourceCount('RDSInstance') ? '100% Healthy' : 'No data',
+        description: 'RDS fleet overview'
+      },
+      {
+        key: 'ebs',
+        title: 'EBS Volumes',
+        total: this.getResourceCount('EBSVolume'),
+        badge: this.getResourceCount('EBSVolume'),
+        segments: [
+          { value: this.getResourceCount('EBSVolume'), color: 'good' }
+        ],
+        status: this.getResourceCount('EBSVolume') ? '100% Healthy' : 'No data',
+        description: 'Volume health overview'
+      },
+      {
+        key: 's3',
+        title: 'S3 Buckets',
+        total: this.getResourceCount('S3Bucket'),
+        badge: this.getResourceCount('S3Bucket'),
+        segments: [
+          { value: this.getResourceCount('S3Bucket'), color: 'good' }
+        ],
+        status: this.getResourceCount('S3Bucket') ? '100% Healthy' : 'No buckets',
+        description: 'Storage overview'
+      }
+    ];
+    return cards;
+  }
+
+  get monitoringMetrics() {
+    const coverage = this.dashboardData?.ec2Health?.cloudwatchAgentCoverage || 0;
+    return [
+      {
+        label: 'RAM Monitoring',
+        value: coverage,
+        description: 'Active monitoring on resources'
+      },
+      {
+        label: 'Disk Monitoring',
+        value: coverage,
+        description: 'Active monitoring on resources'
+      }
+    ];
+  }
+
+  get ec2InstanceStatus() {
+    const ec2 = this.dashboardData?.ec2Health;
+    return {
+      total: ec2?.total || 0,
+      running: ec2?.running || 0,
+      stopped: ec2?.stopped || 0,
+      runningPercent: ec2 ? this.getPercentage(ec2.running, ec2.total) : 0
+    };
+  }
+
+  get ssmCoverage(): number {
+    return this.dashboardData?.ec2Health?.ssmAgentCoverage || 0;
+  }
+
+  getResourceCount(type: string): number {
+    return this.dashboardData?.resourceCounts?.get(type) || 0;
+  }
+
+  formatNumber(value: number | undefined): string {
+    const formatter = new Intl.NumberFormat('en-US');
+    return formatter.format(value || 0);
+  }
 }
