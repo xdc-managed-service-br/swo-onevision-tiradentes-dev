@@ -1,214 +1,117 @@
-[
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/rds-resources/rds-instances.component.ts",
-		"code": 2322,
-		"severity": 0,
-		"message": "Type '(string | undefined)[]' is not assignable to type 'string[]'.\n  Type 'string | undefined' is not assignable to type 'string'.\n    Type 'undefined' is not assignable to type 'string'.",
-		"source": "ts",
-		"startLineNumber": 113,
-		"startColumn": 11,
-		"endLineNumber": 113,
-		"endColumn": 29
-	},
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/rds-resources/rds-instances.component.ts",
-		"code": 2322,
-		"severity": 0,
-		"message": "Type '(string | undefined)[]' is not assignable to type 'string[]'.\n  Type 'string | undefined' is not assignable to type 'string'.\n    Type 'undefined' is not assignable to type 'string'.",
-		"source": "ts",
-		"startLineNumber": 114,
-		"startColumn": 11,
-		"endLineNumber": 114,
-		"endColumn": 30
-	},
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/rds-resources/rds-instances.component.ts",
-		"code": 2322,
-		"severity": 0,
-		"message": "Type '(string | undefined)[]' is not assignable to type 'string[]'.\n  Type 'string | undefined' is not assignable to type 'string'.\n    Type 'undefined' is not assignable to type 'string'.",
-		"source": "ts",
-		"startLineNumber": 115,
-		"startColumn": 11,
-		"endLineNumber": 115,
-		"endColumn": 34
-	},
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/rds-resources/rds-instances.component.ts",
-		"code": 2779,
-		"severity": 0,
-		"message": "The left-hand side of an assignment expression may not be an optional property access.",
-		"source": "ts",
-		"startLineNumber": 156,
-		"startColumn": 5,
-		"endLineNumber": 156,
-		"endColumn": 77
-	},
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html",
-		"code": 18050,
-		"severity": 0,
-		"message": "The value 'undefined' cannot be used here.",
-		"source": "ngtsc",
-		"startLineNumber": 193,
-		"startColumn": 85,
-		"endLineNumber": 193,
-		"endColumn": 107,
-		"relatedInformation": [
-			{
-				"startLineNumber": 24,
-				"startColumn": 16,
-				"endLineNumber": 24,
-				"endColumn": 45,
-				"message": "Error occurs in the template of component S3BucketsComponent.",
-				"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.ts"
-			}
-		]
-	},
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html",
-		"code": 2341,
-		"severity": 0,
-		"message": "Property 'recomputePagination' is private and only accessible within class 'S3BucketsComponent'.",
-		"source": "ngtsc",
-		"startLineNumber": 195,
-		"startColumn": 91,
-		"endLineNumber": 195,
-		"endColumn": 110,
-		"relatedInformation": [
-			{
-				"startLineNumber": 24,
-				"startColumn": 16,
-				"endLineNumber": 24,
-				"endColumn": 45,
-				"message": "Error occurs in the template of component S3BucketsComponent.",
-				"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.ts"
-			}
-		]
-	},
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html",
-		"code": 18050,
-		"severity": 0,
-		"message": "The value 'undefined' cannot be used here.",
-		"source": "ngtsc",
-		"startLineNumber": 199,
-		"startColumn": 94,
-		"endLineNumber": 199,
-		"endColumn": 116,
-		"relatedInformation": [
-			{
-				"startLineNumber": 24,
-				"startColumn": 16,
-				"endLineNumber": 24,
-				"endColumn": 45,
-				"message": "Error occurs in the template of component S3BucketsComponent.",
-				"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.ts"
-			}
-		]
-	},
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html",
-		"code": 2341,
-		"severity": 0,
-		"message": "Property 'recomputePagination' is private and only accessible within class 'S3BucketsComponent'.",
-		"source": "ngtsc",
-		"startLineNumber": 200,
-		"startColumn": 78,
-		"endLineNumber": 200,
-		"endColumn": 97,
-		"relatedInformation": [
-			{
-				"startLineNumber": 24,
-				"startColumn": 16,
-				"endLineNumber": 24,
-				"endColumn": 45,
-				"message": "Error occurs in the template of component S3BucketsComponent.",
-				"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.ts"
-			}
-		]
-	},
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html",
-		"code": -995002,
-		"severity": 0,
-		"message": "Parser Error: Unexpected token , at column 32 in [currentPage>1 && (currentPage--, recomputePagination())] in /Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html@192:53",
-		"source": "ngtsc",
-		"startLineNumber": 193,
-		"startColumn": 54,
-		"endLineNumber": 193,
-		"endColumn": 109,
-		"relatedInformation": [
-			{
-				"startLineNumber": 24,
-				"startColumn": 16,
-				"endLineNumber": 24,
-				"endColumn": 45,
-				"message": "Error occurs in the template of component S3BucketsComponent.",
-				"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.ts"
-			}
-		]
-	},
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html",
-		"code": -995002,
-		"severity": 0,
-		"message": "Parser Error: Unexpected token ')' at column 55 in [currentPage>1 && (currentPage--, recomputePagination())] in /Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html@192:53",
-		"source": "ngtsc",
-		"startLineNumber": 193,
-		"startColumn": 54,
-		"endLineNumber": 193,
-		"endColumn": 109,
-		"relatedInformation": [
-			{
-				"startLineNumber": 24,
-				"startColumn": 16,
-				"endLineNumber": 24,
-				"endColumn": 45,
-				"message": "Error occurs in the template of component S3BucketsComponent.",
-				"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.ts"
-			}
-		]
-	},
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html",
-		"code": -995002,
-		"severity": 0,
-		"message": "Parser Error: Unexpected token , at column 41 in [currentPage<totalPages && (currentPage++, recomputePagination())] in /Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html@198:53",
-		"source": "ngtsc",
-		"startLineNumber": 199,
-		"startColumn": 54,
-		"endLineNumber": 199,
-		"endColumn": 118,
-		"relatedInformation": [
-			{
-				"startLineNumber": 24,
-				"startColumn": 16,
-				"endLineNumber": 24,
-				"endColumn": 45,
-				"message": "Error occurs in the template of component S3BucketsComponent.",
-				"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.ts"
-			}
-		]
-	},
-	{
-		"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html",
-		"code": -995002,
-		"severity": 0,
-		"message": "Parser Error: Unexpected token ')' at column 64 in [currentPage<totalPages && (currentPage++, recomputePagination())] in /Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.html@198:53",
-		"source": "ngtsc",
-		"startLineNumber": 199,
-		"startColumn": 54,
-		"endLineNumber": 199,
-		"endColumn": 118,
-		"relatedInformation": [
-			{
-				"startLineNumber": 24,
-				"startColumn": 16,
-				"endLineNumber": 24,
-				"endColumn": 45,
-				"message": "Error occurs in the template of component S3BucketsComponent.",
-				"resource": "/Users/renanbueno/Projects/OneVision/swo-onevision-tiradentes-dev/src/app/features/components/s3-resources/s3-buckets.component.ts"
-			}
-		]
-	},
-	
+veja, o meu onevision, em ec2 component, nao ta conseguindo mostrar os ips. no dynamodb, os dados sao popoluados assim:
+
+{
+  "id": {
+    "S": "381492155025-us-east-1-EC2Instance-i-04b29a638eec35190"
+  },
+  "accountId": {
+    "S": "381492155025"
+  },
+  "accountName": {
+    "S": "MagisterApps Prod"
+  },
+  "amiName": {
+    "S": "N/A"
+  },
+  "createdAt": {
+    "S": "2025-08-20T05:15:36.000Z"
+  },
+  "cwAgentDiskDetected": {
+    "BOOL": false
+  },
+  "cwAgentMemoryDetected": {
+    "BOOL": false
+  },
+  "ebsStatus": {
+    "S": "ok"
+  },
+  "healthChecksPassed": {
+    "N": "3"
+  },
+  "healthChecksTotal": {
+    "N": "3"
+  },
+  "healthStatus": {
+    "S": "Healthy"
+  },
+  "iamRole": {
+    "S": "SWOSystemsManagerRole"
+  },
+  "instanceId": {
+    "S": "i-04b29a638eec35190"
+  },
+  "instanceName": {
+    "S": "AWSSRVUNITWWWS (WWWS UNIT)"
+  },
+  "instancePrivateIps": {
+    "S": "[\"172.24.57.38\", \"172.24.57.39\", \"172.24.57.40\", \"172.24.57.41\", \"172.24.57.42\", \"172.24.57.43\", \"172.24.57.44\", \"172.24.57.45\", \"172.24.57.46\", \"172.24.57.47\", \"172.24.57.48\", \"172.24.57.49\", \"172.24.57.15\", \"172.24.57.30\", \"172.24.57.31\", \"172.24.57.32\", \"172.24.57.33\", \"172.24.57.34\"]"
+  },
+  "instancePublicIps": {
+    "S": "[]"
+  },
+  "instanceState": {
+    "S": "running"
+  },
+  "instanceStatus": {
+    "S": "ok"
+  },
+  "instanceType": {
+    "S": "t3a.xlarge"
+  },
+  "isWindows": {
+    "BOOL": true
+  },
+  "lastUpdated": {
+    "S": "2025-09-12T12:02:08.917Z"
+  },
+  "patchGroup": {
+    "S": "3"
+  },
+  "platformDetails": {
+    "S": "Windows"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "EC2Instance"
+  },
+  "resourceTypeRegionId": {
+    "S": "EC2Instance#us-east-1#i-04b29a638eec35190"
+  },
+  "ssmLastPingTime": {
+    "S": "2025-09-12T11:57:24.754Z"
+  },
+  "ssmPingStatus": {
+    "S": "Online"
+  },
+  "ssmStatus": {
+    "S": "Online"
+  },
+  "ssmVersion": {
+    "S": "3.3.3050.0"
+  },
+  "swoBackup": {
+    "S": "2"
+  },
+  "swoMonitor": {
+    "S": "1"
+  },
+  "swoPatch": {
+    "S": "3"
+  },
+  "swoRiskClass": {
+    "S": "1"
+  },
+  "systemStatus": {
+    "S": "ok"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"Name\", \"Value\": \"AWSSRVUNITWWWS (WWWS UNIT)\"}, {\"Key\": \"swoPatch\", \"Value\": \"3\"}, {\"Key\": \"PatchGroup\", \"Value\": \"3\"}, {\"Key\": \"Billing-MagProd\", \"Value\": \"0\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}, {\"Key\": \"swoBackup\", \"Value\": \"2\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"swoResize\", \"Value\": \"0\"}]"
+  },
+  "updatedAt": {
+    "S": "2025-09-12T12:02:08.917Z"
+  }
+}
+
+uma instancia pode ter apenas um ip privado, mas tem instancias iguais essa, q sao appliance, entao tem muitas interfaces anexada a ela, entao sao muitos ips. esse codigo ae nao ta conseguindo lidar com esses ip, com esse formato, nao consigo resolver, ajuda

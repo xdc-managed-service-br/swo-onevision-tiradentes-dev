@@ -1,66 +1,70 @@
 <article class="ov-container" aria-labelledby="rds-title">
-  <div class="ov-header">
-    <h1 id="rds-title" class="ov-title">RDS Instances</h1>
+  <div class="ov-section">
+    <div class="ov-header ov-bleed">
+      <h1 id="rds-title" class="ov-title">RDS Instances</h1>
 
-    <div class="ov-filterbar">
-      <div class="ov-filter">
-        <label for="regionFilter">Region</label>
-        <select id="regionFilter" (change)="filterByRegion($event)">
-          <option value="">All Regions</option>
-          <option *ngFor="let r of uniqueRegions" [value]="r">{{ r }}</option>
-        </select>
-      </div>
-      <div class="ov-filter">
-        <label for="accountFilter">Account</label>
-        <select id="accountFilter" (change)="filterByAccount($event)">
-          <option value="">All Accounts</option>
-          <option *ngFor="let a of uniqueAccounts" [value]="a">{{ a }}</option>
-        </select>
-      </div>
-      <div class="ov-filter">
-        <label for="engineFilter">Engine</label>
-        <select id="engineFilter" (change)="filterByEngine($event)">
-          <option value="">All Engines</option>
-          <option *ngFor="let e of uniqueEngines" [value]="e">{{ e }}</option>
-        </select>
-      </div>
-      <div class="ov-filter">
-        <label for="statusFilter">State</label>
-        <select id="statusFilter" (change)="filterByStatus($event)">
-          <option value="">All States</option>
-          <option *ngFor="let s of uniqueStatuses" [value]="s">{{ s }}</option>
-        </select>
-      </div>
-      <div class="ov-filter">
-        <label for="storageTypeFilter">Storage Type</label>
-        <select id="storageTypeFilter" (change)="filterByStorageType($event)">
-          <option value="">All</option>
-          <option *ngFor="let st of uniqueStorageTypes" [value]="st">{{ st }}</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="ov-filterbar__actions">
-      <div class="ov-search">
-        <input
-          id="rdsSearch"
-          type="search"
-          placeholder="Search by DB Identifier or Name"
-          [(ngModel)]="searchTerm"
-          (input)="applyFilters()"
-          #searchInput />
-        <button
-          type="button"
-          class="ov-clear-btn"
-          *ngIf="searchTerm"
-          (click)="clearSearch(searchInput)"
-          aria-label="Clear search"></button>
+      <div class="ov-filterbar">
+        <div class="ov-filter">
+          <label for="regionFilter">Region</label>
+          <select id="regionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let r of uniqueRegions" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+        <div class="ov-filter">
+          <label for="accountFilter">Account</label>
+          <select id="accountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let a of uniqueAccounts" [value]="a">{{ a }}</option>
+          </select>
+        </div>
+        <div class="ov-filter">
+          <label for="engineFilter">Engine</label>
+          <select id="engineFilter" (change)="filterByEngine($event)">
+            <option value="">All Engines</option>
+            <option *ngFor="let e of uniqueEngines" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+        <div class="ov-filter">
+          <label for="statusFilter">State</label>
+          <select id="statusFilter" (change)="filterByStatus($event)">
+            <option value="">All States</option>
+            <option *ngFor="let s of uniqueStatuses" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="ov-filter">
+          <label for="storageTypeFilter">Storage Type</label>
+          <select id="storageTypeFilter" (change)="filterByStorageType($event)">
+            <option value="">All</option>
+            <option *ngFor="let st of uniqueStorageTypes" [value]="st">{{ st }}</option>
+          </select>
+        </div>
       </div>
 
-      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToCSV()">Export to CSV</button>
-      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToXLSX()">Export to XLSX</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="loadResources()">Refresh</button>
+      <div class="ov-header-actions">
+        <div class="ov-search">
+          <input
+            id="rdsSearch"
+            type="search"
+            placeholder="Search by DB Identifier or Name"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
+        </div>
+
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToCSV()">Export to CSV</button>
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToXLSX()">Export to XLSX</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="loadResources()">Refresh</button>
+        </div>
+      </div>
     </div>
   </div>
 

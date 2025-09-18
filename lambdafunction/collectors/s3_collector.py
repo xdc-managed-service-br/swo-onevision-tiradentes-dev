@@ -242,15 +242,15 @@ class S3Collector(ResourceCollector):
             logger.info(f"No S3 bucket items to save for account {self.account_id}")
             return 0
         
-        if not self.tables:
-            logger.error(f"No DynamoDB tables configured for saving S3 items.")
+        if not self.resource_tables:
+            logger.error("No DynamoDB tables configured for saving S3 items.")
             return 0
 
         items_to_save = self.items
         self.items = []
         
         try:
-            count = batch_write_to_dynamodb(self.tables, items_to_save)
+            count = batch_write_to_dynamodb(self.resource_tables, items_to_save)
             if count > 0:
                 logger.info(f"Saved {count} S3 bucket items for account {self.account_id} to DynamoDB.")
             return count

@@ -587,23 +587,23 @@ class NetworkingCollector(ResourceCollector):
                     creation_time = tgw.get('CreationTime')
                     formatted_creation = format_aws_datetime(creation_time) if creation_time else None
                     
-                item_data = {
-                    'transitGatewayId': tgw_id,
-                    'transitGatewayName': tgw_name,
-                    'state': tgw.get('State', 'N/A'),
-                    'ownerId': tgw.get('OwnerId', 'N/A'),
-                    'description': tgw.get('Description', ''),
-                    'amazonSideAsn': tgw.get('Options', {}).get('AmazonSideAsn', 'N/A'),
-                    'dnsSupport': tgw.get('Options', {}).get('DnsSupport', 'N/A'),
-                    'vpnEcmpSupport': tgw.get('Options', {}).get('VpnEcmpSupport', 'N/A'),
-                    'defaultRouteTableAssociation': tgw.get('Options', {}).get('DefaultRouteTableAssociation', 'N/A'),
-                    'defaultRouteTablePropagation': tgw.get('Options', {}).get('DefaultRouteTablePropagation', 'N/A'),
-                    'multicastSupport': tgw.get('Options', {}).get('MulticastSupport', 'N/A'),
-                    'createdAt': formatted_creation,
-                    'tags': tags_json
-                }
-                self.add_item('TransitGateway', tgw_id, to_dynamodb_format(item_data))
-                tgw_count += 1
+                    item_data = {
+                        'transitGatewayId': tgw_id,
+                        'transitGatewayName': tgw_name,
+                        'state': tgw.get('State', 'N/A'),
+                        'ownerId': tgw.get('OwnerId', 'N/A'),
+                        'description': tgw.get('Description', ''),
+                        'amazonSideAsn': tgw.get('Options', {}).get('AmazonSideAsn', 'N/A'),
+                        'dnsSupport': tgw.get('Options', {}).get('DnsSupport', 'N/A'),
+                        'vpnEcmpSupport': tgw.get('Options', {}).get('VpnEcmpSupport', 'N/A'),
+                        'defaultRouteTableAssociation': tgw.get('Options', {}).get('DefaultRouteTableAssociation', 'N/A'),
+                        'defaultRouteTablePropagation': tgw.get('Options', {}).get('DefaultRouteTablePropagation', 'N/A'),
+                        'multicastSupport': tgw.get('Options', {}).get('MulticastSupport', 'N/A'),
+                        'createdAt': formatted_creation,
+                        'tags': tags_json
+                    }
+                    self.add_item('TransitGateway', tgw_id, to_dynamodb_format(item_data))
+                    tgw_count += 1
             
             if tgw_count > 0:
                 logger.debug(f"Added {tgw_count} Transit Gateways from region {self.region} to the item list.")

@@ -1,33 +1,32 @@
 <article class="ov-container" aria-labelledby="ami-title">
-    <!-- Page section wrapper (use o mesmo para a tabela) -->
-<div class="ov-section">
-  <!-- Header -->
-  <div class="ov-header ov-bleed">
-    <h1 id="ami-title" class="ov-title">AMI Snapshots</h1>
-    
-    <!-- Filters (grid) -->  
-    <div class="ov-filterbar">
-      <div class="ov-filter">
-        <label for="accountFilter">Account</label>
-        <select id="accountFilter" (change)="filterByAccount($event)">
-          <option value="">All Accounts</option>
-          <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
-        </select>
-      </div>  
-      <div class="ov-filter">
-        <label for="regionFilter">Region</label>
-        <select id="regionFilter" (change)="filterByRegion($event)">
-          <option value="">All Regions</option>
-          <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
-        </select>
-      </div>         
-      <div class="ov-filter">
-        <label for="platformFilter">Platform</label>
-        <select id="platformFilter" (change)="filterByPlatform($event)">
-          <option value="">All Platforms</option>
-          <option *ngFor="let p of uniquePlatforms" [value]="p">{{ p }}</option>
-        </select>
-      </div>
+  <!-- Page section wrapper (mantem header alinhado com a tabela) -->
+  <div class="ov-section">
+    <div class="ov-header ov-bleed">
+      <h1 id="ami-title" class="ov-title">AMI Snapshots</h1>
+
+      <!-- Filters (grid) -->
+      <div class="ov-filterbar">
+        <div class="ov-filter">
+          <label for="accountFilter">Account</label>
+          <select id="accountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
+          </select>
+        </div>
+        <div class="ov-filter">
+          <label for="regionFilter">Region</label>
+          <select id="regionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+          </select>
+        </div>
+        <div class="ov-filter">
+          <label for="platformFilter">Platform</label>
+          <select id="platformFilter" (change)="filterByPlatform($event)">
+            <option value="">All Platforms</option>
+            <option *ngFor="let p of uniquePlatforms" [value]="p">{{ p }}</option>
+          </select>
+        </div>
       </div>
 
       <!-- Actions + Search (inline) -->
@@ -39,10 +38,10 @@
             placeholder="Search by Image ID, Name Tag, or AMI Name"
             [(ngModel)]="searchTerm"
             (input)="applyFilters()"
-            #searchInput/>
-          <button 
-            type="button" 
-            class="ov-clear-btn" 
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
             *ngIf="searchTerm"
             (click)="clearSearch(searchInput)"
             aria-label="Clear search"></button>
@@ -54,9 +53,10 @@
           <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
           <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
         </div>
-      </div>        
+      </div>
     </div>
-  <!-- Loading/Empty -->
+  </div>
+
   <div *ngIf="loading" class="ov-loading">Loading AMI snapshots…</div>
   <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
     No AMI snapshots found matching your filters.
@@ -269,6 +269,4 @@
       <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
     </div>
   </div>
-  <!-- Close ov-section wrapper -->
-</div>
 </article>

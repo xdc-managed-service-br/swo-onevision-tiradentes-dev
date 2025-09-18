@@ -1,0 +1,102 @@
+:host {
+  display: block;
+}
+
+.dashboard-card {
+  background: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius-lg);
+  padding: var(--ov-space-4);
+  box-shadow: var(--ov-shadow-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ov-space-4);
+  color: var(--ov-text);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--ov-space-2);
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: var(--ov-text-lg);
+  font-weight: 600;
+  color: var(--ov-text);
+}
+
+.total-count {
+  font-size: var(--ov-text-xs);
+  color: var(--ov-text-secondary);
+}
+
+.distribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ov-space-3);
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.distribution-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ov-space-2);
+  background: var(--ov-surface-overlay);
+  border-radius: var(--ov-radius);
+  padding: var(--ov-space-3);
+  transition: var(--ov-transition-fast);
+}
+
+.distribution-item:hover {
+  background: var(--ov-surface-raised);
+  box-shadow: var(--ov-shadow-1);
+}
+
+.item-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--ov-space-2);
+}
+
+.item-name {
+  font-size: var(--ov-text-sm);
+  color: var(--ov-text);
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-count {
+  font-size: var(--ov-text-base);
+  font-weight: 600;
+  color: var(--ov-text);
+}
+
+.progress-bar-container {
+  height: 22px;
+  width: 100%;
+  background: var(--ov-surface);
+  border-radius: var(--ov-radius-full);
+  overflow: hidden;
+  border: 1px solid var(--ov-border);
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ov-success), #059669);
+  border-radius: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: var(--ov-space-2);
+  font-size: var(--ov-text-xs);
+  font-weight: 600;
+  color: var(--ov-accent-contrast);
+  transition: width 0.3s ease;
+}

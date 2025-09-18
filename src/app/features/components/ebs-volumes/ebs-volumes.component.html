@@ -1,84 +1,88 @@
 <!-- src/app/features/components/ebs-volumes/ebs-volumes.component.html -->
 <article class="ov-container" aria-labelledby="ebs-title">
 
-  <div class="ov-header">
-    <h1 id="ebs-title" class="ov-title">EBS Volumes</h1>
+  <div class="ov-section">
+    <div class="ov-header ov-bleed">
+      <h1 id="ebs-title" class="ov-title">EBS Volumes</h1>
 
-    <!-- Filter Bar -->
-    <div class="ov-filterbar">
-      <div class="ov-filter">
-        <label for="regionFilter">Region</label>
-        <select id="regionFilter" (change)="filterByRegion($event)">
-          <option value="">All Regions</option>
-          <option *ngFor="let r of uniqueRegions" [value]="r">{{ r }}</option>
-        </select>
+      <!-- Filter Bar -->
+      <div class="ov-filterbar">
+        <div class="ov-filter">
+          <label for="regionFilter">Region</label>
+          <select id="regionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let r of uniqueRegions" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="accountFilter">Account</label>
+          <select id="accountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let a of uniqueAccounts" [value]="a">{{ a }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="stateFilter">State</label>
+          <select id="stateFilter" (change)="filterByState($event)">
+            <option value="">All States</option>
+            <option *ngFor="let s of uniqueStates" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="typeFilter">Type</label>
+          <select id="typeFilter" (change)="filterByType($event)">
+            <option value="">All Types</option>
+            <option *ngFor="let t of uniqueTypes" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="encryptedFilter">Encrypted</label>
+          <select id="encryptedFilter" (change)="filterByEncrypted($event)">
+            <option value="">All</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="attachedFilter">Attached</label>
+          <select id="attachedFilter" (change)="filterByAttached($event)">
+            <option value="">All</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
       </div>
 
-      <div class="ov-filter">
-        <label for="accountFilter">Account</label>
-        <select id="accountFilter" (change)="filterByAccount($event)">
-          <option value="">All Accounts</option>
-          <option *ngFor="let a of uniqueAccounts" [value]="a">{{ a }}</option>
-        </select>
-      </div>
+      <!-- Actions + Search -->
+      <div class="ov-header-actions">
+        <div class="ov-search">
+          <input
+            id="ebsSearch"
+            type="search"
+            placeholder="Search by Volume ID or Name"
+            (input)="searchResources($event)"
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
+        </div>
 
-      <div class="ov-filter">
-        <label for="stateFilter">State</label>
-        <select id="stateFilter" (change)="filterByState($event)">
-          <option value="">All States</option>
-          <option *ngFor="let s of uniqueStates" [value]="s">{{ s }}</option>
-        </select>
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToCSV()">Export to CSV</button>
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToXLSX()">Export to XLSX</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
+        </div>
       </div>
-
-      <div class="ov-filter">
-        <label for="typeFilter">Type</label>
-        <select id="typeFilter" (change)="filterByType($event)">
-          <option value="">All Types</option>
-          <option *ngFor="let t of uniqueTypes" [value]="t">{{ t }}</option>
-        </select>
-      </div>
-
-      <div class="ov-filter">
-        <label for="encryptedFilter">Encrypted</label>
-        <select id="encryptedFilter" (change)="filterByEncrypted($event)">
-          <option value="">All</option>
-          <option value="true">Yes</option>
-          <option value="false">No</option>
-        </select>
-      </div>
-
-      <div class="ov-filter">
-        <label for="attachedFilter">Attached</label>
-        <select id="attachedFilter" (change)="filterByAttached($event)">
-          <option value="">All</option>
-          <option value="true">Yes</option>
-          <option value="false">No</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Actions + Search -->
-    <div class="ov-filterbar__actions">
-      <div class="ov-search">
-        <input
-          id="ebsSearch"
-          type="search"
-          placeholder="Search by Volume ID or Name"
-          (input)="searchResources($event)"
-          #searchInput />
-        <button
-          type="button"
-          class="ov-clear-btn"
-          *ngIf="searchTerm"
-          (click)="clearSearch(searchInput)"
-          aria-label="Clear search"></button>
-      </div>
-
-      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToCSV()">Export to CSV</button>
-      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToXLSX()">Export to XLSX</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
     </div>
   </div>
 
@@ -237,15 +241,15 @@
       Showing {{ pageStartIndex }} - {{ pageEndIndex }} of {{ filteredResources.length }} items
     </div>
     <div class="ov-pagination__controls">
-      <button class="ov-btn ov-btn--subtle" (click)="currentPage = 1; updatePaginationAfterChange()" [disabled]="currentPage === 1">First</button>
-      <button class="ov-btn ov-btn--subtle" (click)="currentPage = currentPage - 1; updatePaginationAfterChange()" [disabled]="currentPage === 1">Previous</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToFirstPage()" [disabled]="currentPage === 1">First</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToPreviousPage()" [disabled]="currentPage === 1">Previous</button>
       <span class="ov-pagination__pages">
         <button class="ov-btn" *ngFor="let p of getPageNumbers()"
-                (click)="currentPage = p; updatePaginationAfterChange()"
+                (click)="goToPage(p)"
                 [class.is-active]="p === currentPage">{{ p }}</button>
       </span>
-      <button class="ov-btn ov-btn--subtle" (click)="currentPage = currentPage + 1; updatePaginationAfterChange()" [disabled]="currentPage === totalPages">Next</button>
-      <button class="ov-btn ov-btn--subtle" (click)="currentPage = totalPages; updatePaginationAfterChange()" [disabled]="currentPage === totalPages">Last</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToNextPage()" [disabled]="currentPage === totalPages">Next</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
     </div>
   </div>
 </article>

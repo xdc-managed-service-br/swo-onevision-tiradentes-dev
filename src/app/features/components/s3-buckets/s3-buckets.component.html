@@ -1,59 +1,63 @@
 <!-- src/app/features/components/s3-buckets/s3-buckets.component.html -->
 <article class="ov-container" aria-labelledby="s3-title">
 
-  <div class="ov-header">
-    <h1 id="s3-title" class="ov-title">S3 Buckets</h1>
+  <div class="ov-section">
+    <div class="ov-header ov-bleed">
+      <h1 id="s3-title" class="ov-title">S3 Buckets</h1>
 
-    <!-- 1ª linha: filtros -->
-    <div class="ov-filterbar">
-      <div class="ov-filter">
-        <label for="regionFilter">Region</label>
-        <select id="regionFilter" (change)="filterByRegion($event)">
-          <option value="">All Regions</option>
-          <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
-        </select>
+      <!-- 1ª linha: filtros -->
+      <div class="ov-filterbar">
+        <div class="ov-filter">
+          <label for="regionFilter">Region</label>
+          <select id="regionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="accountFilter">Account</label>
+          <select id="accountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="lifecycleFilter">Lifecycle Rules</label>
+          <select id="lifecycleFilter" (change)="filterByLifecycle($event)">
+            <option value="">All</option>
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
       </div>
 
-      <div class="ov-filter">
-        <label for="accountFilter">Account</label>
-        <select id="accountFilter" (change)="filterByAccount($event)">
-          <option value="">All Accounts</option>
-          <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
-        </select>
-      </div>
+      <!-- 2ª linha: busca + ações -->
+      <div class="ov-header-actions">
+        <div class="ov-search">
+          <input
+            id="s3Search"
+            type="search"
+            placeholder="Search by Bucket Name or Name Tag"
+            (input)="searchBuckets($event)"
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
+        </div>
 
-      <div class="ov-filter">
-        <label for="lifecycleFilter">Lifecycle Rules</label>
-        <select id="lifecycleFilter" (change)="filterByLifecycle($event)">
-          <option value="">All</option>
-          <option value="true">Enabled</option>
-          <option value="false">Disabled</option>
-        </select>
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToCSV()">Export to CSV</button>
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToXLSX()">Export to XLSX</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
+        </div>
       </div>
-    </div>
-
-    <!-- 2ª linha: busca + ações -->
-    <div class="ov-filterbar__actions">
-      <div class="ov-search">
-        <input
-          id="s3Search"
-          type="search"
-          placeholder="Search by Bucket Name or Name Tag"
-          (input)="searchBuckets($event)"
-          #searchInput />
-        <button
-          type="button"
-          class="ov-clear-btn"
-          *ngIf="searchTerm"
-          (click)="clearSearch(searchInput)"
-          aria-label="Clear search"></button>
-      </div>
-
-      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToCSV()">Export to CSV</button>
-      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length > 0" (click)="exportToXLSX()">Export to XLSX</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
-      <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
     </div>
   </div>
 

@@ -155,49 +155,36 @@
    4. LAYOUT COMPONENTS
    ======================================== */
 
-/* ============== NEW: Wrapper para alinhar header + tabela ============== */
-.ov-section{
+.ov-section {
   max-width: 1600px;
-  margin: 0 auto;
+  margin: 0 auto var(--ov-space-8);
   padding: 0 var(--ov-space-4);
 }
-/* Faz o card ocupar a mesma largura da tabela (cancela padding do .ov-section) */
+
+.ov-section-title {
+  font-size: var(--ov-text-xl);
+  font-weight: 600;
+  color: var(--ov-text);
+  margin: 0 0 var(--ov-space-4);
+}
+
 .ov-bleed {
   margin-left: calc(-1 * var(--ov-space-4));
   margin-right: calc(-1 * var(--ov-space-4));
 }
 
-/* Em telas pequenas, mantenha seguro (sem bleed) */
-@media (max-width: 768px){
-  .ov-bleed { margin-left: 0; margin-right: 0; }
-}
-
-/* (opcional) iguala o raio da tabela ao do card */
-.ov-tablewrap { border-radius: var(--ov-radius-lg); }
-/* ============== UPDATED: Header vira “card” + grid em 2 linhas ============== */
-/* Substitui o bloco atual de .ov-header */
 .ov-header {
-  /* card */
   background: var(--ov-surface);
   border: 1px solid var(--ov-border);
   border-radius: var(--ov-radius-lg);
   box-shadow: var(--ov-shadow-1);
-  padding: var(--ov-space-4);
-
-  /* layout */
-  display: grid;
+  padding: var(--ov-space-5);
+  display: flex;
+  flex-direction: column;
   gap: var(--ov-space-4);
-  margin-bottom: var(--ov-space-6);
 }
 
-@media (max-width: 900px) {
-  .ov-header {
-    flex-direction: column;
-  }
-}
-
-/* Mantém o grid de 6 colunas para os filtros (1ª linha) */
-.ov-filterbar{
+.ov-filterbar {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(6, minmax(160px, 1fr));
@@ -208,61 +195,27 @@
 .ov-filter {
   display: flex;
   flex-direction: column;
-  gap: var(--ov-space-1);
+  gap: var(--ov-space-2);
 }
 
 .ov-filter label {
-  font-size: var(--ov-text-sm);
+  font-size: var(--ov-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
   color: var(--ov-text-secondary);
-  font-weight: 500;
+  letter-spacing: 0.04em;
 }
 
 .ov-filter select {
   width: 100%;
-}
-
-/* selects back to original style */
-.ov-filterbar .ov-filter select {
-  width: 100%;
+  padding: var(--ov-space-2) var(--ov-space-3);
   background-color: var(--ov-surface);
   color: var(--ov-text);
-  border: 1px solid var(--ov-border);
   border-radius: var(--ov-radius-sm);
-  padding: var(--ov-space-2) var(--ov-space-3);
+  border: 1px solid var(--ov-border);
   font-size: var(--ov-text-sm);
-  min-width: 140px;
-  cursor: pointer;
   transition: var(--ov-transition-fast);
-}
-
-.ov-filterbar .ov-filter select:hover {
-  border-color: var(--ov-border-strong);
-  background-color: var(--ov-surface-raised);
-}
-
-.ov-filterbar .ov-filter select:focus {
-  outline: none;
-  border-color: var(--ov-accent);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-@media (max-width: 1200px) {
-  .ov-filterbar { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
-}
-@media (max-width: 700px) {
-  .ov-filterbar { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
-}
-
-@media (max-width: 700px) {
-  .ov-filterbar__actions {
-    gap: var(--ov-space-2);
-  }
-  .ov-filterbar__actions .ov-search {
-    flex: 1 1 100%;
-  }
-  .ov-filterbar__actions > button:first-of-type {
-    margin-left: 0;    /* stack buttons under search on very small widths */
-  }
+  cursor: pointer;
 }
 
 .ov-filter select:hover {
@@ -273,31 +226,22 @@
 .ov-filter select:focus {
   outline: none;
   border-color: var(--ov-accent);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
-/* ============== NEW: Linha 2 – busca à esquerda, botões à direita ============== */
-.ov-header-actions,
-.ov-filterbar__actions{                      /* alias p/ compatibilidade */
+.ov-header-actions {
   width: 100%;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(260px, 1fr) auto;
   gap: var(--ov-space-3);
   align-items: center;
 }
 
-.ov-filterbar__actions .ov-search {
-  flex: 1 1 420px;   /* grows, but keeps a good min size */
-  max-width: none;
+.ov-header-actions > * {
+  min-width: 0;
 }
 
-/* Botão “primeiro” não precisa mais empurrar (grid cuida disso) */
-.ov-filterbar__actions > button:first-of-type{
-  margin-left: 0;
-}
-
-/* ================== Search (mantém teu estilo; só garante 100%) ================== */
-.ov-search{
+.ov-search {
   position: relative;
   display: flex;
   align-items: center;
@@ -306,16 +250,15 @@
 
 .ov-search input {
   width: 100%;
+  padding: var(--ov-space-2) var(--ov-space-3);
+  padding-right: var(--ov-space-8);
   background-color: var(--ov-surface);
   color: var(--ov-text);
   border: 1px solid var(--ov-border);
   border-radius: var(--ov-radius-sm);
-  padding: var(--ov-space-2) var(--ov-space-3);
-  padding-right: var(--ov-space-8);
   font-size: var(--ov-text-sm);
   transition: var(--ov-transition-fast);
 }
-
 
 .ov-search input:hover {
   border-color: var(--ov-border-strong);
@@ -325,7 +268,7 @@
 .ov-search input:focus {
   outline: none;
   border-color: var(--ov-accent);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
 .ov-search input::placeholder {
@@ -348,6 +291,77 @@
   color: var(--ov-text);
 }
 
+.ov-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--ov-space-2);
+}
+
+.ov-actions .ov-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 1280px) {
+  .ov-filterbar {
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .ov-filterbar {
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .ov-section {
+    padding: 0 var(--ov-space-3);
+  }
+
+  .ov-bleed {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .ov-header {
+    padding: var(--ov-space-4);
+    gap: var(--ov-space-3);
+  }
+
+  .ov-filterbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ov-space-2);
+  }
+
+  .ov-header-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ov-space-3);
+  }
+
+  .ov-header-actions .ov-actions {
+    order: 1;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: var(--ov-space-2);
+    width: 100%;
+  }
+
+  .ov-header-actions .ov-actions .ov-btn {
+    width: 100%;
+  }
+
+  .ov-header-actions .ov-search {
+    order: 2;
+    width: 100%;
+  }
+}
+
 /* ========================================
    5. TABLE
    ======================================== */
@@ -359,7 +373,8 @@
   overflow-x: auto;
   overflow-y: hidden;
   box-shadow: var(--ov-shadow-1);
-  margin-bottom: var(--ov-space-6);
+  max-width: 1600px;
+  margin: 0 auto var(--ov-space-6);
 }
 
 @media (max-width: 900px) { .ov-tablewrap { display: none; } }
@@ -852,11 +867,13 @@
   justify-content: space-between;
   align-items: center;
   gap: var(--ov-space-4);
-  margin-top: var(--ov-space-6);
+  margin: var(--ov-space-6) auto 0;
   padding: var(--ov-space-4);
   background-color: var(--ov-surface);
   border: 1px solid var(--ov-border);
   border-radius: var(--ov-radius);
+  max-width: 1600px;
+  width: 100%;
 }
 
 @media (max-width: 768px) {

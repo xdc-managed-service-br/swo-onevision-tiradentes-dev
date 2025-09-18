@@ -4,7 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   // Home (All Resources)
   {
-    path: 'resources',
+    path: '',
     loadComponent: () =>
       import('./components/resources/all-resources.component')
         .then(m => m.ResourcesComponent)
@@ -31,6 +31,13 @@ const routes: Routes = [
         .then(m => m.AMISnapshotsComponent)
   },
 
+  {
+    path: 'security-groups',
+    loadComponent: () =>
+      import('./components/security-groups/security-groups.component')
+        .then(m => m.SecurityGroupsComponent)
+  },
+
   // Storage
   {
     path: 's3',
@@ -38,17 +45,17 @@ const routes: Routes = [
       import('./components/s3-buckets/s3-buckets.component')
         .then(m => m.S3BucketsComponent)
   },
- {
+  {
     path: 'ebs',
     loadComponent: () =>
       import('./components/ebs-volumes/ebs-volumes.component')
         .then(m => m.EBSVolumesComponent)
   },
   {
-      path: 'ebs-snapshots',
-      loadComponent: () =>
-        import('./components/ebs-snapshots/ebs-snapshots.component')
-          .then(m => m.EBSSnapshotsComponent)
+    path: 'ebs-snapshots',
+    loadComponent: () =>
+      import('./components/ebs-snapshots/ebs-snapshots.component')
+        .then(m => m.EBSSnapshotsComponent)
   },
   // Databases
   {
@@ -56,6 +63,20 @@ const routes: Routes = [
     loadComponent: () =>
       import('./components/rds-instances/rds-instances.component')
         .then(m => m.RDSInstancesComponent)
+  },
+
+  // Networking
+  {
+    path: 'vpcs',
+    loadComponent: () =>
+      import('./components/vpcs/vpcs.component')
+        .then(m => m.VPCsComponent)
+  },
+  {
+    path: 'subnets',
+    loadComponent: () =>
+      import('./components/subnets/subnets.component')
+        .then(m => m.SubnetsComponent)
   }
 ];
 

@@ -1,64 +1,68 @@
 <article class="ov-container" aria-labelledby="ebs-snaps-title">
 
-  <div class="ov-header">
-    <h1 id="ebs-snaps-title" class="ov-title">EBS Snapshots</h1>
+  <div class="ov-section">
+    <div class="ov-header ov-bleed">
+      <h1 id="ebs-snaps-title" class="ov-title">EBS Snapshots</h1>
 
-    <div class="ov-filterbar">
-      <div class="ov-filter">
-        <label for="regionFilter">Region</label>
-        <select id="regionFilter" (change)="filterByRegion($event)">
-          <option value="">All Regions</option>
-          <option *ngFor="let r of uniqueRegions" [value]="r">{{ r }}</option>
-        </select>
+      <div class="ov-filterbar">
+        <div class="ov-filter">
+          <label for="regionFilter">Region</label>
+          <select id="regionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let r of uniqueRegions" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="accountFilter">Account</label>
+          <select id="accountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="stateFilter">State</label>
+          <select id="stateFilter" (change)="filterByState($event)">
+            <option value="">All States</option>
+            <option *ngFor="let s of uniqueStates" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="encFilter">Encrypted</label>
+          <select id="encFilter" (change)="filterByEncrypted($event)">
+            <option value="">All</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
       </div>
 
-      <div class="ov-filter">
-        <label for="accountFilter">Account</label>
-        <select id="accountFilter" (change)="filterByAccount($event)">
-          <option value="">All Accounts</option>
-          <option *ngFor="let acc of uniqueAccounts" [value]="acc">{{ acc }}</option>
-        </select>
-      </div>
+      <div class="ov-header-actions">
+        <div class="ov-search">
+          <input
+            id="ebsSnapSearch"
+            type="search"
+            placeholder="Search by Snapshot ID or Name"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
+        </div>
 
-      <div class="ov-filter">
-        <label for="stateFilter">State</label>
-        <select id="stateFilter" (change)="filterByState($event)">
-          <option value="">All States</option>
-          <option *ngFor="let s of uniqueStates" [value]="s">{{ s }}</option>
-        </select>
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToCSV()">Export to CSV</button>
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToXLSX()">Export to XLSX</button>
+          <button class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+          <button class="ov-btn ov-btn--subtle" (click)="loadResources()">Refresh</button>
+        </div>
       </div>
-
-      <div class="ov-filter">
-        <label for="encFilter">Encrypted</label>
-        <select id="encFilter" (change)="filterByEncrypted($event)">
-          <option value="">All</option>
-          <option value="true">Yes</option>
-          <option value="false">No</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="ov-filterbar__actions">
-      <div class="ov-search">
-        <input
-          id="ebsSnapSearch"
-          type="search"
-          placeholder="Search by Snapshot ID or Name"
-          [(ngModel)]="searchTerm"
-          (input)="applyFilters()"
-          #searchInput />
-        <button
-          type="button"
-          class="ov-clear-btn"
-          *ngIf="searchTerm"
-          (click)="clearSearch(searchInput)"
-          aria-label="Clear search"></button>
-      </div>
-
-      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToCSV()">Export to CSV</button>
-      <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToXLSX()">Export to XLSX</button>
-      <button class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
-      <button class="ov-btn ov-btn--subtle" (click)="loadResources()">Refresh</button>
     </div>
   </div>
 

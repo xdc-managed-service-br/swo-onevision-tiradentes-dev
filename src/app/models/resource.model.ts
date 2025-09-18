@@ -280,6 +280,7 @@ export interface VPC extends BaseResource {
   vpcId?: string; // Generic field
   cidrBlock?: string; // Generic field
   isDefault?: boolean; // Generic field
+  state?: string; // Generic field
 }
 
 // VPC Endpoint

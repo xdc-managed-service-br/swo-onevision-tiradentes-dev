@@ -1,0 +1,29 @@
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3>Recent Resources</h3>
+        <span class="total-count">Last 10 created</span>
+      </div>
+      
+      <div class="resources-list">
+        <div *ngFor="let resource of recentResources" 
+             class="resource-item">
+          <div class="resource-icon">
+            <i [class]="getResourceIcon(resource.resourceType)"></i>
+          </div>
+          <div class="resource-details">
+            <div class="resource-name">{{ resource.resourceName }}</div>
+            <div class="resource-info">
+              <span class="resource-type">{{ resource.resourceType }}</span>
+              <span class="separator">•</span>
+              <span class="resource-region">{{ resource.region }}</span>
+              <span class="separator">•</span>
+              <span class="resource-time">{{ getRelativeTime(resource.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="recentResources.length === 0" class="no-resources">
+          <p>No recent resources found</p>
+        </div>
+      </div>
+    </div>
