@@ -1,4 +1,4 @@
-// src/app/features/components/load-balancers/load-balancers.component.ts
+// src/app/features/components/vpn-gateways/vpn-gateways.component.ts
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
@@ -7,78 +7,68 @@ import { takeUntil } from 'rxjs/operators';
 import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
-import { LoadBalancer } from '../../../models/resource.model';
+import { VPNGateway } from '../../../models/resource.model';
 
 interface ColumnDefinition {
   key: ColumnKey;
   label: string;
   sortable?: boolean;
-  transform?: (resource: NormalizedLoadBalancer) => string;
+  transform?: (resource: NormalizedVpnGateway) => string;
 }
 
 type ColumnKey =
   | 'displayName'
-  | 'loadBalancerArn'
-  | 'dnsName'
+  | 'vpnGatewayId'
   | 'type'
-  | 'scheme'
-  | 'ipAddressType'
   | 'state'
-  | 'vpcId'
+  | 'amazonSideAsn'
+  | 'availabilityZone'
+  | 'attachedVpcCount'
+  | 'attachedVpcSummary'
   | 'region'
   | 'accountName'
-  | 'targetGroupCount'
-  | 'securityGroupCount'
-  | 'availabilityZoneCount'
   | 'createdAt'
   | 'updatedAt';
 
-type NormalizedLoadBalancer = LoadBalancer & {
+type AttachmentFilter = '' | 'attached' | 'detached';
+
+type NormalizedVpnGateway = VPNGateway & {
   displayName: string;
-  dnsName?: string;
   type?: string;
-  scheme?: string;
-  ipAddressType?: string;
   state?: string;
-  vpcId?: string;
-  targetGroupsList: string[];
-  targetGroupCount: number;
-  securityGroupsList: string[];
-  securityGroupCount: number;
-  availabilityZonesList: string[];
-  availabilityZoneCount: number;
+  availabilityZone?: string;
+  attachedVpcList: string[];
+  attachedVpcCount: number;
+  attachedVpcSummary: string;
 };
 
 @Component({
-  selector: 'app-load-balancers',
+  selector: 'app-vpn-gateways',
   standalone: true,
   imports: [CommonModule, ResourceTagsComponent],
-  templateUrl: './load-balancers.component.html'
+  templateUrl: './vpn-gateways.component.html'
 })
-export class LoadBalancersComponent implements OnInit, OnDestroy {
-  resources: NormalizedLoadBalancer[] = [];
-  filteredResources: NormalizedLoadBalancer[] = [];
-  paginatedResources: NormalizedLoadBalancer[] = [];
+export class VpnGatewaysComponent implements OnInit, OnDestroy {
+  resources: NormalizedVpnGateway[] = [];
+  filteredResources: NormalizedVpnGateway[] = [];
+  paginatedResources: NormalizedVpnGateway[] = [];
   loading = true;
-  selectedResource: NormalizedLoadBalancer | null = null;
+  selectedResource: NormalizedVpnGateway | null = null;
 
   // Filters
   searchTerm = '';
   regionFilter = '';
   accountFilter = '';
-  vpcFilter = '';
   typeFilter = '';
-  schemeFilter = '';
-  ipTypeFilter = '';
   stateFilter = '';
+  attachmentFilter: AttachmentFilter = '';
+  availabilityZoneFilter = '';
 
   uniqueRegions: string[] = [];
   uniqueAccounts: string[] = [];
-  uniqueVpcs: string[] = [];
   uniqueTypes: string[] = [];
-  uniqueSchemes: string[] = [];
-  uniqueIpTypes: string[] = [];
   uniqueStates: string[] = [];
+  uniqueAvailabilityZones: string[] = [];
 
   // Sorting
   sortColumn: ColumnKey | '' = '';
@@ -91,22 +81,19 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
   pageStartIndex = 0;
   pageEndIndex = 0;
 
-  // Column customization
+  // Columns
   showColumnCustomizer = false;
   selectedColumns: Set<ColumnKey> = new Set();
-  private readonly requiredColumns: ColumnKey[] = ['displayName'];
+  private readonly requiredColumns: ColumnKey[] = ['vpnGatewayId'];
   private readonly defaultColumns: ColumnKey[] = [
     'displayName',
-    'loadBalancerArn',
+    'vpnGatewayId',
     'type',
-    'scheme',
-    'ipAddressType',
     'state',
-    'vpcId',
+    'availabilityZone',
+    'attachedVpcCount',
     'region',
     'accountName',
-    'targetGroupCount',
-    'securityGroupCount',
     'createdAt'
   ];
 
@@ -117,33 +104,12 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
       sortable: true,
       transform: (resource) => resource.displayName
     },
-    {
-      key: 'loadBalancerArn',
-      label: 'ARN',
-      sortable: true
-    },
-    {
-      key: 'dnsName',
-      label: 'DNS Name',
-      sortable: true
-    },
+    { key: 'vpnGatewayId', label: 'Gateway ID', sortable: true },
     {
       key: 'type',
       label: 'Type',
       sortable: true,
       transform: (resource) => this.formatTitle(resource.type)
-    },
-    {
-      key: 'scheme',
-      label: 'Scheme',
-      sortable: true,
-      transform: (resource) => this.formatTitle(resource.scheme)
-    },
-    {
-      key: 'ipAddressType',
-      label: 'IP Type',
-      sortable: true,
-      transform: (resource) => this.formatTitle(resource.ipAddressType)
     },
     {
       key: 'state',
@@ -152,9 +118,28 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
       transform: (resource) => this.formatTitle(resource.state)
     },
     {
-      key: 'vpcId',
-      label: 'VPC',
-      sortable: true
+      key: 'amazonSideAsn',
+      label: 'Amazon ASN',
+      sortable: true,
+      transform: (resource) => resource.amazonSideAsn ? String(resource.amazonSideAsn) : 'N/A'
+    },
+    {
+      key: 'availabilityZone',
+      label: 'Availability Zone',
+      sortable: true,
+      transform: (resource) => resource.availabilityZone || 'N/A'
+    },
+    {
+      key: 'attachedVpcCount',
+      label: 'Attached VPCs',
+      sortable: true,
+      transform: (resource) => this.formatNumber(resource.attachedVpcCount)
+    },
+    {
+      key: 'attachedVpcSummary',
+      label: 'VPC Attachments',
+      sortable: false,
+      transform: (resource) => resource.attachedVpcSummary || 'None'
     },
     { key: 'region', label: 'Region', sortable: true },
     {
@@ -162,24 +147,6 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
       label: 'Account',
       sortable: true,
       transform: (resource) => this.getAccountLabel(resource)
-    },
-    {
-      key: 'targetGroupCount',
-      label: 'Target Groups',
-      sortable: true,
-      transform: (resource) => this.formatNumber(resource.targetGroupCount)
-    },
-    {
-      key: 'securityGroupCount',
-      label: 'Security Groups',
-      sortable: true,
-      transform: (resource) => this.formatNumber(resource.securityGroupCount)
-    },
-    {
-      key: 'availabilityZoneCount',
-      label: 'Availability Zones',
-      sortable: true,
-      transform: (resource) => this.formatNumber(resource.availabilityZoneCount)
     },
     {
       key: 'createdAt',
@@ -195,7 +162,7 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     }
   ];
 
-  private readonly LS_KEY = 'load-balancers-columns';
+  private readonly LS_KEY = 'vpn-gateways-columns';
   private readonly destroy$ = new Subject<void>();
 
   constructor(
@@ -214,24 +181,21 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // Data loading ---------------------------------------------------------------
   loadResources(): void {
     this.loading = true;
     this.resourceService
-      .getResourcesByType('LoadBalancer')
+      .getResourcesByType('VPNGateway')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.resources = ((data as LoadBalancer[]) || []).map((item) => this.normalizeLoadBalancer(item));
+          this.resources = ((data as VPNGateway[]) || []).map((item) => this.normalizeVpnGateway(item));
           this.filteredResources = [...this.resources];
 
           this.uniqueRegions = this.buildUniqueList(this.resources.map((item) => item.region));
           this.uniqueAccounts = this.buildUniqueList(this.resources.map((item) => this.getAccountLabel(item)));
-          this.uniqueVpcs = this.buildUniqueList(this.resources.map((item) => item.vpcId));
           this.uniqueTypes = this.buildUniqueList(this.resources.map((item) => item.type));
-          this.uniqueSchemes = this.buildUniqueList(this.resources.map((item) => item.scheme));
-          this.uniqueIpTypes = this.buildUniqueList(this.resources.map((item) => item.ipAddressType));
           this.uniqueStates = this.buildUniqueList(this.resources.map((item) => item.state));
+          this.uniqueAvailabilityZones = this.buildUniqueList(this.resources.map((item) => item.availabilityZone));
 
           this.loading = false;
           this.currentPage = 1;
@@ -242,7 +206,7 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Error loading Load Balancers:', error);
+          console.error('Error loading VPN Gateways:', error);
           this.loading = false;
         }
       });
@@ -253,7 +217,7 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     this.loadResources();
   }
 
-  // Column customization -------------------------------------------------------
+  // Column customizer ---------------------------------------------------------
   openColumnCustomizer(): void { this.showColumnCustomizer = true; }
   closeColumnCustomizer(): void { this.showColumnCustomizer = false; }
 
@@ -297,7 +261,7 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
       const preferences = Array.from(this.selectedColumns);
       localStorage.setItem(this.LS_KEY, JSON.stringify(preferences));
     } catch (error) {
-      console.warn('Could not save Load Balancer column preferences:', error);
+      console.warn('Could not save VPN Gateway column preferences:', error);
     }
   }
 
@@ -311,13 +275,13 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
         this.requiredColumns.forEach((column) => this.selectedColumns.add(column));
       }
     } catch (error) {
-      console.warn('Could not load Load Balancer column preferences:', error);
+      console.warn('Could not load VPN Gateway column preferences:', error);
       this.selectedColumns = new Set(this.defaultColumns);
     }
   }
 
   // Filters -------------------------------------------------------------------
-  searchLoadBalancers(event: Event): void {
+  searchVpnGateways(event: Event): void {
     const value = (event.target as HTMLInputElement).value || '';
     this.searchTerm = value.trim().toLowerCase();
     this.applyFilters();
@@ -339,23 +303,8 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  filterByVpc(event: Event): void {
-    this.vpcFilter = (event.target as HTMLSelectElement).value;
-    this.applyFilters();
-  }
-
   filterByType(event: Event): void {
     this.typeFilter = (event.target as HTMLSelectElement).value;
-    this.applyFilters();
-  }
-
-  filterByScheme(event: Event): void {
-    this.schemeFilter = (event.target as HTMLSelectElement).value;
-    this.applyFilters();
-  }
-
-  filterByIpType(event: Event): void {
-    this.ipTypeFilter = (event.target as HTMLSelectElement).value;
     this.applyFilters();
   }
 
@@ -364,17 +313,26 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  filterByAvailabilityZone(event: Event): void {
+    this.availabilityZoneFilter = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
+
+  filterByAttachment(event: Event): void {
+    this.attachmentFilter = (event.target as HTMLSelectElement).value as AttachmentFilter;
+    this.applyFilters();
+  }
+
   resetFilters(): void {
     this.regionFilter = '';
     this.accountFilter = '';
-    this.vpcFilter = '';
     this.typeFilter = '';
-    this.schemeFilter = '';
-    this.ipTypeFilter = '';
     this.stateFilter = '';
+    this.attachmentFilter = '';
+    this.availabilityZoneFilter = '';
     this.searchTerm = '';
 
-    const searchInput = document.getElementById('loadBalancerSearch') as HTMLInputElement | null;
+    const searchInput = document.getElementById('vpnGatewaySearch') as HTMLInputElement | null;
     if (searchInput) searchInput.value = '';
 
     this.filteredResources = [...this.resources];
@@ -391,11 +349,9 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
       if (term) {
         const haystack = [
           resource.displayName,
-          resource.loadBalancerName,
-          resource.loadBalancerArn,
-          resource.dnsName,
-          resource.vpcId,
-          this.getAccountLabel(resource)
+          resource.vpnGatewayId,
+          this.getAccountLabel(resource),
+          resource.attachedVpcSummary
         ]
           .filter(Boolean)
           .join(' ')
@@ -405,11 +361,12 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
 
       if (this.regionFilter && resource.region !== this.regionFilter) return false;
       if (this.accountFilter && this.getAccountLabel(resource) !== this.accountFilter) return false;
-      if (this.vpcFilter && (resource.vpcId || '') !== this.vpcFilter) return false;
       if (this.typeFilter && (resource.type || '').toLowerCase() !== this.typeFilter.toLowerCase()) return false;
-      if (this.schemeFilter && (resource.scheme || '').toLowerCase() !== this.schemeFilter.toLowerCase()) return false;
-      if (this.ipTypeFilter && (resource.ipAddressType || '').toLowerCase() !== this.ipTypeFilter.toLowerCase()) return false;
       if (this.stateFilter && (resource.state || '').toLowerCase() !== this.stateFilter.toLowerCase()) return false;
+      if (this.availabilityZoneFilter && (resource.availabilityZone || '') !== this.availabilityZoneFilter) return false;
+
+      if (this.attachmentFilter === 'attached' && resource.attachedVpcCount === 0) return false;
+      if (this.attachmentFilter === 'detached' && resource.attachedVpcCount > 0) return false;
 
       return true;
     });
@@ -450,14 +407,12 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     this.updatePaginationAfterChange();
   }
 
-  private getSortValue(resource: NormalizedLoadBalancer, column: ColumnKey): string | number {
+  private getSortValue(resource: NormalizedVpnGateway, column: ColumnKey): string | number {
     switch (column) {
-      case 'targetGroupCount':
-        return resource.targetGroupCount;
-      case 'securityGroupCount':
-        return resource.securityGroupCount;
-      case 'availabilityZoneCount':
-        return resource.availabilityZoneCount;
+      case 'attachedVpcCount':
+        return resource.attachedVpcCount;
+      case 'amazonSideAsn':
+        return resource.amazonSideAsn ?? 0;
       case 'accountName':
         return this.getAccountLabel(resource).toLowerCase();
       case 'createdAt':
@@ -532,7 +487,7 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
   }
 
   // Detail modal ---------------------------------------------------------------
-  showDetails(resource: NormalizedLoadBalancer): void {
+  showDetails(resource: NormalizedVpnGateway): void {
     this.selectedResource = resource;
   }
 
@@ -540,8 +495,31 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     this.selectedResource = null;
   }
 
-  // View helpers ----------------------------------------------------------------
-  getColumnValue(column: ColumnDefinition, resource: NormalizedLoadBalancer): string {
+  // Export ---------------------------------------------------------------------
+  exportToCSV(): void {
+    if (!this.filteredResources.length) return;
+    const visible = this.getVisibleColumns();
+    const columns: ExportColumn[] = visible.map((column) => ({
+      key: column.key,
+      label: column.label,
+      transform: column.transform ?? ((resource: NormalizedVpnGateway) => (resource as any)[column.key] ?? '')
+    }));
+    this.exportService.exportDataToCSV(this.filteredResources, columns, 'vpn-gateways.csv');
+  }
+
+  exportToXLSX(): void {
+    if (!this.filteredResources.length) return;
+    const visible = this.getVisibleColumns();
+    const columns: ExportColumn[] = visible.map((column) => ({
+      key: column.key,
+      label: column.label,
+      transform: column.transform ?? ((resource: NormalizedVpnGateway) => (resource as any)[column.key] ?? '')
+    }));
+    this.exportService.exportDataToXLSX(this.filteredResources, columns, 'vpn-gateways.xlsx');
+  }
+
+  // Helpers --------------------------------------------------------------------
+  getColumnValue(column: ColumnDefinition, resource: NormalizedVpnGateway): string {
     if (column.transform) return column.transform(resource);
     const value = (resource as any)[column.key];
     if (value === null || value === undefined) return 'N/A';
@@ -550,31 +528,24 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     return String(value);
   }
 
-  getStateClass(resource: NormalizedLoadBalancer): string {
+  getStateClass(resource: NormalizedVpnGateway): string {
     const state = (resource.state || '').toLowerCase();
     switch (state) {
-      case 'active':
-      case 'provisioning':
+      case 'available':
         return 'status-running';
-      case 'failed':
-      case 'deleted':
-      case 'inactive':
-        return 'status-stopped';
       case 'pending':
-      case 'modifying':
         return 'status-warning';
+      case 'deleted':
+      case 'deleting':
+      case 'failed':
+        return 'status-stopped';
       default:
         return 'status-neutral';
     }
   }
 
-  getAccountLabel(resource: LoadBalancer): string {
+  getAccountLabel(resource: VPNGateway): string {
     return resource.accountName || resource.accountId || 'Unknown Account';
-  }
-
-  formatList(list: string[]): string {
-    if (!list.length) return 'None';
-    return list.join(', ');
   }
 
   formatTitle(value?: string): string {
@@ -605,43 +576,45 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Normalization --------------------------------------------------------------
-  private normalizeLoadBalancer(item: LoadBalancer | any): NormalizedLoadBalancer {
+  private normalizeVpnGateway(item: VPNGateway | any): NormalizedVpnGateway {
     const displayName =
-      item?.loadBalancerNameTag ||
-      item?.loadBalancerName ||
+      item?.vpnGatewayName ||
       item?.name ||
       this.extractNameFromTags(item?.tags) ||
-      'Unnamed Load Balancer';
+      item?.vpnGatewayId ||
+      'VPN Gateway';
 
-    const normalized: NormalizedLoadBalancer = {
+    const attachedVpcList = this.normalizeAttachedVpcs(
+      item?.attachedVpcIds ?? item?.attachedVpcId ?? item?.vpcAttachments ?? item?.attachments
+    );
+
+    const normalized: NormalizedVpnGateway = {
       ...item,
       displayName,
-      dnsName: item?.dnsName || item?.DNSName,
-      type: item?.type || item?.loadBalancerType,
-      scheme: item?.scheme || item?.Scheme,
-      ipAddressType: item?.ipAddressType || item?.ipType,
-      state: item?.state || item?.State || item?.status,
-      vpcId: item?.vpcId || item?.vpcID || item?.vpc,
-      targetGroupsList: this.normalizeStringArray(item?.targetGroups ?? item?.targetGroupArns ?? item?.targetGroupNames),
-      targetGroupCount: 0,
-      securityGroupsList: this.normalizeStringArray(item?.securityGroups ?? item?.securityGroupIds ?? item?.securityGroupArns),
-      securityGroupCount: 0,
-      availabilityZonesList: this.normalizeAvailabilityZones(item?.availabilityZones ?? item?.AvailabilityZones ?? item?.zones),
-      availabilityZoneCount: 0
-    } as NormalizedLoadBalancer;
+      type: item?.type || item?.VpnType || item?.vpnType,
+      state: item?.state || item?.VpnState || item?.status,
+      amazonSideAsn: this.normalizeNumber(item?.amazonSideAsn ?? item?.AmazonSideAsn),
+      availabilityZone: item?.availabilityZone || item?.AvailabilityZone || item?.az,
+      attachedVpcList,
+      attachedVpcCount: attachedVpcList.length,
+      attachedVpcSummary: attachedVpcList.length ? attachedVpcList.join(', ') : 'None'
+    } as NormalizedVpnGateway;
 
-    normalized.targetGroupCount = normalized.targetGroupsList.length;
-    normalized.securityGroupCount = normalized.securityGroupsList.length;
-    normalized.availabilityZoneCount = normalized.availabilityZonesList.length;
+    if (normalized.attachedVpcCount && !normalized.vpcId) {
+      normalized.vpcId = normalized.attachedVpcList[0];
+    }
+
+    if (normalized.attachmentCount == null) {
+      normalized.attachmentCount = normalized.attachedVpcCount;
+    }
 
     return normalized;
   }
 
-  private normalizeStringArray(value: unknown): string[] {
+  private normalizeAttachedVpcs(value: unknown): string[] {
     if (!value) return [];
 
-    const pushString = (input: string, target: string[]): void => {
+    const push = (input: string, target: string[]) => {
       const trimmed = input.trim();
       if (trimmed) target.push(trimmed);
     };
@@ -651,11 +624,10 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     if (Array.isArray(value)) {
       value.forEach((entry) => {
         if (typeof entry === 'string') {
-          pushString(entry, result);
+          push(entry, result);
         } else if (entry && typeof entry === 'object') {
-          const candidate =
-            entry.name || entry.arn || entry.id || entry.targetGroupArn || entry.securityGroupId || entry.SecurityGroupId;
-          if (typeof candidate === 'string') pushString(candidate, result);
+          const vpcId = entry.vpcId || entry.VpcId || entry.vpc || entry.resourceId;
+          if (typeof vpcId === 'string') push(vpcId, result);
         }
       });
       return [...new Set(result)];
@@ -667,62 +639,18 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
       if (trimmed.startsWith('[')) {
         try {
           const parsed = JSON.parse(trimmed);
-          return this.normalizeStringArray(parsed);
+          return this.normalizeAttachedVpcs(parsed);
         } catch {
-          // fall through to simple split
+          // fallback
         }
       }
-      trimmed.split(/[;,]/).forEach((part) => pushString(part, result));
+      trimmed.split(/[;,]/).forEach((part) => push(part, result));
       return [...new Set(result)];
     }
 
     if (typeof value === 'object') {
-      const candidate = (value as any).name || (value as any).arn || (value as any).id;
-      if (typeof candidate === 'string') pushString(candidate, result);
-    }
-
-    return [...new Set(result)];
-  }
-
-  private normalizeAvailabilityZones(value: unknown): string[] {
-    if (!value) return [];
-
-    const zones: string[] = [];
-
-    if (Array.isArray(value)) {
-      value.forEach((entry) => {
-        if (typeof entry === 'string') {
-          const trimmed = entry.trim();
-          if (trimmed) zones.push(trimmed);
-          return;
-        }
-        if (entry && typeof entry === 'object') {
-          const zone = entry.zoneName || entry.ZoneName || entry.availabilityZone || entry.AvailabilityZone;
-          const subnet = entry.subnetId || entry.SubnetId;
-          const text = zone || subnet;
-          if (typeof text === 'string' && text.trim().length) zones.push(text.trim());
-        }
-      });
-      return [...new Set(zones)];
-    }
-
-    if (typeof value === 'string') {
-      const trimmed = value.trim();
-      if (!trimmed) return [];
-      if (trimmed.startsWith('[')) {
-        try {
-          const parsed = JSON.parse(trimmed);
-          return this.normalizeAvailabilityZones(parsed);
-        } catch {
-          // fallback to splitting
-        }
-      }
-      return [...new Set(trimmed.split(/[;,]/).map((part) => part.trim()).filter(Boolean))];
-    }
-
-    if (typeof value === 'object') {
-      const zone = (value as any).zoneName || (value as any).availabilityZone;
-      if (typeof zone === 'string' && zone.trim().length) return [zone.trim()];
+      const vpcId = (value as any).vpcId || (value as any).VpcId;
+      if (typeof vpcId === 'string') return [vpcId.trim()];
     }
 
     return [];
@@ -738,25 +666,12 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     return [...new Set(values.filter((value): value is string => !!value && value.trim().length > 0))].sort();
   }
 
-  exportToCSV(): void {
-    if (!this.filteredResources.length) return;
-    const visible = this.getVisibleColumns();
-    const columns: ExportColumn[] = visible.map((column) => ({
-      key: column.key,
-      label: column.label,
-      transform: column.transform ?? ((resource: NormalizedLoadBalancer) => (resource as any)[column.key] ?? '')
-    }));
-    this.exportService.exportDataToCSV(this.filteredResources, columns, 'load-balancers.csv');
-  }
-
-  exportToXLSX(): void {
-    if (!this.filteredResources.length) return;
-    const visible = this.getVisibleColumns();
-    const columns: ExportColumn[] = visible.map((column) => ({
-      key: column.key,
-      label: column.label,
-      transform: column.transform ?? ((resource: NormalizedLoadBalancer) => (resource as any)[column.key] ?? '')
-    }));
-    this.exportService.exportDataToXLSX(this.filteredResources, columns, 'load-balancers.xlsx');
+  private normalizeNumber(value: unknown): number | undefined {
+    if (typeof value === 'number' && !Number.isNaN(value)) return value;
+    if (typeof value === 'string') {
+      const parsed = parseInt(value, 10);
+      if (!Number.isNaN(parsed)) return parsed;
+    }
+    return undefined;
   }
 }

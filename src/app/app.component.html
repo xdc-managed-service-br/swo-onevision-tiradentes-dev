@@ -17,7 +17,7 @@
     <div class="brand-container">
       <img
         class="company-logo"
-        src="/assets/icons/swoDarkMode.svg"
+        [src]="theme === 'light' ? '/assets/icons/swoLightMode.svg' : '/assets/icons/swoDarkMode.svg'"
         alt="SoftwareOne"
         loading="lazy" />
       <h1>OneVision</h1>

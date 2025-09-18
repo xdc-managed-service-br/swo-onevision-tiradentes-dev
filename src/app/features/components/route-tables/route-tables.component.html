@@ -1,64 +1,68 @@
-<!-- src/app/features/components/transit-gateways/transit-gateways.component.html -->
-<article class="ov-container" aria-labelledby="transit-gateway-title">
+<!-- src/app/features/components/route-tables/route-tables.component.html -->
+<article class="ov-container" aria-labelledby="route-table-title">
 
   <div class="ov-section">
     <div class="ov-header ov-bleed">
-      <h1 id="transit-gateway-title" class="ov-title">Transit Gateways</h1>
+      <h1 id="route-table-title" class="ov-title">Route Tables</h1>
 
       <div class="ov-filterbar">
         <div class="ov-filter">
-          <label for="transitGatewayAccountFilter">Account</label>
-          <select id="transitGatewayAccountFilter" (change)="filterByAccount($event)">
+          <label for="routeTableAccountFilter">Account</label>
+          <select id="routeTableAccountFilter" (change)="filterByAccount($event)">
             <option value="">All Accounts</option>
             <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="transitGatewayRegionFilter">Region</label>
-          <select id="transitGatewayRegionFilter" (change)="filterByRegion($event)">
+          <label for="routeTableRegionFilter">Region</label>
+          <select id="routeTableRegionFilter" (change)="filterByRegion($event)">
             <option value="">All Regions</option>
             <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="transitGatewayAssociationFilter">Default Association</label>
-          <select id="transitGatewayAssociationFilter" (change)="filterByAssociation($event)">
-            <option value="">All States</option>
-            <option *ngFor="let state of uniqueAssociationStates" [value]="state">{{ formatTitle(state) }}</option>
+          <label for="routeTableVpcFilter">VPC</label>
+          <select id="routeTableVpcFilter" (change)="filterByVpc($event)">
+            <option value="">All VPCs</option>
+            <option *ngFor="let vpc of uniqueVpcs" [value]="vpc">{{ vpc }}</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="transitGatewayPropagationFilter">Default Propagation</label>
-          <select id="transitGatewayPropagationFilter" (change)="filterByPropagation($event)">
-            <option value="">All States</option>
-            <option *ngFor="let state of uniquePropagationStates" [value]="state">{{ formatTitle(state) }}</option>
+          <label for="routeTableInternetFilter">Internet Route</label>
+          <select id="routeTableInternetFilter" (change)="filterByInternet($event)">
+            <option value="">All</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="transitGatewayDnsFilter">DNS Support</label>
-          <select id="transitGatewayDnsFilter" (change)="filterByDns($event)">
-            <option value="">All States</option>
-            <option *ngFor="let state of uniqueDnsStates" [value]="state">{{ formatTitle(state) }}</option>
+          <label for="routeTableNatFilter">NAT Route</label>
+          <select id="routeTableNatFilter" (change)="filterByNat($event)">
+            <option value="">All</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="transitGatewayMulticastFilter">Multicast</label>
-          <select id="transitGatewayMulticastFilter" (change)="filterByMulticast($event)">
-            <option value="">All States</option>
-            <option *ngFor="let state of uniqueMulticastStates" [value]="state">{{ formatTitle(state) }}</option>
+          <label for="routeTablePeeringFilter">Peering Route</label>
+          <select id="routeTablePeeringFilter" (change)="filterByPeering($event)">
+            <option value="">All</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="transitGatewayVpnFilter">VPN ECMP</label>
-          <select id="transitGatewayVpnFilter" (change)="filterByVpn($event)">
-            <option value="">All States</option>
-            <option *ngFor="let state of uniqueVpnStates" [value]="state">{{ formatTitle(state) }}</option>
+          <label for="routeTableMainFilter">Main Table</label>
+          <select id="routeTableMainFilter" (change)="filterByMain($event)">
+            <option value="">All</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
           </select>
         </div>
       </div>
@@ -66,10 +70,10 @@
       <div class="ov-header-actions">
         <div class="ov-search">
           <input
-            id="transitGatewaySearch"
+            id="routeTableSearch"
             type="search"
-            placeholder="Search by Transit Gateway ID, Name, or Owner"
-            (input)="searchTransitGateways($event)"
+            placeholder="Search by Route Table ID, Name, or VPC"
+            (input)="searchRouteTables($event)"
             #searchInput />
           <button
             type="button"
@@ -90,13 +94,13 @@
     </div>
   </div>
 
-  <div *ngIf="loading" class="ov-loading">Loading transit gateways…</div>
+  <div *ngIf="loading" class="ov-loading">Loading route tables…</div>
   <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
-    No transit gateways found matching the current filters.
+    No route tables found matching the current filters.
   </div>
 
   <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
-    <table class="ov-table" aria-label="Transit gateways table">
+    <table class="ov-table" aria-label="Route tables table">
       <thead>
         <tr>
           <th *ngFor="let column of getVisibleColumns()"
@@ -113,7 +117,14 @@
       <tbody>
         <tr *ngFor="let resource of paginatedResources">
           <td *ngFor="let column of getVisibleColumns()">
-            <span [ngClass]="column.key === 'defaultRouteTableAssociation' ? getStateClass(resource) : ''">
+            <span [ngClass]="
+              column.key === 'hasInternetRoute' ||
+              column.key === 'hasNatRoute' ||
+              column.key === 'hasVpcPeeringRoute' ||
+              column.key === 'isMain'
+                ? getBooleanClass($any(resource)[column.key])
+                : ''
+            ">w
               {{ getColumnValue(column, resource) }}
             </span>
           </td>
@@ -131,19 +142,19 @@
     <article class="ov-card" *ngFor="let resource of paginatedResources">
       <header class="ov-card__head">
         <div>
-          <div class="ov-card__title">{{ resource.displayName }}</div>
-          <div class="ov-card__sub ov-text--mono">{{ resource.transitGatewayId }}</div>
+          <div class="ov-card__title">{{ resource.routeTableName || 'Unnamed Route Table' }}</div>
+          <div class="ov-card__sub ov-text--mono">{{ resource.routeTableId }}</div>
         </div>
-        <span [ngClass]="getStateClass(resource)">{{ formatTitle(resource.defaultRouteTableAssociation) }}</span>
+        <span [ngClass]="getBooleanClass(resource.isMain)">{{ resource.isMain ? 'Main' : 'Secondary' }}</span>
       </header>
 
       <div class="ov-card__grid">
         <div><div class="ov-k">Region</div><div class="ov-v">{{ resource.region || 'N/A' }}</div></div>
         <div><div class="ov-k">Account</div><div class="ov-v">{{ getAccountLabel(resource) }}</div></div>
-        <div><div class="ov-k">Owner</div><div class="ov-v">{{ resource.ownerId || 'N/A' }}</div></div>
-        <div><div class="ov-k">Amazon ASN</div><div class="ov-v">{{ resource.amazonSideAsn || 'N/A' }}</div></div>
-        <div><div class="ov-k">DNS Support</div><div class="ov-v">{{ formatTitle(resource.dnsSupport) }}</div></div>
-        <div><div class="ov-k">VPN ECMP</div><div class="ov-v">{{ formatTitle(resource.vpnEcmpSupport) }}</div></div>
+        <div><div class="ov-k">VPC</div><div class="ov-v ov-text--mono">{{ resource.vpcId || 'N/A' }}</div></div>
+        <div><div class="ov-k">Routes</div><div class="ov-v">{{ formatNumber(resource.normalizedRouteCount) }}</div></div>
+        <div><div class="ov-k">Internet Route</div><div class="ov-v">{{ formatBoolean(resource.hasInternetRoute) }}</div></div>
+        <div><div class="ov-k">NAT Route</div><div class="ov-v">{{ formatBoolean(resource.hasNatRoute) }}</div></div>
       </div>
 
       <div class="ov-card__footer">
@@ -156,9 +167,9 @@
   </div>
 
   <div class="ov-modal" *ngIf="showColumnCustomizer" (click)="closeColumnCustomizer()">
-    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="transit-gateway-columns-title" (click)="$event.stopPropagation()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="route-table-columns-title" (click)="$event.stopPropagation()">
       <div class="ov-modal__head">
-        <h2 id="transit-gateway-columns-title" class="ov-modal__title">Customize Columns</h2>
+        <h2 id="route-table-columns-title" class="ov-modal__title">Customize Columns</h2>
         <button class="ov-btn" (click)="closeColumnCustomizer()" aria-label="Close dialog">×</button>
       </div>
       <div class="ov-modal__body">
@@ -186,48 +197,54 @@
     </div>
   </div>
 
-  <div class="ov-modal" *ngIf="selectedResource as gateway" (click)="closeDetails()">
-    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="transit-gateway-details-title" (click)="$event.stopPropagation()" style="max-width: 760px;">
+  <div class="ov-modal" *ngIf="selectedResource as routeTable" (click)="closeDetails()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="route-table-details-title" (click)="$event.stopPropagation()" style="max-width: 760px;">
       <div class="ov-modal__head">
-        <h2 id="transit-gateway-details-title" class="ov-modal__title">Transit Gateway Details — {{ gateway.transitGatewayId }}</h2>
+        <h2 id="route-table-details-title" class="ov-modal__title">Route Table Details — {{ routeTable.routeTableId }}</h2>
         <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
       </div>
 
       <div class="ov-modal__body">
-        <section aria-labelledby="transit-gateway-info-section">
-          <h3 id="transit-gateway-info-section">Gateway Information</h3>
+        <section aria-labelledby="route-table-info-section">
+          <h3 id="route-table-info-section">Route Table</h3>
           <table class="ov-details-table">
-            <tr><th>Name</th><td>{{ gateway.displayName }}</td></tr>
-            <tr><th>Transit Gateway ID</th><td class="ov-text--mono">{{ gateway.transitGatewayId }}</td></tr>
-            <tr><th>Owner</th><td>{{ gateway.ownerId || 'N/A' }}</td></tr>
-            <tr><th>Amazon ASN</th><td>{{ gateway.amazonSideAsn || 'N/A' }}</td></tr>
-            <tr><th>Default Association</th><td>{{ formatTitle(gateway.defaultRouteTableAssociation) }}</td></tr>
-            <tr><th>Default Propagation</th><td>{{ formatTitle(gateway.defaultRouteTablePropagation) }}</td></tr>
+            <tr><th>Name</th><td>{{ routeTable.routeTableName || 'Unnamed Route Table' }}</td></tr>
+            <tr><th>Route Table ID</th><td class="ov-text--mono">{{ routeTable.routeTableId }}</td></tr>
+            <tr><th>VPC</th><td class="ov-text--mono">{{ routeTable.vpcId || 'N/A' }}</td></tr>
+            <tr><th>Routes</th><td>{{ formatNumber(routeTable.normalizedRouteCount) }}</td></tr>
           </table>
         </section>
 
-        <section aria-labelledby="transit-gateway-features-section">
-          <h3 id="transit-gateway-features-section">Features</h3>
+        <section aria-labelledby="route-table-flags-section">
+          <h3 id="route-table-flags-section">Routing Flags</h3>
           <table class="ov-details-table">
-            <tr><th>DNS Support</th><td>{{ formatTitle(gateway.dnsSupport) }}</td></tr>
-            <tr><th>Multicast Support</th><td>{{ formatTitle(gateway.multicastSupport) }}</td></tr>
-            <tr><th>VPN ECMP</th><td>{{ formatTitle(gateway.vpnEcmpSupport) }}</td></tr>
+            <tr><th>Main Table</th><td><span [ngClass]="getBooleanClass(routeTable.isMain)">{{ formatBoolean(routeTable.isMain) }}</span></td></tr>
+            <tr><th>Internet Route</th><td><span [ngClass]="getBooleanClass(routeTable.hasInternetRoute)">{{ formatBoolean(routeTable.hasInternetRoute) }}</span></td></tr>
+            <tr><th>NAT Route</th><td><span [ngClass]="getBooleanClass(routeTable.hasNatRoute)">{{ formatBoolean(routeTable.hasNatRoute) }}</span></td></tr>
+            <tr><th>Peering Route</th><td><span [ngClass]="getBooleanClass(routeTable.hasVpcPeeringRoute)">{{ formatBoolean(routeTable.hasVpcPeeringRoute) }}</span></td></tr>
           </table>
         </section>
 
-        <section aria-labelledby="transit-gateway-metadata-section">
-          <h3 id="transit-gateway-metadata-section">Metadata</h3>
+        <section aria-labelledby="route-table-associations-section">
+          <h3 id="route-table-associations-section">Subnet Associations</h3>
+          <p *ngIf="routeTable.associatedSubnetsList.length === 0">No associated subnets.</p>
+          <ul *ngIf="routeTable.associatedSubnetsList.length > 0">
+            <li *ngFor="let subnet of routeTable.associatedSubnetsList" class="ov-text--mono">{{ subnet }}</li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="route-table-metadata-section">
+          <h3 id="route-table-metadata-section">Metadata</h3>
           <table class="ov-details-table">
-            <tr><th>Region</th><td>{{ gateway.region || 'N/A' }}</td></tr>
-            <tr><th>Account</th><td>{{ getAccountLabel(gateway) }}</td></tr>
-            <tr><th>Created</th><td>{{ formatDate(gateway.createdAt) }}</td></tr>
-            <tr><th>Updated</th><td>{{ formatDate(gateway.updatedAt) }}</td></tr>
+            <tr><th>Associations</th><td>{{ formatNumber(routeTable.associationCount ?? routeTable.associatedSubnetsList.length) }}</td></tr>
+            <tr><th>Created</th><td>{{ formatDate(routeTable.createdAt) }}</td></tr>
+            <tr><th>Updated</th><td>{{ formatDate(routeTable.updatedAt) }}</td></tr>
           </table>
         </section>
 
-        <section *ngIf="gateway.tags" aria-labelledby="transit-gateway-tags-section">
-          <h3 id="transit-gateway-tags-section">Tags</h3>
-          <app-resource-tags [tags]="gateway.tags"></app-resource-tags>
+        <section *ngIf="routeTable.tags" aria-labelledby="route-table-tags-section">
+          <h3 id="route-table-tags-section">Tags</h3>
+          <app-resource-tags [tags]="routeTable.tags"></app-resource-tags>
         </section>
       </div>
 

@@ -149,6 +149,22 @@ export interface InternetGateway extends BaseResource {
   attachmentCount?: number;
 }
 
+// NAT Gateway
+export interface NATGateway extends BaseResource {
+  natGatewayId: string;
+  natGatewayName?: string;
+  state?: string;
+  natGatewayType?: string;
+  connectivityType?: string;
+  subnetId?: string;
+  vpcId?: string;
+  elasticIpAllocationId?: string;
+  publicIp?: string;
+  privateIp?: string;
+  natGatewayAddresses?: string[];
+  networkInterfaceIds?: string[];
+}
+
 // Load Balancer
 export interface LoadBalancer extends BaseResource {
   loadBalancerArn: string;
@@ -210,6 +226,7 @@ export interface RouteTable extends BaseResource {
   hasNatRoute?: boolean;
   hasVpcPeeringRoute?: boolean;
   isMain?: boolean;
+  vpcId?: string; // Generic field
   associationCount?: number; // Generic field
   associatedSubnets?: string[]; // Generic field
 }
@@ -309,6 +326,19 @@ export interface VPNConnection extends BaseResource {
   type?: string; // Generic field
 }
 
+// VPN Gateway
+export interface VPNGateway extends BaseResource {
+  vpnGatewayId: string;
+  vpnGatewayName?: string;
+  type?: string;
+  state?: string;
+  amazonSideAsn?: number;
+  availabilityZone?: string;
+  attachedVpcIds?: string[];
+  attachmentCount?: number;
+  vpcId?: string; // For normalized attachments
+}
+
 // Additional models
 export interface PatchRequest {
   id: string;
@@ -342,6 +372,7 @@ export type AWSResource =
   | EC2Instance
   | ElasticIP
   | InternetGateway
+  | NATGateway
   | LoadBalancer
   | NetworkACL
   | RDSClusterSnapshot
@@ -355,3 +386,4 @@ export type AWSResource =
   | VPC
   | VPCEndpoint
   | VPNConnection
+  | VPNGateway

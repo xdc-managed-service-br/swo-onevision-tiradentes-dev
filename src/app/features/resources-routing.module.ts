@@ -30,6 +30,12 @@ const routes: Routes = [
       import('./components/ami-snapshots/ami-snapshots.component')
         .then(m => m.AMISnapshotsComponent)
   },
+  {
+    path: 'load-balancers',
+    loadComponent: () =>
+      import('./components/load-balancers/load-balancers.component')
+        .then(m => m.LoadBalancersComponent)
+  },
 
   {
     path: 'security-groups',
@@ -77,6 +83,36 @@ const routes: Routes = [
     loadComponent: () =>
       import('./components/subnets/subnets.component')
         .then(m => m.SubnetsComponent)
+  },
+  {
+    path: 'internet-gateways',
+    loadComponent: () =>
+      import('./components/internet-gateways/internet-gateways.component')
+        .then(m => m.InternetGatewaysComponent)
+  },
+  {
+    path: 'nat-gateways',
+    loadComponent: () =>
+      import('./components/nat-gateways/nat-gateways.component')
+        .then(m => m.NatGatewaysComponent)
+  },
+  {
+    path: 'route-tables',
+    loadComponent: () =>
+      import('./components/route-tables/route-tables.component')
+        .then(m => m.RouteTablesComponent)
+  },
+  {
+    path: 'vpn-gateways',
+    loadComponent: () =>
+      import('./components/vpn-gateways/vpn-gateways.component')
+        .then(m => m.VpnGatewaysComponent)
+  },
+  {
+    path: 'transit-gateways',
+    loadComponent: () =>
+      import('./components/transit-gateways/transit-gateways.component')
+        .then(m => m.TransitGatewaysComponent)
   }
 ];
 

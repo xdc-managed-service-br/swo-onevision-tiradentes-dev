@@ -1,4 +1,4 @@
-// src/app/features/components/load-balancers/load-balancers.component.ts
+// src/app/features/components/route-tables/route-tables.component.ts
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
@@ -7,78 +7,63 @@ import { takeUntil } from 'rxjs/operators';
 import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
-import { LoadBalancer } from '../../../models/resource.model';
+import { RouteTable } from '../../../models/resource.model';
 
 interface ColumnDefinition {
   key: ColumnKey;
   label: string;
   sortable?: boolean;
-  transform?: (resource: NormalizedLoadBalancer) => string;
+  transform?: (resource: NormalizedRouteTable) => string;
 }
 
 type ColumnKey =
-  | 'displayName'
-  | 'loadBalancerArn'
-  | 'dnsName'
-  | 'type'
-  | 'scheme'
-  | 'ipAddressType'
-  | 'state'
+  | 'routeTableName'
+  | 'routeTableId'
   | 'vpcId'
+  | 'routeCount'
+  | 'hasInternetRoute'
+  | 'hasNatRoute'
+  | 'hasVpcPeeringRoute'
+  | 'isMain'
+  | 'associationCount'
   | 'region'
   | 'accountName'
-  | 'targetGroupCount'
-  | 'securityGroupCount'
-  | 'availabilityZoneCount'
   | 'createdAt'
   | 'updatedAt';
 
-type NormalizedLoadBalancer = LoadBalancer & {
-  displayName: string;
-  dnsName?: string;
-  type?: string;
-  scheme?: string;
-  ipAddressType?: string;
-  state?: string;
-  vpcId?: string;
-  targetGroupsList: string[];
-  targetGroupCount: number;
-  securityGroupsList: string[];
-  securityGroupCount: number;
-  availabilityZonesList: string[];
-  availabilityZoneCount: number;
+type BooleanFilter = '' | 'yes' | 'no';
+
+type NormalizedRouteTable = RouteTable & {
+  associatedSubnetsList: string[];
+  normalizedRouteCount: number;
 };
 
 @Component({
-  selector: 'app-load-balancers',
+  selector: 'app-route-tables',
   standalone: true,
   imports: [CommonModule, ResourceTagsComponent],
-  templateUrl: './load-balancers.component.html'
+  templateUrl: './route-tables.component.html'
 })
-export class LoadBalancersComponent implements OnInit, OnDestroy {
-  resources: NormalizedLoadBalancer[] = [];
-  filteredResources: NormalizedLoadBalancer[] = [];
-  paginatedResources: NormalizedLoadBalancer[] = [];
+export class RouteTablesComponent implements OnInit, OnDestroy {
+  resources: NormalizedRouteTable[] = [];
+  filteredResources: NormalizedRouteTable[] = [];
+  paginatedResources: NormalizedRouteTable[] = [];
   loading = true;
-  selectedResource: NormalizedLoadBalancer | null = null;
+  selectedResource: NormalizedRouteTable | null = null;
 
   // Filters
   searchTerm = '';
   regionFilter = '';
   accountFilter = '';
   vpcFilter = '';
-  typeFilter = '';
-  schemeFilter = '';
-  ipTypeFilter = '';
-  stateFilter = '';
+  internetFilter: BooleanFilter = '';
+  natFilter: BooleanFilter = '';
+  peeringFilter: BooleanFilter = '';
+  mainFilter: BooleanFilter = '';
 
   uniqueRegions: string[] = [];
   uniqueAccounts: string[] = [];
   uniqueVpcs: string[] = [];
-  uniqueTypes: string[] = [];
-  uniqueSchemes: string[] = [];
-  uniqueIpTypes: string[] = [];
-  uniqueStates: string[] = [];
 
   // Sorting
   sortColumn: ColumnKey | '' = '';
@@ -94,67 +79,65 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
   // Column customization
   showColumnCustomizer = false;
   selectedColumns: Set<ColumnKey> = new Set();
-  private readonly requiredColumns: ColumnKey[] = ['displayName'];
+  private readonly requiredColumns: ColumnKey[] = ['routeTableId'];
   private readonly defaultColumns: ColumnKey[] = [
-    'displayName',
-    'loadBalancerArn',
-    'type',
-    'scheme',
-    'ipAddressType',
-    'state',
+    'routeTableName',
+    'routeTableId',
     'vpcId',
+    'routeCount',
+    'hasInternetRoute',
+    'hasNatRoute',
+    'hasVpcPeeringRoute',
+    'isMain',
     'region',
     'accountName',
-    'targetGroupCount',
-    'securityGroupCount',
     'createdAt'
   ];
 
   readonly availableColumns: ColumnDefinition[] = [
     {
-      key: 'displayName',
+      key: 'routeTableName',
       label: 'Name',
       sortable: true,
-      transform: (resource) => resource.displayName
+      transform: (resource) => resource.routeTableName || 'Unnamed Route Table'
     },
+    { key: 'routeTableId', label: 'Route Table ID', sortable: true },
+    { key: 'vpcId', label: 'VPC ID', sortable: true },
     {
-      key: 'loadBalancerArn',
-      label: 'ARN',
-      sortable: true
-    },
-    {
-      key: 'dnsName',
-      label: 'DNS Name',
-      sortable: true
-    },
-    {
-      key: 'type',
-      label: 'Type',
+      key: 'routeCount',
+      label: 'Routes',
       sortable: true,
-      transform: (resource) => this.formatTitle(resource.type)
+      transform: (resource) => this.formatNumber(resource.normalizedRouteCount)
     },
     {
-      key: 'scheme',
-      label: 'Scheme',
+      key: 'hasInternetRoute',
+      label: 'Internet Route',
       sortable: true,
-      transform: (resource) => this.formatTitle(resource.scheme)
+      transform: (resource) => this.formatBoolean(resource.hasInternetRoute)
     },
     {
-      key: 'ipAddressType',
-      label: 'IP Type',
+      key: 'hasNatRoute',
+      label: 'NAT Route',
       sortable: true,
-      transform: (resource) => this.formatTitle(resource.ipAddressType)
+      transform: (resource) => this.formatBoolean(resource.hasNatRoute)
     },
     {
-      key: 'state',
-      label: 'State',
+      key: 'hasVpcPeeringRoute',
+      label: 'Peering Route',
       sortable: true,
-      transform: (resource) => this.formatTitle(resource.state)
+      transform: (resource) => this.formatBoolean(resource.hasVpcPeeringRoute)
     },
     {
-      key: 'vpcId',
-      label: 'VPC',
-      sortable: true
+      key: 'isMain',
+      label: 'Main Table',
+      sortable: true,
+      transform: (resource) => this.formatBoolean(resource.isMain)
+    },
+    {
+      key: 'associationCount',
+      label: 'Associations',
+      sortable: true,
+      transform: (resource) => this.formatNumber(resource.associationCount ?? resource.associatedSubnetsList.length)
     },
     { key: 'region', label: 'Region', sortable: true },
     {
@@ -162,24 +145,6 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
       label: 'Account',
       sortable: true,
       transform: (resource) => this.getAccountLabel(resource)
-    },
-    {
-      key: 'targetGroupCount',
-      label: 'Target Groups',
-      sortable: true,
-      transform: (resource) => this.formatNumber(resource.targetGroupCount)
-    },
-    {
-      key: 'securityGroupCount',
-      label: 'Security Groups',
-      sortable: true,
-      transform: (resource) => this.formatNumber(resource.securityGroupCount)
-    },
-    {
-      key: 'availabilityZoneCount',
-      label: 'Availability Zones',
-      sortable: true,
-      transform: (resource) => this.formatNumber(resource.availabilityZoneCount)
     },
     {
       key: 'createdAt',
@@ -195,7 +160,7 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     }
   ];
 
-  private readonly LS_KEY = 'load-balancers-columns';
+  private readonly LS_KEY = 'route-tables-columns';
   private readonly destroy$ = new Subject<void>();
 
   constructor(
@@ -218,20 +183,16 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
   loadResources(): void {
     this.loading = true;
     this.resourceService
-      .getResourcesByType('LoadBalancer')
+      .getResourcesByType('RouteTable')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.resources = ((data as LoadBalancer[]) || []).map((item) => this.normalizeLoadBalancer(item));
+          this.resources = ((data as RouteTable[]) || []).map((item) => this.normalizeRouteTable(item));
           this.filteredResources = [...this.resources];
 
           this.uniqueRegions = this.buildUniqueList(this.resources.map((item) => item.region));
           this.uniqueAccounts = this.buildUniqueList(this.resources.map((item) => this.getAccountLabel(item)));
           this.uniqueVpcs = this.buildUniqueList(this.resources.map((item) => item.vpcId));
-          this.uniqueTypes = this.buildUniqueList(this.resources.map((item) => item.type));
-          this.uniqueSchemes = this.buildUniqueList(this.resources.map((item) => item.scheme));
-          this.uniqueIpTypes = this.buildUniqueList(this.resources.map((item) => item.ipAddressType));
-          this.uniqueStates = this.buildUniqueList(this.resources.map((item) => item.state));
 
           this.loading = false;
           this.currentPage = 1;
@@ -242,7 +203,7 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Error loading Load Balancers:', error);
+          console.error('Error loading Route Tables:', error);
           this.loading = false;
         }
       });
@@ -297,7 +258,7 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
       const preferences = Array.from(this.selectedColumns);
       localStorage.setItem(this.LS_KEY, JSON.stringify(preferences));
     } catch (error) {
-      console.warn('Could not save Load Balancer column preferences:', error);
+      console.warn('Could not save Route Table column preferences:', error);
     }
   }
 
@@ -311,13 +272,13 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
         this.requiredColumns.forEach((column) => this.selectedColumns.add(column));
       }
     } catch (error) {
-      console.warn('Could not load Load Balancer column preferences:', error);
+      console.warn('Could not load Route Table column preferences:', error);
       this.selectedColumns = new Set(this.defaultColumns);
     }
   }
 
   // Filters -------------------------------------------------------------------
-  searchLoadBalancers(event: Event): void {
+  searchRouteTables(event: Event): void {
     const value = (event.target as HTMLInputElement).value || '';
     this.searchTerm = value.trim().toLowerCase();
     this.applyFilters();
@@ -344,23 +305,23 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  filterByType(event: Event): void {
-    this.typeFilter = (event.target as HTMLSelectElement).value;
+  filterByInternet(event: Event): void {
+    this.internetFilter = (event.target as HTMLSelectElement).value as BooleanFilter;
     this.applyFilters();
   }
 
-  filterByScheme(event: Event): void {
-    this.schemeFilter = (event.target as HTMLSelectElement).value;
+  filterByNat(event: Event): void {
+    this.natFilter = (event.target as HTMLSelectElement).value as BooleanFilter;
     this.applyFilters();
   }
 
-  filterByIpType(event: Event): void {
-    this.ipTypeFilter = (event.target as HTMLSelectElement).value;
+  filterByPeering(event: Event): void {
+    this.peeringFilter = (event.target as HTMLSelectElement).value as BooleanFilter;
     this.applyFilters();
   }
 
-  filterByState(event: Event): void {
-    this.stateFilter = (event.target as HTMLSelectElement).value;
+  filterByMain(event: Event): void {
+    this.mainFilter = (event.target as HTMLSelectElement).value as BooleanFilter;
     this.applyFilters();
   }
 
@@ -368,13 +329,13 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     this.regionFilter = '';
     this.accountFilter = '';
     this.vpcFilter = '';
-    this.typeFilter = '';
-    this.schemeFilter = '';
-    this.ipTypeFilter = '';
-    this.stateFilter = '';
+    this.internetFilter = '';
+    this.natFilter = '';
+    this.peeringFilter = '';
+    this.mainFilter = '';
     this.searchTerm = '';
 
-    const searchInput = document.getElementById('loadBalancerSearch') as HTMLInputElement | null;
+    const searchInput = document.getElementById('routeTableSearch') as HTMLInputElement | null;
     if (searchInput) searchInput.value = '';
 
     this.filteredResources = [...this.resources];
@@ -390,12 +351,11 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     this.filteredResources = this.resources.filter((resource) => {
       if (term) {
         const haystack = [
-          resource.displayName,
-          resource.loadBalancerName,
-          resource.loadBalancerArn,
-          resource.dnsName,
+          resource.routeTableId,
+          resource.routeTableName,
           resource.vpcId,
-          this.getAccountLabel(resource)
+          this.getAccountLabel(resource),
+          resource.associatedSubnetsList.join(' ')
         ]
           .filter(Boolean)
           .join(' ')
@@ -406,10 +366,11 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
       if (this.regionFilter && resource.region !== this.regionFilter) return false;
       if (this.accountFilter && this.getAccountLabel(resource) !== this.accountFilter) return false;
       if (this.vpcFilter && (resource.vpcId || '') !== this.vpcFilter) return false;
-      if (this.typeFilter && (resource.type || '').toLowerCase() !== this.typeFilter.toLowerCase()) return false;
-      if (this.schemeFilter && (resource.scheme || '').toLowerCase() !== this.schemeFilter.toLowerCase()) return false;
-      if (this.ipTypeFilter && (resource.ipAddressType || '').toLowerCase() !== this.ipTypeFilter.toLowerCase()) return false;
-      if (this.stateFilter && (resource.state || '').toLowerCase() !== this.stateFilter.toLowerCase()) return false;
+
+      if (!this.matchesBooleanFilter(resource.hasInternetRoute, this.internetFilter)) return false;
+      if (!this.matchesBooleanFilter(resource.hasNatRoute, this.natFilter)) return false;
+      if (!this.matchesBooleanFilter(resource.hasVpcPeeringRoute, this.peeringFilter)) return false;
+      if (!this.matchesBooleanFilter(resource.isMain, this.mainFilter)) return false;
 
       return true;
     });
@@ -419,6 +380,12 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     } else {
       this.updatePaginationAfterChange();
     }
+  }
+
+  private matchesBooleanFilter(value: boolean | undefined | null, filter: BooleanFilter): boolean {
+    if (!filter) return true;
+    const bool = !!value;
+    return filter === 'yes' ? bool : !bool;
   }
 
   // Sorting --------------------------------------------------------------------
@@ -450,21 +417,24 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     this.updatePaginationAfterChange();
   }
 
-  private getSortValue(resource: NormalizedLoadBalancer, column: ColumnKey): string | number {
+  private getSortValue(resource: NormalizedRouteTable, column: ColumnKey): string | number {
     switch (column) {
-      case 'targetGroupCount':
-        return resource.targetGroupCount;
-      case 'securityGroupCount':
-        return resource.securityGroupCount;
-      case 'availabilityZoneCount':
-        return resource.availabilityZoneCount;
+      case 'routeCount':
+        return resource.normalizedRouteCount;
+      case 'associationCount':
+        return resource.associationCount ?? resource.associatedSubnetsList.length;
+      case 'hasInternetRoute':
+      case 'hasNatRoute':
+      case 'hasVpcPeeringRoute':
+      case 'isMain':
+        return resource[column] ? 1 : 0;
       case 'accountName':
         return this.getAccountLabel(resource).toLowerCase();
       case 'createdAt':
       case 'updatedAt':
         return resource[column] ? new Date(resource[column] as string).getTime() : 0;
       default: {
-        const value = (resource as any)[column];
+        const value = resource[column];
         if (typeof value === 'number') return value;
         if (typeof value === 'string') return value;
         return value ? 1 : 0;
@@ -532,7 +502,7 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
   }
 
   // Detail modal ---------------------------------------------------------------
-  showDetails(resource: NormalizedLoadBalancer): void {
+  showDetails(resource: NormalizedRouteTable): void {
     this.selectedResource = resource;
   }
 
@@ -541,49 +511,131 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
   }
 
   // View helpers ----------------------------------------------------------------
-  getColumnValue(column: ColumnDefinition, resource: NormalizedLoadBalancer): string {
+  getColumnValue(column: ColumnDefinition, resource: NormalizedRouteTable): string {
     if (column.transform) return column.transform(resource);
-    const value = (resource as any)[column.key];
+    const value = resource[column.key as keyof NormalizedRouteTable];
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return this.formatBoolean(value);
     if (Array.isArray(value)) return value.join(', ');
     return String(value);
   }
 
-  getStateClass(resource: NormalizedLoadBalancer): string {
-    const state = (resource.state || '').toLowerCase();
-    switch (state) {
-      case 'active':
-      case 'provisioning':
-        return 'status-running';
-      case 'failed':
-      case 'deleted':
-      case 'inactive':
-        return 'status-stopped';
-      case 'pending':
-      case 'modifying':
-        return 'status-warning';
-      default:
-        return 'status-neutral';
-    }
+  getBooleanClass(value: boolean | undefined | null): string {
+    return value ? 'status-running' : 'status-stopped';
   }
 
-  getAccountLabel(resource: LoadBalancer): string {
+  getAccountLabel(resource: RouteTable): string {
     return resource.accountName || resource.accountId || 'Unknown Account';
   }
 
-  formatList(list: string[]): string {
-    if (!list.length) return 'None';
-    return list.join(', ');
+  getAssociatedSubnets(resource: NormalizedRouteTable): string {
+    if (!resource.associatedSubnetsList.length) return 'None';
+    return resource.associatedSubnetsList.join(', ');
   }
 
-  formatTitle(value?: string): string {
-    if (!value) return 'N/A';
-    const cleaned = value.replace(/_/g, ' ').toLowerCase();
-    return cleaned
-      .replace(/\b[a-z]/g, (char) => char.toUpperCase())
-      .replace(/\s+/g, ' ')
-      .trim();
+  // Export ---------------------------------------------------------------------
+  exportToCSV(): void {
+    if (!this.filteredResources.length) return;
+    const visible = this.getVisibleColumns();
+    const columns: ExportColumn[] = visible.map((column) => ({
+      key: column.key,
+      label: column.label,
+      transform: column.transform ?? ((resource: NormalizedRouteTable) => (resource as any)[column.key] ?? '')
+    }));
+    this.exportService.exportDataToCSV(this.filteredResources, columns, 'route-tables.csv');
+  }
+
+  exportToXLSX(): void {
+    if (!this.filteredResources.length) return;
+    const visible = this.getVisibleColumns();
+    const columns: ExportColumn[] = visible.map((column) => ({
+      key: column.key,
+      label: column.label,
+      transform: column.transform ?? ((resource: NormalizedRouteTable) => (resource as any)[column.key] ?? '')
+    }));
+    this.exportService.exportDataToXLSX(this.filteredResources, columns, 'route-tables.xlsx');
+  }
+
+  // Normalization --------------------------------------------------------------
+  private normalizeRouteTable(item: RouteTable | any): NormalizedRouteTable {
+    const resource: NormalizedRouteTable = {
+      ...item,
+      routeTableName: item?.routeTableName || item?.name || this.extractNameFromTags(item?.tags),
+      vpcId: item?.vpcId || item?.vpcID || item?.vpc,
+      associatedSubnetsList: this.normalizeSubnetAssociations(item?.associatedSubnets ?? item?.subnetAssociations),
+      normalizedRouteCount: this.normalizeNumber(item?.routeCount, item?.routes?.length)
+    } as NormalizedRouteTable;
+
+    if (resource.associationCount == null) {
+      resource.associationCount = resource.associatedSubnetsList.length;
+    }
+
+    return resource;
+  }
+
+  private normalizeSubnetAssociations(value: unknown): string[] {
+    if (!value) return [];
+
+    const parseEntry = (entry: any): string | null => {
+      if (!entry) return null;
+      if (typeof entry === 'string') return entry;
+      if (typeof entry === 'object') {
+        const subnetId = entry.subnetId || entry.SubnetId || entry.subnet || entry.resourceId;
+        return typeof subnetId === 'string' && subnetId.trim().length ? subnetId : null;
+      }
+      return null;
+    };
+
+    if (Array.isArray(value)) {
+      return value.map(parseEntry).filter((subnet): subnet is string => !!subnet);
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return [];
+      if (trimmed.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          return this.normalizeSubnetAssociations(parsed);
+        } catch {
+          return trimmed
+            .split(/[;,]/)
+            .map((part) => part.trim())
+            .filter((subnet) => subnet.length > 0);
+        }
+      }
+      return trimmed
+        .split(/[;,]/)
+        .map((part) => part.trim())
+        .filter((subnet) => subnet.length > 0);
+    }
+
+    if (typeof value === 'object') {
+      const parsed = parseEntry(value);
+      return parsed ? [parsed] : [];
+    }
+
+    return [];
+  }
+
+  private normalizeNumber(value: unknown, fallback?: number): number {
+    if (typeof value === 'number' && !Number.isNaN(value)) return value;
+    if (typeof value === 'string') {
+      const parsed = parseInt(value, 10);
+      if (!Number.isNaN(parsed)) return parsed;
+    }
+    if (typeof fallback === 'number' && !Number.isNaN(fallback)) return fallback;
+    return 0;
+  }
+
+  private extractNameFromTags(tags: any): string | undefined {
+    if (!tags || typeof tags !== 'object') return undefined;
+    const name = tags.Name || tags.name || tags.NAME;
+    return typeof name === 'string' && name.trim().length ? name : undefined;
+  }
+
+  private buildUniqueList(values: (string | undefined | null)[]): string[] {
+    return [...new Set(values.filter((value): value is string => !!value && value.trim().length > 0))].sort();
   }
 
   formatDate(value?: string): string {
@@ -603,160 +655,5 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     } catch {
       return String(num);
     }
-  }
-
-  // Normalization --------------------------------------------------------------
-  private normalizeLoadBalancer(item: LoadBalancer | any): NormalizedLoadBalancer {
-    const displayName =
-      item?.loadBalancerNameTag ||
-      item?.loadBalancerName ||
-      item?.name ||
-      this.extractNameFromTags(item?.tags) ||
-      'Unnamed Load Balancer';
-
-    const normalized: NormalizedLoadBalancer = {
-      ...item,
-      displayName,
-      dnsName: item?.dnsName || item?.DNSName,
-      type: item?.type || item?.loadBalancerType,
-      scheme: item?.scheme || item?.Scheme,
-      ipAddressType: item?.ipAddressType || item?.ipType,
-      state: item?.state || item?.State || item?.status,
-      vpcId: item?.vpcId || item?.vpcID || item?.vpc,
-      targetGroupsList: this.normalizeStringArray(item?.targetGroups ?? item?.targetGroupArns ?? item?.targetGroupNames),
-      targetGroupCount: 0,
-      securityGroupsList: this.normalizeStringArray(item?.securityGroups ?? item?.securityGroupIds ?? item?.securityGroupArns),
-      securityGroupCount: 0,
-      availabilityZonesList: this.normalizeAvailabilityZones(item?.availabilityZones ?? item?.AvailabilityZones ?? item?.zones),
-      availabilityZoneCount: 0
-    } as NormalizedLoadBalancer;
-
-    normalized.targetGroupCount = normalized.targetGroupsList.length;
-    normalized.securityGroupCount = normalized.securityGroupsList.length;
-    normalized.availabilityZoneCount = normalized.availabilityZonesList.length;
-
-    return normalized;
-  }
-
-  private normalizeStringArray(value: unknown): string[] {
-    if (!value) return [];
-
-    const pushString = (input: string, target: string[]): void => {
-      const trimmed = input.trim();
-      if (trimmed) target.push(trimmed);
-    };
-
-    const result: string[] = [];
-
-    if (Array.isArray(value)) {
-      value.forEach((entry) => {
-        if (typeof entry === 'string') {
-          pushString(entry, result);
-        } else if (entry && typeof entry === 'object') {
-          const candidate =
-            entry.name || entry.arn || entry.id || entry.targetGroupArn || entry.securityGroupId || entry.SecurityGroupId;
-          if (typeof candidate === 'string') pushString(candidate, result);
-        }
-      });
-      return [...new Set(result)];
-    }
-
-    if (typeof value === 'string') {
-      const trimmed = value.trim();
-      if (!trimmed) return [];
-      if (trimmed.startsWith('[')) {
-        try {
-          const parsed = JSON.parse(trimmed);
-          return this.normalizeStringArray(parsed);
-        } catch {
-          // fall through to simple split
-        }
-      }
-      trimmed.split(/[;,]/).forEach((part) => pushString(part, result));
-      return [...new Set(result)];
-    }
-
-    if (typeof value === 'object') {
-      const candidate = (value as any).name || (value as any).arn || (value as any).id;
-      if (typeof candidate === 'string') pushString(candidate, result);
-    }
-
-    return [...new Set(result)];
-  }
-
-  private normalizeAvailabilityZones(value: unknown): string[] {
-    if (!value) return [];
-
-    const zones: string[] = [];
-
-    if (Array.isArray(value)) {
-      value.forEach((entry) => {
-        if (typeof entry === 'string') {
-          const trimmed = entry.trim();
-          if (trimmed) zones.push(trimmed);
-          return;
-        }
-        if (entry && typeof entry === 'object') {
-          const zone = entry.zoneName || entry.ZoneName || entry.availabilityZone || entry.AvailabilityZone;
-          const subnet = entry.subnetId || entry.SubnetId;
-          const text = zone || subnet;
-          if (typeof text === 'string' && text.trim().length) zones.push(text.trim());
-        }
-      });
-      return [...new Set(zones)];
-    }
-
-    if (typeof value === 'string') {
-      const trimmed = value.trim();
-      if (!trimmed) return [];
-      if (trimmed.startsWith('[')) {
-        try {
-          const parsed = JSON.parse(trimmed);
-          return this.normalizeAvailabilityZones(parsed);
-        } catch {
-          // fallback to splitting
-        }
-      }
-      return [...new Set(trimmed.split(/[;,]/).map((part) => part.trim()).filter(Boolean))];
-    }
-
-    if (typeof value === 'object') {
-      const zone = (value as any).zoneName || (value as any).availabilityZone;
-      if (typeof zone === 'string' && zone.trim().length) return [zone.trim()];
-    }
-
-    return [];
-  }
-
-  private extractNameFromTags(tags: any): string | undefined {
-    if (!tags || typeof tags !== 'object') return undefined;
-    const name = tags.Name || tags.name || tags.NAME;
-    return typeof name === 'string' && name.trim().length ? name : undefined;
-  }
-
-  private buildUniqueList(values: (string | undefined | null)[]): string[] {
-    return [...new Set(values.filter((value): value is string => !!value && value.trim().length > 0))].sort();
-  }
-
-  exportToCSV(): void {
-    if (!this.filteredResources.length) return;
-    const visible = this.getVisibleColumns();
-    const columns: ExportColumn[] = visible.map((column) => ({
-      key: column.key,
-      label: column.label,
-      transform: column.transform ?? ((resource: NormalizedLoadBalancer) => (resource as any)[column.key] ?? '')
-    }));
-    this.exportService.exportDataToCSV(this.filteredResources, columns, 'load-balancers.csv');
-  }
-
-  exportToXLSX(): void {
-    if (!this.filteredResources.length) return;
-    const visible = this.getVisibleColumns();
-    const columns: ExportColumn[] = visible.map((column) => ({
-      key: column.key,
-      label: column.label,
-      transform: column.transform ?? ((resource: NormalizedLoadBalancer) => (resource as any)[column.key] ?? '')
-    }));
-    this.exportService.exportDataToXLSX(this.filteredResources, columns, 'load-balancers.xlsx');
   }
 }
