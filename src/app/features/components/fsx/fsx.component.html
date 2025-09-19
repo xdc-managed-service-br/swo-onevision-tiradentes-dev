@@ -1,58 +1,58 @@
-<!-- src/app/features/components/s3-buckets/s3-buckets.component.html -->
-<article class="ov-container" aria-labelledby="s3-buckets-title">
+<!-- src/app/features/components/fsx-file-systems/fsx.component.html -->
+<article class="ov-container" aria-labelledby="fsx-title">
 
   <div class="ov-section">
     <div class="ov-header ov-bleed">
-      <h1 id="s3-buckets-title" class="ov-title">S3 Buckets</h1>
+      <h1 id="fsx-title" class="ov-title">FSx File Systems</h1>
 
       <div class="ov-filterbar">
         <div class="ov-filter">
-          <label for="s3AccountFilter">Account</label>
-          <select id="s3AccountFilter" (change)="filterByAccount($event)">
+          <label for="fsxAccountFilter">Account</label>
+          <select id="fsxAccountFilter" (change)="filterByAccount($event)">
             <option value="">All Accounts</option>
             <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="s3RegionFilter">Region</label>
-          <select id="s3RegionFilter" (change)="filterByRegion($event)">
+          <label for="fsxRegionFilter">Region</label>
+          <select id="fsxRegionFilter" (change)="filterByRegion($event)">
             <option value="">All Regions</option>
             <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="s3LifecycleFilter">Lifecycle</label>
-          <select id="s3LifecycleFilter" (change)="filterByLifecycle($event)">
+          <label for="fsxTypeFilter">File System Type</label>
+          <select id="fsxTypeFilter" (change)="filterByType($event)">
             <option value="">All</option>
-            <option value="yes">With Rules</option>
-            <option value="no">No Rules</option>
+            <option *ngFor="let t of uniqueTypes" [value]="t">{{ t }}</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="s3EncryptionFilter">Encryption</label>
-          <select id="s3EncryptionFilter" (change)="filterByEncryption($event)">
+          <label for="fsxDeploymentFilter">Deployment</label>
+          <select id="fsxDeploymentFilter" (change)="filterByDeployment($event)">
             <option value="">All</option>
-            <option *ngFor="let enc of uniqueEncryptions" [value]="enc">{{ enc }}</option>
+            <option *ngFor="let d of uniqueDeployments" [value]="d">{{ d }}</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="s3VersioningFilter">Versioning</label>
-          <select id="s3VersioningFilter" (change)="filterByVersioning($event)">
+          <label for="fsxRetentionFilter">Backup Retention</label>
+          <select id="fsxRetentionFilter" (change)="filterByRetention($event)">
             <option value="">All</option>
-            <option *ngFor="let v of uniqueVersioning" [value]="v">{{ v }}</option>
+            <option value="none">None (0 days)</option>
+            <option value="retained">> 0 days</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="s3PabFilter">Public Access Block</label>
-          <select id="s3PabFilter" (change)="filterByPAB($event)">
+          <label for="fsxCopyTagsFilter">Copy Tags to Backups</label>
+          <select id="fsxCopyTagsFilter" (change)="filterByCopyTags($event)">
             <option value="">All</option>
-            <option value="enabled">Enabled</option>
-            <option value="disabled">Disabled</option>
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
           </select>
         </div>
       </div>
@@ -60,10 +60,10 @@
       <div class="ov-header-actions">
         <div class="ov-search">
           <input
-            id="s3BucketSearch"
+            id="fsxSearch"
             type="search"
-            placeholder="Search by Name, Bucket, Account, Encryption…"
-            (input)="searchBuckets($event)"
+            placeholder="Search by FileSystem ID, Account, Tag Name, Type"
+            (input)="searchFSx($event)"
             #searchInput />
           <button
             type="button"
@@ -84,13 +84,13 @@
     </div>
   </div>
 
-  <div *ngIf="loading" class="ov-loading">Loading S3 buckets…</div>
+  <div *ngIf="loading" class="ov-loading">Loading FSx file systems…</div>
   <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
-    No S3 buckets found matching the current filters.
+    No FSx file systems found matching the current filters.
   </div>
 
   <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
-    <table class="ov-table" aria-label="S3 buckets table">
+    <table class="ov-table" aria-label="FSx table">
       <thead>
         <tr>
           <th *ngFor="let column of getVisibleColumns()"
@@ -122,70 +122,75 @@
   </section>
 
   <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
-    <article class="ov-card" *ngFor="let bucket of paginatedResources">
+    <article class="ov-card" *ngFor="let resource of paginatedResources">
       <header class="ov-card__head">
         <div>
-          <div class="ov-card__title">{{ getDisplayName(bucket) }}</div>
-          <div class="ov-card__sub ov-text--mono">{{ bucket.bucketName }}</div>
+          <div class="ov-card__title">{{ getDisplayName(resource) }}</div>
+          <div class="ov-card__sub ov-text--mono">{{ resource.fileSystemId || 'Unknown FS' }}</div>
         </div>
-        <span [ngClass]="bucket.publicAccessBlock ? 'status-running' : 'status-stopped'">
-          {{ bucket.publicAccessBlock ? 'Public Access Block: Enabled' : 'Public Access Block: Disabled' }}
-        </span>
+        <span [ngClass]="getLifecycleBadgeClass(resource)">{{ resource.lifecycle || 'Unknown' }}</span>
       </header>
 
       <div class="ov-card__grid">
         <div>
           <div class="ov-k">Region</div>
-          <div class="ov-v">{{ bucket.region || 'N/A' }}</div>
+          <div class="ov-v">{{ resource.region || 'N/A' }}</div>
         </div>
         <div>
           <div class="ov-k">Account</div>
-          <div class="ov-v">{{ getAccountLabel(bucket) }}</div>
+          <div class="ov-v">{{ getAccountLabel(resource) }}</div>
         </div>
         <div>
-          <div class="ov-k">Objects</div>
-          <div class="ov-v">{{ formatNumber(bucket.objectCount) }}</div>
+          <div class="ov-k">Type</div>
+          <div class="ov-v">{{ resource.fileSystemType || 'N/A' }}</div>
         </div>
         <div>
-          <div class="ov-k">Storage</div>
-          <div class="ov-v">{{ bucket.storageBytes || 'N/A' }}</div>
+          <div class="ov-k">Deployment</div>
+          <div class="ov-v">{{ resource.deploymentType || 'N/A' }}</div>
         </div>
         <div>
-          <div class="ov-k">Encryption</div>
-          <div class="ov-v">{{ bucket.encryption || 'None' }}</div>
+          <div class="ov-k">Storage Capacity</div>
+          <div class="ov-v">{{ formatNumber(resource.storageCapacity ?? 0) }} GB</div>
         </div>
         <div>
-          <div class="ov-k">Versioning</div>
-          <div class="ov-v">{{ bucket.versioning || 'None' }}</div>
+          <div class="ov-k">Throughput</div>
+          <div class="ov-v">{{ formatThroughput(resource) }}</div>
         </div>
         <div>
-          <div class="ov-k">Lifecycle</div>
-          <div class="ov-v">{{ bucket.hasLifecycleRules ? 'Yes' : 'No' }}</div>
+          <div class="ov-k">Backup Retention</div>
+          <div class="ov-v">{{ formatRetention(resource.automaticBackupRetentionDays) }}</div>
+        </div>
+        <div>
+          <div class="ov-k">Backup Window</div>
+          <div class="ov-v">{{ resource.dailyAutomaticBackupStartTime || 'N/A' }}</div>
+        </div>
+        <div>
+          <div class="ov-k">Copy Tags to Backups</div>
+          <div class="ov-v">{{ resource.copyTagsToBackups ? 'Yes' : 'No' }}</div>
         </div>
         <div>
           <div class="ov-k">Created</div>
-          <div class="ov-v">{{ formatDate(bucket.createdAt) }}</div>
+          <div class="ov-v">{{ formatDate(resource.createdAt) }}</div>
         </div>
         <div>
           <div class="ov-k">Updated</div>
-          <div class="ov-v">{{ formatDate(bucket.updatedAt) }}</div>
+          <div class="ov-v">{{ formatDate(resource.updatedAt) }}</div>
         </div>
       </div>
 
       <div class="ov-card__footer">
-        <app-resource-tags *ngIf="bucket.tags" [tags]="bucket.tags"></app-resource-tags>
+        <app-resource-tags *ngIf="resource.tags" [tags]="resource.tags"></app-resource-tags>
         <div class="ov-actions">
-          <button class="ov-btn ov-btn--primary" (click)="showDetails(bucket)">View Details</button>
+          <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
         </div>
       </div>
     </article>
   </div>
 
-  <!-- Column customizer -->
   <div class="ov-modal" *ngIf="showColumnCustomizer" (click)="closeColumnCustomizer()">
-    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="s3-columns-title" (click)="$event.stopPropagation()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="fsx-columns-title" (click)="$event.stopPropagation()">
       <div class="ov-modal__head">
-        <h2 id="s3-columns-title" class="ov-modal__title">Customize Columns</h2>
+        <h2 id="fsx-columns-title" class="ov-modal__title">Customize Columns</h2>
         <button class="ov-btn" (click)="closeColumnCustomizer()" aria-label="Close dialog">×</button>
       </div>
       <div class="ov-modal__body">
@@ -213,48 +218,49 @@
     </div>
   </div>
 
-  <!-- Details modal -->
-  <div class="ov-modal" *ngIf="selectedResource as bucket" (click)="closeDetails()">
-    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="s3-details-title" (click)="$event.stopPropagation()" style="max-width: 720px;">
+  <div class="ov-modal" *ngIf="selectedResource as fs" (click)="closeDetails()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="fsx-details-title" (click)="$event.stopPropagation()" style="max-width: 780px;">
       <div class="ov-modal__head">
-        <h2 id="s3-details-title" class="ov-modal__title">S3 Bucket Details — {{ bucket.bucketName }}</h2>
+        <h2 id="fsx-details-title" class="ov-modal__title">FSx Details — {{ fs.fileSystemId }}</h2>
         <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
       </div>
 
       <div class="ov-modal__body">
-        <section aria-labelledby="s3-info-section">
-          <h3 id="s3-info-section">Bucket Information</h3>
+        <section aria-labelledby="fsx-info-section">
+          <h3 id="fsx-info-section">File System Information</h3>
           <table class="ov-details-table">
-            <tr><th>Name</th><td>{{ getDisplayName(bucket) }}</td></tr>
-            <tr><th>Bucket</th><td class="ov-text--mono">{{ bucket.bucketName }}</td></tr>
-            <tr><th>Region</th><td>{{ bucket.region || 'N/A' }}</td></tr>
-            <tr><th>Account</th><td>{{ getAccountLabel(bucket) }}</td></tr>
+            <tr><th>FileSystem ID</th><td class="ov-text--mono">{{ fs.fileSystemId }}</td></tr>
+            <tr><th>Name</th><td>{{ getDisplayName(fs) }}</td></tr>
+            <tr><th>Account</th><td>{{ getAccountLabel(fs) }}</td></tr>
+            <tr><th>Region</th><td>{{ fs.region || 'N/A' }}</td></tr>
           </table>
         </section>
 
-        <section aria-labelledby="s3-config-section">
-          <h3 id="s3-config-section">Configuration</h3>
+        <section aria-labelledby="fsx-config-section">
+          <h3 id="fsx-config-section">Configuration</h3>
           <table class="ov-details-table">
-            <tr><th>Lifecycle Rules</th><td>{{ bucket.hasLifecycleRules ? 'Yes' : 'No' }}</td></tr>
-            <tr><th>Encryption</th><td>{{ bucket.encryption || 'None' }}</td></tr>
-            <tr><th>Versioning</th><td>{{ bucket.versioning || 'None' }}</td></tr>
-            <tr><th>Public Access Block</th><td>{{ bucket.publicAccessBlock ? 'Enabled' : 'Disabled' }}</td></tr>
+            <tr><th>Type</th><td>{{ fs.fileSystemType || 'N/A' }}</td></tr>
+            <tr><th>Deployment</th><td>{{ fs.deploymentType || 'N/A' }}</td></tr>
+            <tr><th>Storage Capacity</th><td>{{ formatNumber(fs.storageCapacity ?? 0) }} GB</td></tr>
+            <tr><th>Throughput</th><td>{{ formatThroughput(fs) }}</td></tr>
+            <tr><th>Backup Retention</th><td>{{ formatRetention(fs.automaticBackupRetentionDays) }}</td></tr>
+            <tr><th>Backup Window</th><td>{{ fs.dailyAutomaticBackupStartTime || 'N/A' }}</td></tr>
+            <tr><th>Copy Tags to Backups</th><td>{{ fs.copyTagsToBackups ? 'Yes' : 'No' }}</td></tr>
+            <tr><th>Lifecycle</th><td>{{ fs.lifecycle || 'Unknown' }}</td></tr>
           </table>
         </section>
 
-        <section aria-labelledby="s3-stats-section">
-          <h3 id="s3-stats-section">Statistics</h3>
-          <table class="ov-details-table">
-            <tr><th>Objects</th><td>{{ formatNumber(bucket.objectCount) }}</td></tr>
-            <tr><th>Storage</th><td>{{ bucket.storageBytes || 'N/A' }}</td></tr>
-            <tr><th>Created</th><td>{{ formatDate(bucket.createdAt) }}</td></tr>
-            <tr><th>Updated</th><td>{{ formatDate(bucket.updatedAt) }}</td></tr>
-          </table>
+        <section *ngIf="fs.tags" aria-labelledby="fsx-tags-section">
+          <h3 id="fsx-tags-section">Tags</h3>
+          <app-resource-tags [tags]="fs.tags"></app-resource-tags>
         </section>
 
-        <section *ngIf="bucket.tags" aria-labelledby="s3-tags-section">
-          <h3 id="s3-tags-section">Tags</h3>
-          <app-resource-tags [tags]="bucket.tags"></app-resource-tags>
+        <section aria-labelledby="fsx-meta-section">
+          <h3 id="fsx-meta-section">Metadata</h3>
+          <table class="ov-details-table">
+            <tr><th>Created</th><td>{{ formatDate(fs.createdAt) }}</td></tr>
+            <tr><th>Updated</th><td>{{ formatDate(fs.updatedAt) }}</td></tr>
+          </table>
         </section>
       </div>
 
@@ -264,7 +270,6 @@
     </div>
   </div>
 
-  <!-- Pagination -->
   <div class="ov-pagination" *ngIf="!loading && filteredResources.length > 0">
     <div class="ov-pagination__info">
       Showing {{ pageStartIndex }} - {{ pageEndIndex }} of {{ filteredResources.length }} items

@@ -10,28 +10,29 @@ const schema = a.schema({
     region: a.string().required(),
     createdAt: a.datetime().required(),
     updatedAt: a.datetime().required(),
-    
+
     // ===== BASE OPTIONAL FIELDS =====
     accountName: a.string(),
-    tags: a.json(),
+    tags: a.json(),                 // DynamoDB 'tags' pode vir como JSON/obj
+    metrics: a.json(),              // <- NOVO: guarda objeto 'metrics' dos coletores
     availabilityZones: a.string().array(), // Load Balancer and ASG
 
     // ===== GENERIC FIELDS =====
-    volumeId: a.string(),   // EBS Volume and Snapshot
-    encrypted: a.boolean(), // EBS Volume and Snapshot
-    instanceId: a.string(), // EC2 Instance and Elastic IP
-    securityGroups: a.integer(), // Security Metric and Load Balancer
-    vpcId: a.string(), // VPC, Load Balancer, Security Group and Network ACL
-    associationCount: a.integer(), // Network ACL and Route Table
+    volumeId: a.string(),           // EBS Volume and Snapshot
+    encrypted: a.boolean(),         // EBS Volume and Snapshot
+    instanceId: a.string(),         // EC2 Instance and Elastic IP
+    securityGroups: a.integer(),    // Security Metric and Load Balancer
+    vpcId: a.string(),              // VPC, Load Balancer, Security Group and Network ACL
+    associationCount: a.integer(),  // Network ACL and Route Table
     associatedSubnets: a.string().array(), // Network ACL and Route Table
-    description: a.string(), // AMI and Security Group
-    ingressRuleCount: a.integer(), // Security Group and Network ACL
-    egressRuleCount: a.integer(), // Security Group and Network ACL
-    state: a.string(), // Load Balancer and Subnet
-    transitGatewayId: a.string(), // VPN, Transit Gateway Attachment and Transit Gateway
-    cidrBlock: a.string(), // VPC and Subnet
-    isDefault: a.boolean(), // VPC and Network ACL
-    type: a.string(), // Load Balancer and VPN
+    description: a.string(),        // AMI and Security Group
+    ingressRuleCount: a.integer(),  // Security Group and Network ACL
+    egressRuleCount: a.integer(),   // Security Group and Network ACL
+    state: a.string(),              // Load Balancer and Subnet
+    transitGatewayId: a.string(),   // VPN, Transit Gateway Attachment and Transit Gateway
+    cidrBlock: a.string(),          // VPC and Subnet
+    isDefault: a.boolean(),         // VPC and Network ACL
+    type: a.string(),               // Load Balancer and VPN
 
     // ===== AMI FIELDS =====
     imageId: a.string(),
@@ -176,8 +177,31 @@ const schema = a.schema({
     bucketName: a.string(),
     bucketNameTag: a.string(),
     hasLifecycleRules: a.boolean(),
-    objectCount: a.integer(),
-    storageBytes: a.string(),
+    objectCount: a.integer(),  // opcional: pode ficar nulo se vier apenas via metrics
+    storageBytes: a.string(),  // idem
+    encryption: a.string(),           // <- NOVO
+    versioning: a.string(),           // <- NOVO
+    publicAccessBlock: a.boolean(),   // <- NOVO
+
+    // ===== EFS File System FIELDS =====
+    fileSystemId: a.string(),
+    performanceMode: a.string(),
+    throughputMode: a.string(),
+    provisionedThroughputInMibps: a.integer(),
+    lifecyclePolicies: a.string().array(),
+    backupPolicyEnabled: a.boolean(),
+    mountTargetsCount: a.integer(),
+    sizeInBytes: a.string(), // human-readable (ex.: "59.28 TB")
+
+    // ===== FSx File System FIELDS =====
+    fileSystemType: a.string(),                // WINDOWS | ONTAP | LUSTRE | OPENZFS
+    deploymentType: a.string(),
+    storageCapacity: a.integer(),
+    throughputCapacity: a.integer(),
+    automaticBackupRetentionDays: a.integer(),
+    dailyAutomaticBackupStartTime: a.string(),
+    copyTagsToBackups: a.boolean(),
+    lifecycle: a.string(),
 
     // ===== Security Group FIELDS =====
     groupId: a.string(),
@@ -236,6 +260,23 @@ const schema = a.schema({
     category: a.string(),
     tunnelCount: a.integer(),
     tunnelsUp: a.integer(),
+
+    // ===== AWS Backup - Plan =====
+    backupPlanId: a.string(),
+    backupPlanName: a.string(),
+    schedules: a.string().array(),
+    selectionResourceTypes: a.string().array(),
+    targetBackupVault: a.string(),
+    lastExecutionDate: a.datetime(),
+    windowStart: a.integer(),    // minutos
+    windowDuration: a.integer(), // minutos
+
+    // ===== AWS Backup - Vault =====
+    backupVaultName: a.string(),
+    encryptionKeyArn: a.string(),
+    numberOfRecoveryPoints: a.integer(),
+    latestRecoveryPointAgeDays: a.integer(),
+    locked: a.boolean(),
   })
   .authorization(allow => [
     allow.authenticated().to(['read']),
@@ -261,9 +302,13 @@ const schema = a.schema({
 
     isMetric: a.boolean(),
     metricDate: a.string(),
+    processingDurationSeconds: a.float(), // <- NOVO
+
     potentialMonthlySavings: a.float(),
     unassociatedElasticIPs: a.integer(),
     unattachedEBSVolumes: a.integer(),
+
+    // EC2 health
     total: a.integer(),
     byState_running: a.integer(),
     byState_stopped: a.integer(),
@@ -279,25 +324,42 @@ const schema = a.schema({
     ssmAgent_notConnected: a.integer(),
     ssmAgent_notInstalled: a.integer(),
     ssmAgent_percentageConnected: a.integer(),
+
+    // RDS
     available: a.integer(),
     engines_aurora_mysql: a.integer(),
     multiAZ: a.integer(),
     percentageMultiAZ: a.integer(),
     performanceInsights: a.integer(),
     percentageWithPerfInsights: a.integer(),
+
+    // Security
     exposedSecurityGroups: a.integer(),
     percentageExposed: a.integer(),
+
+    // Storage aggregates
     amiSnapshots: a.integer(),
     ebsSnapshots: a.integer(),
     ebsVolumes: a.integer(),
     s3Buckets: a.integer(),
     s3WithLifecycle: a.integer(),
+
+    // NOVOS agregados de storage/backup
+    efsFileSystems: a.integer(),
+    fsxFileSystems: a.integer(),
+    backupPlans: a.integer(),
+    backupVaults: a.integer(),
+    backupRecoveryPoints: a.integer(),
+
+    // Global
     totalResources: a.integer(),
     resourceRegionsFound: a.integer(),
     regionsCollected: a.integer(),
     accountDistribution: a.json(),
     regionDistribution: a.json(),
     recentResources: a.json(),
+
+    // resourceCounts_* (topo do dicionário flatten)
     resourceCounts_AMI: a.integer(),
     resourceCounts_AutoScalingGroup: a.integer(),
     resourceCounts_DirectConnectConnection: a.integer(),
@@ -320,6 +382,13 @@ const schema = a.schema({
     resourceCounts_VPC: a.integer(),
     resourceCounts_VPCEndpoint: a.integer(),
     resourceCounts_VPNConnection: a.integer(),
+
+    // NOVOS resourceCounts_* para storage/backup
+    resourceCounts_EFSFileSystem: a.integer(),
+    resourceCounts_FSxFileSystem: a.integer(),
+    resourceCounts_BackupPlan: a.integer(),
+    resourceCounts_BackupVault: a.integer(),
+    resourceCounts_BackupRecoveryPoint: a.integer(),
   })
   .authorization(allow => [
     allow.authenticated().to(['read']),

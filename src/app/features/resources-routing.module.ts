@@ -1,3 +1,4 @@
+// src/app/features/resources-routing.module.ts
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
@@ -9,7 +10,6 @@ const routes: Routes = [
       import('./components/resources/all-resources.component')
         .then(m => m.ResourcesComponent)
   },
-
   // Dashboard
   {
     path: 'dashboard',
@@ -36,14 +36,12 @@ const routes: Routes = [
       import('./components/load-balancers/load-balancers.component')
         .then(m => m.LoadBalancersComponent)
   },
-
   {
     path: 'security-groups',
     loadComponent: () =>
       import('./components/security-groups/security-groups.component')
         .then(m => m.SecurityGroupsComponent)
   },
-
   // Storage
   {
     path: 's3',
@@ -52,10 +50,34 @@ const routes: Routes = [
         .then(m => m.S3BucketsComponent)
   },
   {
-    path: 'ebs',
+    path: 'efs',
+    loadComponent: () =>
+      import('./components/efs/efs.component')
+        .then(m => m.EFSFileSystemsComponent)
+  },
+  {
+    path: 'fsx',
+    loadComponent: () =>
+      import('./components/fsx/fsx.component')
+    .then(m => m.FSXFileSystemsComponent)
+  },  
+  {
+    path: 'backup-plans',
+    loadComponent: () =>
+      import('./components/backup-plans/backup-plans.component')
+        .then(m => m.BackupPlansComponent)
+  },
+  {
+    path: 'backup-vaults',
+    loadComponent: () =>
+      import('./components/backup-vaults/backup-vaults.component')
+    .then(m => m.BackupVaultsComponent)
+  },
+  {
+    path: 'ebs-volumes',
     loadComponent: () =>
       import('./components/ebs-volumes/ebs-volumes.component')
-        .then(m => m.EBSVolumesComponent)
+    .then(m => m.EBSVolumesComponent)
   },
   {
     path: 'ebs-snapshots',

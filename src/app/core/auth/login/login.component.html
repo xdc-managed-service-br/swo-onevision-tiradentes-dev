@@ -1,90 +1,95 @@
 <div class="login-container">
-  <div class="login-card">
+  <div class="login-card" role="region" aria-labelledby="ov-auth-title">
+    <!-- Header / Brand -->
     <div class="login-header">
-      <h1>OneVision</h1>
-      <p>AWS Resource Management Platform</p>
+      <div class="login-header__logo" aria-hidden="true"></div>
+      <div>
+        <h1 id="ov-auth-title">OneVision</h1>
+        <p>AWS Resource Management Platform</p>
+      </div>
     </div>
 
-    <!-- Normal Sign In Form -->
+    <!-- =============== Sign In =============== -->
     <div *ngIf="!forgotPasswordMode && !newPasswordChallengeMode" class="login-form">
       <h2>Sign In</h2>
-      
-      <form (ngSubmit)="handleSignIn()">
+
+      <form (ngSubmit)="handleSignIn()" autocomplete="on">
         <div class="form-group">
           <label for="username">Email</label>
-          <input 
-            type="text" 
-            id="username" 
-            name="username" 
-            [(ngModel)]="username" 
-            placeholder="Enter your email"
+          <input
+            id="username"
+            name="username"
+            type="email"
+            [(ngModel)]="username"
+            placeholder="you@company.com"
             [disabled]="isLoading"
-          >
+            autocomplete="username"
+          />
         </div>
-        
+
         <div class="form-group">
           <label for="password">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            name="password" 
-            [(ngModel)]="password" 
-            placeholder="Enter your password"
+          <input
+            id="password"
+            name="password"
+            type="password"
+            [(ngModel)]="password"
+            placeholder="••••••••"
             [disabled]="isLoading"
-          >
+            autocomplete="current-password"
+          />
         </div>
-        
-        <div *ngIf="errorMessage" class="error-message">
+
+        <div *ngIf="errorMessage" class="error-message" aria-live="assertive">
           {{ errorMessage }}
         </div>
-        
+
         <div class="form-actions">
-          <button 
-            type="submit" 
-            [disabled]="isLoading" 
-            class="primary-button"
-          >
-            {{ isLoading ? 'Signing in...' : 'Sign In' }}
+          <button type="submit" class="primary-button" [disabled]="isLoading">
+            {{ isLoading ? 'Signing in…' : 'Sign In' }}
           </button>
-          
+
           <div class="secondary-actions">
-            <a routerLink="/reset-password">Forgot Password?</a>
+            <a (click)="toggleForgotPassword()">Forgot Password?</a>
           </div>
         </div>
       </form>
     </div>
 
-    <!-- New Password Challenge Form -->
+    <!-- =============== New Password Challenge =============== -->
     <div *ngIf="newPasswordChallengeMode" class="login-form">
       <h2>Set New Password</h2>
-      
-      <p>Your account requires a password change. Please set a new password.</p>
-      
-      <form (ngSubmit)="handleNewPasswordChallenge()">
+      <p class="secondary-actions" style="margin: 0 0 12px; color: var(--ov-text-muted);">
+        Your account requires a password change.
+      </p>
+
+      <form (ngSubmit)="handleNewPasswordChallenge()" autocomplete="off">
         <div class="form-group">
           <label for="newPassword">New Password</label>
-          <input 
-            type="password" 
-            id="newPassword" 
-            name="newPassword" 
-            [(ngModel)]="newPassword" 
-            placeholder="Enter your new password"
+          <input
+            id="newPassword"
+            name="newPassword"
+            type="password"
+            [(ngModel)]="newPassword"
+            placeholder="Create a strong password"
             [disabled]="isLoading"
-          >
+            autocomplete="new-password"
+          />
         </div>
-        
+
         <div class="form-group">
           <label for="confirmNewPassword">Confirm New Password</label>
-          <input 
-            type="password" 
-            id="confirmNewPassword" 
-            name="confirmNewPassword" 
-            [(ngModel)]="confirmNewPassword" 
-            placeholder="Confirm your new password"
+          <input
+            id="confirmNewPassword"
+            name="confirmNewPassword"
+            type="password"
+            [(ngModel)]="confirmNewPassword"
+            placeholder="Re-enter your new password"
             [disabled]="isLoading"
-          >
+            autocomplete="new-password"
+          />
         </div>
-        
+
         <div class="password-requirements">
           <p>Password requirements:</p>
           <ul>
@@ -95,159 +100,124 @@
             <li>At least one special character</li>
           </ul>
         </div>
-        
-        <div *ngIf="errorMessage" class="error-message">
+
+        <div *ngIf="errorMessage" class="error-message" aria-live="assertive">
           {{ errorMessage }}
         </div>
-        
+
         <div class="form-actions">
-          <button 
-            type="submit" 
-            [disabled]="isLoading" 
-            class="primary-button"
-          >
-            {{ isLoading ? 'Submitting...' : 'Set New Password' }}
+          <button type="submit" class="primary-button" [disabled]="isLoading">
+            {{ isLoading ? 'Submitting…' : 'Set New Password' }}
           </button>
-          
-          <button 
-            type="button" 
-            (click)="cancelNewPasswordChallenge()" 
-            class="secondary-button"
-            [disabled]="isLoading"
-          >
+          <button type="button" class="secondary-button" (click)="cancelNewPasswordChallenge()" [disabled]="isLoading">
             Cancel
           </button>
         </div>
       </form>
     </div>
 
-    <!-- Forgot Password Form -->
+    <!-- =============== Forgot Password (request code) =============== -->
     <div *ngIf="forgotPasswordMode && !resetConfirmMode" class="reset-form">
       <h2>Reset Password</h2>
-      
-      <div *ngIf="!resetSuccess">
-        <p>Enter your email address and we'll send you a code to reset your password.</p>
-        
-        <div class="form-group">
-          <label for="resetEmail">Email</label>
-          <input 
-            type="email" 
-            id="resetEmail" 
-            name="resetEmail" 
-            [(ngModel)]="resetEmail" 
-            placeholder="Enter your email"
-            [disabled]="isLoading"
-          >
-        </div>
-        
-        <div *ngIf="resetErrorMessage" class="error-message">
-          {{ resetErrorMessage }}
-        </div>
-        
-        <div class="form-actions">
-          <button 
-            type="button" 
-            [disabled]="isLoading" 
-            class="primary-button"
-            (click)="handleForgotPassword()"
-          >
-            {{ isLoading ? 'Sending...' : 'Send Reset Code' }}
-          </button>
-          
-          <button 
-            type="button" 
-            (click)="toggleForgotPassword()" 
-            class="secondary-button"
-            [disabled]="isLoading"
-          >
-            Back to Login
-          </button>
-        </div>
+      <p style="margin: 0 0 12px; color: var(--ov-text-muted);">
+        Enter your email and we’ll send a verification code.
+      </p>
+
+      <div class="form-group">
+        <label for="resetEmail">Email</label>
+        <input
+          id="resetEmail"
+          name="resetEmail"
+          type="email"
+          [(ngModel)]="resetEmail"
+          placeholder="you@company.com"
+          [disabled]="isLoading"
+          autocomplete="username"
+        />
       </div>
-      
-      <div *ngIf="resetSuccess" class="success-message">
-        <p>A verification code has been sent to your email. Please check your inbox and use the code to complete the password reset.</p>
-        <button 
-          type="button" 
-          class="primary-button"
-          (click)="showResetConfirmMode()"
-        >
-          Continue
+
+      <div *ngIf="resetErrorMessage" class="error-message" aria-live="assertive">
+        {{ resetErrorMessage }}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="primary-button" (click)="handleForgotPassword()" [disabled]="isLoading">
+          {{ isLoading ? 'Sending…' : 'Send Reset Code' }}
         </button>
+        <button type="button" class="secondary-button" (click)="toggleForgotPassword()" [disabled]="isLoading">
+          Back to Login
+        </button>
+      </div>
+
+      <div *ngIf="resetSuccess" class="success-message" style="margin-top:12px;">
+        A verification code was sent to your email.
+        <div class="form-actions" style="margin-top:12px;">
+          <button type="button" class="primary-button" (click)="showResetConfirmMode()">Continue</button>
+        </div>
       </div>
     </div>
 
-    <!-- Reset Password Confirmation (Enter Code + New Password) -->
+    <!-- =============== Reset Password (confirm code) =============== -->
     <div *ngIf="forgotPasswordMode && resetConfirmMode" class="reset-form">
       <h2>Set New Password</h2>
-      
-      <form (ngSubmit)="handleResetConfirm()">
+
+      <form (ngSubmit)="handleResetConfirm()" autocomplete="off">
         <div class="form-group">
           <label for="resetCode">Verification Code</label>
-          <input 
-            type="text" 
-            id="resetCode" 
-            name="resetCode" 
-            [(ngModel)]="resetCode" 
-            placeholder="Enter verification code"
+          <input
+            id="resetCode"
+            name="resetCode"
+            type="text"
+            [(ngModel)]="resetCode"
+            placeholder="6-digit code"
             [disabled]="isLoading"
-          >
+            autocomplete="one-time-code"
+          />
         </div>
-        
+
         <div class="form-group">
-          <label for="newPassword">New Password</label>
-          <input 
-            type="password" 
-            id="newPassword" 
-            name="newPassword" 
-            [(ngModel)]="newPassword" 
-            placeholder="Enter your new password"
+          <label for="newPassword2">New Password</label>
+          <input
+            id="newPassword2"
+            name="newPassword"
+            type="password"
+            [(ngModel)]="newPassword"
+            placeholder="Create a strong password"
             [disabled]="isLoading"
-          >
+            autocomplete="new-password"
+          />
         </div>
-        
+
         <div class="form-group">
-          <label for="confirmNewPassword">Confirm New Password</label>
-          <input 
-            type="password" 
-            id="confirmNewPassword" 
-            name="confirmNewPassword" 
-            [(ngModel)]="confirmNewPassword" 
-            placeholder="Confirm your new password"
+          <label for="confirmNewPassword2">Confirm New Password</label>
+          <input
+            id="confirmNewPassword2"
+            name="confirmNewPassword"
+            type="password"
+            [(ngModel)]="confirmNewPassword"
+            placeholder="Re-enter your new password"
             [disabled]="isLoading"
-          >
+            autocomplete="new-password"
+          />
         </div>
-        
+
         <div class="password-requirements">
           <p>Password requirements:</p>
           <ul>
             <li>Minimum 8 characters</li>
-            <li>At least one uppercase letter</li>
-            <li>At least one lowercase letter</li>
-            <li>At least one number</li>
-            <li>At least one special character</li>
+            <li>At least one uppercase, one lowercase, one number and one special character</li>
           </ul>
         </div>
-        
-        <div *ngIf="resetErrorMessage" class="error-message">
+
+        <div *ngIf="resetErrorMessage" class="error-message" aria-live="assertive">
           {{ resetErrorMessage }}
         </div>
-        
+
         <div class="form-actions">
-          <button 
-            type="submit" 
-            [disabled]="isLoading" 
-            class="primary-button"
-          >
-            {{ isLoading ? 'Submitting...' : 'Reset Password' }}
+          <button type="submit" class="primary-button" [disabled]="isLoading">
+            {{ isLoading ? 'Submitting…' : 'Reset Password' }}
           </button>
-          
-          <button 
-            type="button" 
-            (click)="toggleForgotPassword()" 
-            class="secondary-button"
-            [disabled]="isLoading"
-          >
+          <button type="button" class="secondary-button" (click)="toggleForgotPassword()" [disabled]="isLoading">
             Back to Login
           </button>
         </div>

@@ -1,168 +1,339 @@
+/* ===============================
+   OneVision — Auth (Dark Theme)
+   =============================== */
+
+:root {
+  --ov-bg: #0b1220;            /* fundo da página */
+  --ov-surface: #0f1629;       /* cartão */
+  --ov-surface-2: #0c1424;
+  --ov-border: rgba(148, 163, 184, 0.18);
+  --ov-text: #e5e7eb;
+  --ov-text-muted: #9ca3af;
+  --ov-primary: #3b82f6;
+  --ov-primary-600: #2563eb;
+  --ov-primary-700: #1d4ed8;
+  --ov-success: #10b981;
+  --ov-danger: #ef4444;
+  --ov-warning: #f59e0b;
+  --ov-input: #111a2e;
+  --ov-input-border: #1f2a44;
+  --ov-input-border-hover: #29385b;
+  --ov-input-placeholder: #7a859c;
+  --ov-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* ===== Container ===== */
 .login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #f5f5f5;
-    padding: 20px;
-  }
-  
-  .login-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    overflow: hidden;
-  }
-  
-  .login-header {
-    background-color: #1a1a1a;
-    color: white;
-    text-align: center;
-    padding: 30px 20px;
-  }
-  
-  .login-header h1 {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 600;
-  }
-  
-  .login-header p {
-    margin: 10px 0 0;
-    opacity: 0.8;
-    font-size: 14px;
-  }
-  
-  .login-form, .reset-form {
-    padding: 30px;
-  }
-  
-  .login-form h2, .reset-form h2 {
-    margin: 0 0 24px;
-    color: #333;
-    font-size: 20px;
-    font-weight: 500;
-  }
-  
-  .form-group {
-    margin-bottom: 20px;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: #666;
-    font-size: 14px;
-  }
-  
-  .form-group input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-    transition: border-color 0.3s;
-  }
-  
-  .form-group input:focus {
-    outline: none;
-    border-color: #6b45c7;
-  }
-  
-  .form-actions {
-    margin-top: 30px;
-  }
-  
-  .primary-button {
-    background-color: #6b45c7;
-    color: white;
-    width: 100%;
-    border: none;
-    border-radius: 4px;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .primary-button:hover {
-    background-color: #5a3a9f;
-  }
-  
-  .primary-button:disabled {
-    background-color: #a990e7;
-    cursor: not-allowed;
-  }
-  
-  .secondary-button {
-    background-color: transparent;
-    color: #6b45c7;
-    width: 100%;
-    border: 1px solid #6b45c7;
-    border-radius: 4px;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-top: 12px;
-    transition: background-color 0.3s;
-  }
-  
-  .secondary-button:hover {
-    background-color: rgba(107, 69, 199, 0.05);
-  }
-  
-  .secondary-actions {
-    margin-top: 16px;
-    text-align: center;
-  }
-  
-  .secondary-actions a {
-    color: #6b45c7;
-    text-decoration: none;
-    font-size: 14px;
-  }
-  
-  .secondary-actions a:hover {
-    text-decoration: underline;
-  }
-  
-  .error-message {
-    color: #f44336;
-    margin-top: 16px;
-    font-size: 14px;
-    text-align: center;
-  }
-  
-  .success-message {
-    text-align: center;
-    color: #4caf50;
-    margin: 16px 0;
-  }
-  /* Add to src/app/auth/login/login.component.css */
+  width: 100vw;            /* ocupa toda a largura */
+  height: 100dvh;          /* ocupa toda a altura */
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--ov-text);
+}
+
+/* ===== Card ===== */
+.login-card {
+  width: min(92vw, 520px);
+  background: linear-gradient(180deg, var(--ov-surface), var(--ov-surface-2));
+  border: 1px solid var(--ov-border);
+  border-radius: 16px;
+  box-shadow: var(--ov-shadow);
+  overflow: hidden;
+}
+
+/* ===== Header / Brand ===== */
+.login-header {
+  padding: 28px 28px 18px;
+  border-bottom: 1px solid var(--ov-border);
+  display: flex;
+  flex-direction: column;     /* empilha título e subtítulo */
+  align-items: center;        /* centraliza horizontalmente */
+  justify-content: center;    /* centraliza verticalmente dentro do header */
+  text-align: center;         /* garante texto centralizado */
+  gap: 6px;                   /* espaço entre título e subtítulo */
+}
+
+.login-header__logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--ov-primary), var(--ov-primary-700));
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+
+.login-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.login-header p {
+  margin: 2px 0 0;
+  color: var(--ov-text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ===== Forms ===== */
+.login-form,
+.reset-form {
+  padding: 24px 28px 28px;
+}
+
+.login-form h2,
+.reset-form h2 {
+  margin: 0 0 18px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* groups */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ov-text-muted);
+  font-size: 13px;
+}
+
+/* input base */
+.form-group input {
+  width: 100%;
+  appearance: none;
+  border: 1px solid var(--ov-input-border);
+  background: var(--ov-input);
+  color: var(--ov-text);
+  border-radius: 10px;
+  font-size: 15px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .06s ease;
+}
+
+.form-group input::placeholder {
+  color: var(--ov-input-placeholder);
+}
+
+/* Força o mesmo estilo escuro no input de e-mail */
+.form-group input[type="email"] {
+  background-color: var(--ov-input) !important;
+  color: var(--ov-text);
+  -webkit-appearance: none;
+          appearance: none;
+}
+
+/* Corrige autofill do Chrome/Safari que pinta o campo de branco */
+.form-group input:-webkit-autofill,
+.form-group input:-webkit-autofill:hover,
+.form-group input:-webkit-autofill:focus,
+.form-group input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--ov-text);
+  caret-color: var(--ov-text);
+  border-color: var(--ov-input-border);
+  box-shadow: 0 0 0px 1000px var(--ov-input) inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--ov-input) inset !important;
+  transition: background-color 5000s ease-in-out 0s; /* mantém a cor no dark */
+}
+
+/* hover / focus */
+.form-group input:hover {
+  border-color: var(--ov-input-border-hover);
+  background: #121d38;
+}
+
+.form-group input:focus {
+  border-color: var(--ov-primary);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
+  transform: translateY(-1px);
+}
+
+.form-group input:focus:-webkit-autofill {
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.18),
+    0 0 0px 1000px var(--ov-input) inset !important;
+  -webkit-box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.18),
+    0 0 0px 1000px var(--ov-input) inset !important;
+}
+
+/* ===== Actions / Buttons ===== */
+.form-actions {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.primary-button {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  background: linear-gradient(180deg, var(--ov-primary), var(--ov-primary-600));
+  transition: filter .18s ease, transform .06s ease, box-shadow .18s ease;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.22);
+}
+
+.primary-button:hover {
+  filter: brightness(1.06);
+}
+
+.primary-button:active {
+  transform: translateY(1px);
+}
+
+.primary-button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.secondary-button {
+  width: 100%;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--ov-text);
+  background: transparent;
+  border: 1px solid var(--ov-border);
+  transition: background .18s ease, border-color .18s ease, transform .06s ease;
+}
+
+.secondary-button:hover {
+  background: rgba(148, 163, 184, 0.06);
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+.secondary-button:active {
+  transform: translateY(1px);
+}
+
+/* links auxiliares */
+.secondary-actions {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.secondary-actions a {
+  color: var(--ov-primary);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.secondary-actions a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Messages ===== */
+.error-message,
+.success-message {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.error-message {
+  background: rgba(239, 68, 68, 0.08);
+  color: #fecaca;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.success-message {
+  background: rgba(16, 185, 129, 0.08);
+  color: #bbf7d0;
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+/* ===== Password requirements ===== */
 .password-requirements {
-  margin: 15px 0;
-  font-size: 0.85rem;
-  color: #666;
-  background-color: #f8f8f8;
-  padding: 10px 15px;
-  border-radius: 4px;
-  border: 1px solid #eee;
+  margin: 12px 0;
+  font-size: 12.5px;
+  color: var(--ov-text-muted);
+  background: rgba(148, 163, 184, 0.06);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--ov-border);
 }
 
 .password-requirements p {
-  margin: 0 0 5px 0;
-  font-weight: 500;
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: var(--ov-text);
+  font-size: 13px;
 }
 
 .password-requirements ul {
   margin: 0;
-  padding-left: 20px;
+  padding-left: 18px;
 }
 
 .password-requirements li {
-  margin: 3px 0;
+  margin: 2px 0;
+}
+
+/* ===== Small responsiveness ===== */
+@media (max-width: 420px) {
+  .login-card { border-radius: 12px; }
+  .login-header { padding: 22px; }
+  .login-form, .reset-form { padding: 20px 22px 24px; }
+}
+
+/* ====== Fullscreen, sem scroll ====== */
+:host {
+  position: fixed;         /* ocupa a viewport inteira */
+  inset: 0;                /* top/right/bottom/left: 0 */
+  width: 100vw;
+  height: 100dvh;
+  display: grid;           /* centraliza tudo */
+  place-items: center;
+  overflow: clip;          /* evita barra de rolagem (melhor que hidden) */
+  /* Fundo agora cobre 100% da viewport */
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(59,130,246,0.18), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(16,185,129,0.12), transparent 60%),
+    var(--ov-bg);
+}
+
+/* Caso seu wrapper use outro nome, mantenha todos aqui */
+.auth-shell,
+.login-wrapper {
+  width: 100%;
+  margin: 0;
+}
+
+/* ====== Remove bordas do card ====== */
+.login-card,
+.auth-card,
+.card {
+  border: 0 !important;
+  outline: 0 !important;
+  border-radius: 16px;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.45),
+    inset 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+/* Evita jitter horizontal se houver algo com 100vw */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }

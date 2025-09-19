@@ -40,15 +40,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (metrics) => {
-          console.log('[Dashboard] Processing metrics:', metrics.length);
-          
           // Processa os dados para o dashboard
           this.dashboardData = this.metricProcessor.processMetricsForDashboard(metrics);
           
           // Extrai tipos de recursos
           this.extractResourceTypes();
           
-          console.log('[Dashboard] Data processed:', this.dashboardData);
           this.isLoading = false;
         },
         error: (error) => {
@@ -184,17 +181,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
       {
         label: 'Snapshots',
-        value: this.formatNumber(
-          this.dashboardData?.storage?.totalSnapshots ||
-          (this.getResourceCount('EBSSnapshot') + this.getResourceCount('AMI'))
-        )
+        value: this.formatNumber(this.getSnapshotCount())
       }
     ];
   }
 
   get resourceHealthCards() {
+    const ec2Count = this.getResourceCount('EC2Instance');
     const ec2 = this.dashboardData?.ec2Health;
-    const ec2Total = ec2?.total || this.getResourceCount('EC2Instance');
+    const ec2Total = ec2?.total || ec2Count;
     const ec2Running = ec2?.running || 0;
     const ec2Stopped = ec2?.stopped || 0;
     const ec2Other = Math.max(ec2Total - ec2Running - ec2Stopped, 0);
@@ -211,7 +206,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           { value: ec2Stopped, color: 'critical' }
         ],
         status: ec2Total > 0 ? `${this.getPercentage(ec2Running, ec2Total)}% Running` : 'No data',
-        description: ec2Total > 0 ? `${ec2Running} running / ${ec2Stopped} stopped` : 'No instances found'
+        description: ec2Total > 0 ? `${ec2Running} running / ${ec2Stopped} stopped` : 'RDS fleet overview'
       },
       {
         key: 'rds',
@@ -221,7 +216,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         segments: [
           { value: this.getResourceCount('RDSInstance'), color: 'good' }
         ],
-        status: this.getResourceCount('RDSInstance') ? '100% Healthy' : 'No data',
+        status: this.getResourceCount('RDSInstance') > 0 ? '100% Healthy' : 'No data',
         description: 'RDS fleet overview'
       },
       {
@@ -232,7 +227,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         segments: [
           { value: this.getResourceCount('EBSVolume'), color: 'good' }
         ],
-        status: this.getResourceCount('EBSVolume') ? '100% Healthy' : 'No data',
+        status: this.getResourceCount('EBSVolume') > 0 ? '100% Healthy' : 'No data',
         description: 'Volume health overview'
       },
       {
@@ -243,7 +238,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         segments: [
           { value: this.getResourceCount('S3Bucket'), color: 'good' }
         ],
-        status: this.getResourceCount('S3Bucket') ? '100% Healthy' : 'No buckets',
+        status: this.getResourceCount('S3Bucket') > 0 ? '100% Healthy' : 'No buckets',
         description: 'Storage overview'
       }
     ];
@@ -267,12 +262,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   get ec2InstanceStatus() {
+    const ec2Count = this.getResourceCount('EC2Instance');
     const ec2 = this.dashboardData?.ec2Health;
+    const total = ec2?.total || ec2Count;
+    const running = ec2?.running || 0;
+    const stopped = ec2?.stopped || 0;
+    
     return {
-      total: ec2?.total || 0,
-      running: ec2?.running || 0,
-      stopped: ec2?.stopped || 0,
-      runningPercent: ec2 ? this.getPercentage(ec2.running, ec2.total) : 0
+      total: total,
+      running: running,
+      stopped: stopped,
+      runningPercent: total > 0 ? this.getPercentage(running, total) : 0
     };
   }
 
@@ -280,8 +280,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.dashboardData?.ec2Health?.ssmAgentCoverage || 0;
   }
 
+  /**
+   * CORREÇÃO: Buscar recursos usando as chaves corretas (sem formatação)
+   */
   getResourceCount(type: string): number {
-    return this.dashboardData?.resourceCounts?.get(type) || 0;
+    if (!this.dashboardData?.resourceCounts) return 0;
+    
+    // Busca direta pela chave sem formatação
+    return this.dashboardData.resourceCounts.get(type) || 0;
+  }
+
+  /**
+   * Método auxiliar para obter total de snapshots
+   */
+  getSnapshotCount(): number {
+    const ebs = this.getResourceCount('EBSSnapshot');
+    const ami = this.getResourceCount('AMI');
+    const storageTotal = this.dashboardData?.storage?.totalSnapshots;
+    
+    // Usa o valor de storage se disponível, senão soma EBS + AMI
+    return storageTotal || (ebs + ami);
   }
 
   formatNumber(value: number | undefined): string {

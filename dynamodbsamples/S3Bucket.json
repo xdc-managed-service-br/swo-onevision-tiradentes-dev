@@ -1,27 +1,52 @@
 {
   "id": {
-    "S": "905418331872-us-east-1-S3Bucket-fortigate-autoscale-tiradentes"
+    "S": "590183843163-us-east-1-S3Bucket-aws-quicksetup-patchpolicy-access-log-590183843163-8859-309gi"
   },
   "accountId": {
-    "S": "905418331872"
+    "S": "590183843163"
   },
   "accountName": {
-    "S": "CustomAccount"
+    "S": "A4L"
   },
   "bucketName": {
-    "S": "fortigate-autoscale-tiradentes"
+    "S": "aws-quicksetup-patchpolicy-access-log-590183843163-8859-309gi"
   },
   "bucketNameTag": {
     "S": "N/A"
   },
   "createdAt": {
-    "S": "2024-04-05T12:49:06.000Z"
+    "S": "2025-09-16T01:22:12.000Z"
+  },
+  "encryption": {
+    "S": "AES256"
   },
   "hasLifecycleRules": {
-    "BOOL": false
+    "BOOL": true
   },
-  "objectCount": {
-    "N": "27"
+  "metrics": {
+    "M": {
+      "objectCount": {
+        "N": "0"
+      },
+      "storageBytes_DeepArchive": {
+        "S": "0 B"
+      },
+      "storageBytes_Glacier": {
+        "S": "0 B"
+      },
+      "storageBytes_IntelligentTiering": {
+        "S": "0 B"
+      },
+      "storageBytes_Standard": {
+        "S": "0 B"
+      },
+      "storageBytes_StandardIA": {
+        "S": "0 B"
+      }
+    }
+  },
+  "publicAccessBlock": {
+    "BOOL": true
   },
   "region": {
     "S": "us-east-1"
@@ -29,13 +54,13 @@
   "resourceType": {
     "S": "S3Bucket"
   },
-  "storageBytes": {
-    "S": "1.35 MB"
-  },
   "tags": {
-    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}]"
+    "S": "[{\"Key\": \"QuickSetupDefinitionID\", \"Value\": \"309gi\"}, {\"Key\": \"aws:cloudformation:stack-name\", \"Value\": \"StackSet-AWS-QuickSetup-PatchPolicy-LA-309gi-a3bf1b9f-4bb4-47ff-a719-4c95c0a6407b\"}, {\"Key\": \"QuickSetupManagerAccount\", \"Value\": \"590183843163\"}, {\"Key\": \"QuickSetupDocumentVersionName\", \"Value\": \"2.3\"}, {\"Key\": \"aws:cloudformation:stack-id\", \"Value\": \"arn:aws:cloudformation:us-east-1:590183843163:stack/StackSet-AWS-QuickSetup-PatchPolicy-LA-309gi-a3bf1b9f-4bb4-47ff-a719-4c95c0a6407b/8e5ab1e0-929b-11f0-8859-12fcbacfd443\"}, {\"Key\": \"QuickSetupManagerRegion\", \"Value\": \"us-east-1\"}, {\"Key\": \"aws:cloudformation:logical-id\", \"Value\": \"BaselineOverridesAccessLogBucket\"}, {\"Key\": \"QuickSetupDocument\", \"Value\": \"AWSQuickSetupType-PatchPolicy\"}, {\"Key\": \"QuickSetupManagerArn\", \"Value\": \"arn:aws:ssm-quicksetup:us-east-1:590183843163:configuration-manager/4a8dd163-0f72-4c5a-8023-8887e3a7e04f\"}, {\"Key\": \"QuickSetupManagerID\", \"Value\": \"4a8dd163-0f72-4c5a-8023-8887e3a7e04f\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-14T21:34:01.878Z"
+    "S": "2025-09-18T04:39:48.468Z"
+  },
+  "versioning": {
+    "S": "Enabled"
   }
 }

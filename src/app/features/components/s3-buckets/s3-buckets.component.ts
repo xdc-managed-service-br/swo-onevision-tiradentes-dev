@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+// src/app/features/components/s3-buckets/s3-buckets.component.ts
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -12,76 +13,139 @@ interface ColumnDefinition {
   key: ColumnKey;
   label: string;
   sortable?: boolean;
+  // transform recebe o recurso e retorna string formatada para render/export
   transform?: (resource: S3Bucket) => string;
 }
 
-type ColumnKey = keyof S3Bucket;
+// chaves das colunas (inclui 'displayName' virtual)
+type ColumnKey =
+  | 'displayName'
+  | 'bucketName'
+  | 'hasLifecycleRules'
+  | 'objectCount'
+  | 'storageBytes'
+  | 'encryption'
+  | 'versioning'
+  | 'publicAccessBlock'
+  | 'region'
+  | 'accountName'
+  | 'createdAt'
+  | 'updatedAt';
 
 @Component({
   selector: 'app-s3-buckets',
   standalone: true,
   imports: [CommonModule, ResourceTagsComponent],
-  templateUrl: './s3-buckets.component.html',
+  templateUrl: './s3-buckets.component.html'
 })
 export class S3BucketsComponent implements OnInit, OnDestroy {
-  // Data
   resources: S3Bucket[] = [];
   filteredResources: S3Bucket[] = [];
   paginatedResources: S3Bucket[] = [];
   loading = true;
   selectedResource: S3Bucket | null = null;
 
-  // Pagination
+  // filtros
+  searchTerm = '';
+  regionFilter = '';
+  accountFilter = '';
+  lifecycleFilter: '' | 'yes' | 'no' = '';
+  encryptionFilter = ''; // '', 'AES256', 'aws:kms', 'None'
+  versioningFilter = ''; // '', 'Enabled', 'Suspended', 'None'
+  pabFilter: '' | 'enabled' | 'disabled' = '';
+
+  uniqueRegions: string[] = [];
+  uniqueAccounts: string[] = [];
+  uniqueEncryptions: string[] = [];
+  uniqueVersioning: string[] = [];
+
+  sortColumn: ColumnKey | '' = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   pageSize = 50;
   currentPage = 1;
   totalPages = 1;
   pageStartIndex = 0;
   pageEndIndex = 0;
 
-  // Search & filters
-  searchTerm = '';
-  uniqueRegions: string[] = [];
-  uniqueAccounts: string[] = [];
-  regionFilter = '';
-  accountFilter = '';
-  lifecycleFilter = ''; // '', 'true', 'false'
-
-  // Sorting
-  sortColumn: ColumnKey | '' = '';
-  sortDirection: 'asc' | 'desc' = 'asc';
-
-  // Columns customization
   showColumnCustomizer = false;
-  selectedColumns: Set<string> = new Set();
+  selectedColumns: Set<ColumnKey> = new Set();
 
+  private readonly LS_KEY = 's3-buckets-columns';
+  private readonly destroy$ = new Subject<void>();
+
+  // definição de colunas
   availableColumns: ColumnDefinition[] = [
-    { key: 'bucketName',        label: 'Bucket Name',  sortable: true },
-    { key: 'bucketNameTag',     label: 'Name Tag',     sortable: true },
-    { key: 'hasLifecycleRules', label: 'Lifecycle',    sortable: true, transform: (r) => r.hasLifecycleRules ? 'Enabled' : 'Disabled' },
-    { key: 'objectCount',       label: 'Objects',      sortable: true, transform: (r) => this.formatNumber(r.objectCount ?? 0) },
-    // ⬇️ AGORA É STRING PURA (sem conversão)
-    { key: 'storageBytes',      label: 'Storage Used', sortable: true, transform: (r) => r.storageBytes || 'N/A' },
-    { key: 'region',            label: 'Region',       sortable: true },
-    { key: 'accountId',         label: 'Account ID',   sortable: true },
-    { key: 'accountName',       label: 'Account Name', sortable: true },
-    { key: 'createdAt',         label: 'Created',      sortable: true, transform: (r) => this.formatDate(r.createdAt) },
+    {
+      key: 'displayName',
+      label: 'Name',
+      sortable: true,
+      transform: (r) => this.getDisplayName(r)
+    },
+    { key: 'bucketName', label: 'Bucket', sortable: true },
+    {
+      key: 'hasLifecycleRules',
+      label: 'Lifecycle',
+      sortable: true,
+      transform: (r) => this.boolToYesNo(r.hasLifecycleRules)
+    },
+    {
+      key: 'objectCount',
+      label: 'Objects',
+      sortable: true,
+      transform: (r) => this.formatNumber(r.objectCount)
+    },
+    {
+      key: 'storageBytes',
+      label: 'Storage',
+      sortable: true, // ordena usando parse pra bytes
+      transform: (r) => r.storageBytes ?? 'N/A'
+    },
+    { key: 'encryption', label: 'Encryption', sortable: true },
+    { key: 'versioning', label: 'Versioning', sortable: true },
+    {
+      key: 'publicAccessBlock',
+      label: 'Public Access Block',
+      sortable: true,
+      transform: (r) => this.boolToYesNo(r.publicAccessBlock)
+    },
+    { key: 'region', label: 'Region', sortable: true },
+    {
+      key: 'accountName',
+      label: 'Account',
+      sortable: true,
+      transform: (r) => this.getAccountLabel(r)
+    },
+    {
+      key: 'createdAt',
+      label: 'Created',
+      sortable: true,
+      transform: (r) => this.formatDate(r.createdAt)
+    },
+    {
+      key: 'updatedAt',
+      label: 'Updated',
+      sortable: true,
+      transform: (r) => this.formatDate(r.updatedAt)
+    }
   ];
 
-  defaultColumns = [
+  // colunas default (podem ser ajustadas)
+  defaultColumns: ColumnKey[] = [
+    'displayName',
     'bucketName',
-    'bucketNameTag',
     'hasLifecycleRules',
     'objectCount',
     'storageBytes',
+    'encryption',
+    'publicAccessBlock',
     'region',
     'accountName',
-    'createdAt',
+    'createdAt'
   ];
 
-  requiredColumns = ['bucketName'];
-  private readonly LS_KEY = 's3-columns';
-
-  private destroy$ = new Subject<void>();
+  // bucketName é essencial para identificar
+  requiredColumns: ColumnKey[] = ['bucketName'];
 
   constructor(
     private resourceService: ResourceService,
@@ -99,7 +163,7 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // === Load ===
+  // ================== Data ==================
   loadResources(): void {
     this.loading = true;
     this.resourceService
@@ -107,19 +171,32 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          // Nada de parse/conversão aqui — mantemos storageBytes como veio
-          this.resources = (data || []) as S3Bucket[];
-
-          const nonEmpty = (value: string | null | undefined): value is string => !!value && value.trim().length > 0;
+          const list = (data as S3Bucket[]) || [];
+          // já vem normalizado pelo ResourceProcessorService
+          this.resources = list.map((r) => ({
+            ...r,
+            // normalizações adicionais defensivas
+            encryption: r.encryption ?? 'None',
+            versioning: r.versioning ?? 'None',
+            publicAccessBlock: r.publicAccessBlock ?? false
+          }));
 
           this.filteredResources = [...this.resources];
-          this.uniqueRegions = [...new Set(this.resources.map(r => r.region).filter(nonEmpty))].sort();
-          this.uniqueAccounts = [...new Set(this.resources.map(r => r.accountName || r.accountId).filter(nonEmpty))].sort();
-          this.recomputePagination();
+          this.uniqueRegions = this.buildUniqueList(this.resources.map((i) => i.region));
+          this.uniqueAccounts = this.buildUniqueList(this.resources.map((i) => this.getAccountLabel(i)));
+          this.uniqueEncryptions = this.buildUniqueList(this.resources.map((i) => i.encryption || 'None'));
+          this.uniqueVersioning = this.buildUniqueList(this.resources.map((i) => i.versioning || 'None'));
+
           this.loading = false;
+          this.currentPage = 1;
+          if (this.sortColumn) {
+            this.sortData(this.sortColumn);
+          } else {
+            this.recomputePagination();
+          }
         },
-        error: (err) => {
-          console.error('Error loading S3 buckets:', err);
+        error: (error) => {
+          console.error('Error loading S3 Buckets:', error);
           this.loading = false;
         }
       });
@@ -130,23 +207,31 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
     this.loadResources();
   }
 
-  // === Columns modal ===
+  // ================== Columns ==================
   openColumnCustomizer(): void { this.showColumnCustomizer = true; }
   closeColumnCustomizer(): void { this.showColumnCustomizer = false; }
 
-  toggleColumn(key: string): void {
+  toggleColumn(key: ColumnKey): void {
     if (this.isRequiredColumn(key)) return;
     if (this.selectedColumns.has(key)) this.selectedColumns.delete(key);
     else this.selectedColumns.add(key);
   }
 
-  isColumnSelected(key: string): boolean { return this.selectedColumns.has(key); }
-  isRequiredColumn(key: string): boolean { return this.requiredColumns.includes(key); }
+  isColumnSelected(key: ColumnKey): boolean {
+    return this.selectedColumns.has(key);
+  }
 
-  selectAllColumns(): void { this.availableColumns.forEach(col => this.selectedColumns.add(col.key)); }
+  isRequiredColumn(key: ColumnKey): boolean {
+    return this.requiredColumns.includes(key);
+  }
+
+  selectAllColumns(): void {
+    this.availableColumns.forEach((c) => this.selectedColumns.add(c.key));
+  }
+
   deselectAllColumns(): void {
     this.selectedColumns.clear();
-    this.requiredColumns.forEach(k => this.selectedColumns.add(k));
+    this.requiredColumns.forEach((c) => this.selectedColumns.add(c));
   }
 
   applyColumnSelection(): void {
@@ -155,32 +240,35 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
   }
 
   getVisibleColumns(): ColumnDefinition[] {
-    return this.availableColumns.filter(col => this.selectedColumns.has(col.key));
+    return this.availableColumns.filter((c) => this.selectedColumns.has(c.key));
   }
 
   private saveColumnPreferences(): void {
     try {
-      const preferences = Array.from(this.selectedColumns);
-      localStorage.setItem(this.LS_KEY, JSON.stringify(preferences));
-    } catch (e) { console.warn('Could not save column preferences:', e); }
+      localStorage.setItem(this.LS_KEY, JSON.stringify(Array.from(this.selectedColumns)));
+    } catch (e) {
+      console.warn('Could not save S3 column preferences:', e);
+    }
   }
 
   private loadColumnPreferences(): void {
     try {
       const saved = localStorage.getItem(this.LS_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
+      if (!saved) return;
+      const parsed = JSON.parse(saved) as ColumnKey[];
+      if (Array.isArray(parsed) && parsed.length) {
         this.selectedColumns = new Set(parsed);
-        this.requiredColumns.forEach(k => this.selectedColumns.add(k));
+        this.requiredColumns.forEach((k) => this.selectedColumns.add(k));
       }
-    } catch {
+    } catch (e) {
+      console.warn('Could not load S3 column preferences:', e);
       this.selectedColumns = new Set(this.defaultColumns);
     }
   }
 
-  // === Search / Filters ===
+  // ================== Search & Filters ==================
   searchBuckets(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
+    const value = (event.target as HTMLInputElement).value || '';
     this.searchTerm = value.trim().toLowerCase();
     this.applyFilters();
   }
@@ -191,24 +279,81 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  filterByRegion(e: Event): void    { this.regionFilter    = (e.target as HTMLSelectElement).value; this.applyFilters(); }
-  filterByAccount(e: Event): void   { this.accountFilter   = (e.target as HTMLSelectElement).value; this.applyFilters(); }
-  filterByLifecycle(e: Event): void { this.lifecycleFilter = (e.target as HTMLSelectElement).value; this.applyFilters(); }
+  filterByRegion(event: Event): void {
+    this.regionFilter = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
 
-  applyFilters(): void {
-    this.filteredResources = this.resources.filter(r => {
-      // busca: só bucketName e bucketNameTag
-      if (this.searchTerm) {
-        const name = r.bucketName?.toLowerCase() ?? '';
-        const tag  = r.bucketNameTag?.toLowerCase() ?? '';
-        if (!name.includes(this.searchTerm) && !tag.includes(this.searchTerm)) return false;
+  filterByAccount(event: Event): void {
+    this.accountFilter = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
+
+  filterByLifecycle(event: Event): void {
+    this.lifecycleFilter = (event.target as HTMLSelectElement).value as '' | 'yes' | 'no';
+    this.applyFilters();
+  }
+
+  filterByEncryption(event: Event): void {
+    this.encryptionFilter = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
+
+  filterByVersioning(event: Event): void {
+    this.versioningFilter = (event.target as HTMLSelectElement).value;
+    this.applyFilters();
+  }
+
+  filterByPAB(event: Event): void {
+    this.pabFilter = (event.target as HTMLSelectElement).value as '' | 'enabled' | 'disabled';
+    this.applyFilters();
+  }
+
+  resetFilters(): void {
+    this.regionFilter = '';
+    this.accountFilter = '';
+    this.lifecycleFilter = '';
+    this.encryptionFilter = '';
+    this.versioningFilter = '';
+    this.pabFilter = '';
+    this.searchTerm = '';
+    const searchInput = document.getElementById('s3BucketSearch') as HTMLInputElement | null;
+    if (searchInput) searchInput.value = '';
+    this.filteredResources = [...this.resources];
+
+    if (this.sortColumn) this.sortData(this.sortColumn);
+    else this.updatePaginationAfterChange();
+  }
+
+  private applyFilters(): void {
+    const term = this.searchTerm;
+
+    this.filteredResources = this.resources.filter((r) => {
+      if (term) {
+        const haystack = [
+          this.getDisplayName(r),
+          r.bucketName,
+          this.getAccountLabel(r),
+          r.encryption || 'None',
+          r.versioning || 'None'
+        ]
+          .join(' ')
+          .toLowerCase();
+        if (!haystack.includes(term)) return false;
       }
+
       if (this.regionFilter && r.region !== this.regionFilter) return false;
-      if (this.accountFilter && (r.accountName || r.accountId) !== this.accountFilter) return false;
-      if (this.lifecycleFilter) {
-        const expected = this.lifecycleFilter === 'true';
-        if (Boolean(r.hasLifecycleRules) !== expected) return false;
-      }
+      if (this.accountFilter && this.getAccountLabel(r) !== this.accountFilter) return false;
+
+      if (this.lifecycleFilter === 'yes' && !r.hasLifecycleRules) return false;
+      if (this.lifecycleFilter === 'no' && !!r.hasLifecycleRules) return false;
+
+      if (this.encryptionFilter && (r.encryption || 'None') !== this.encryptionFilter) return false;
+      if (this.versioningFilter && (r.versioning || 'None') !== this.versioningFilter) return false;
+
+      if (this.pabFilter === 'enabled' && !r.publicAccessBlock) return false;
+      if (this.pabFilter === 'disabled' && !!r.publicAccessBlock) return false;
+
       return true;
     });
 
@@ -216,149 +361,202 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
     else this.updatePaginationAfterChange();
   }
 
-  resetFilters(): void {
-    this.regionFilter = this.accountFilter = this.lifecycleFilter = '';
-    this.searchTerm = '';
-    const searchInput = document.getElementById('s3Search') as HTMLInputElement | null;
-    if (searchInput) searchInput.value = '';
-    this.filteredResources = [...this.resources];
-    if (this.sortColumn) this.sortData(this.sortColumn);
-    else this.updatePaginationAfterChange();
-  }
-
-  // === Sorting ===
+  // ================== Sorting ==================
   sortData(column: ColumnKey): void {
-    if (this.sortColumn === column) this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    else { this.sortColumn = column; this.sortDirection = 'asc'; }
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
 
-    const dir = this.sortDirection === 'asc' ? 1 : -1;
+    const direction = this.sortDirection === 'asc' ? 1 : -1;
 
     this.filteredResources = [...this.filteredResources].sort((a, b) => {
-      const A = (a as any)[column];
-      const B = (b as any)[column];
+      const valueA = this.getSortValue(a, column);
+      const valueB = this.getSortValue(b, column);
 
-      if (column === 'createdAt') {
-        const da = A ? new Date(A).getTime() : 0;
-        const db = B ? new Date(B).getTime() : 0;
-        return (da - db) * dir;
+      if (valueA === valueB) return 0;
+
+      if (typeof valueA === 'number' && typeof valueB === 'number') {
+        return (valueA - valueB) * direction;
       }
-      if (column === 'objectCount') {
-        const na = typeof A === 'number' ? A : parseInt(A ?? '0', 10) || 0;
-        const nb = typeof B === 'number' ? B : parseInt(B ?? '0', 10) || 0;
-        return (na - nb) * dir;
-      }
-      // storageBytes agora é STRING: ordena alfabeticamente
-      if (typeof A === 'string' && typeof B === 'string') {
-        return A.localeCompare(B) * dir;
-      }
-      if (typeof A === 'boolean' && typeof B === 'boolean') {
-        const va = A ? 1 : 0, vb = B ? 1 : 0;
-        return (va - vb) * dir;
-      }
-      return 0;
+
+      const stringA = String(valueA ?? '').toLowerCase();
+      const stringB = String(valueB ?? '').toLowerCase();
+      return stringA.localeCompare(stringB) * direction;
     });
 
     this.updatePaginationAfterChange();
   }
 
-  // === Pagination ===
+  private getSortValue(resource: S3Bucket, column: ColumnKey): string | number {
+    switch (column) {
+      case 'displayName':
+        return this.getDisplayName(resource).toLowerCase();
+      case 'objectCount':
+        return resource.objectCount ?? 0;
+      case 'storageBytes':
+        return this.parseHumanSizeToBytes(resource.storageBytes);
+      case 'accountName':
+        return this.getAccountLabel(resource);
+      case 'createdAt':
+      case 'updatedAt':
+        return resource[column] ? new Date(resource[column] as string).getTime() : 0;
+      default:
+        const value = (resource as any)[column];
+        if (typeof value === 'number') return value;
+        if (typeof value === 'string') return value.toLowerCase();
+        if (typeof value === 'boolean') return value ? 1 : 0;
+        return 0;
+    }
+  }
+
+  // ================== Pagination ==================
   recomputePagination(): void {
-    const total = this.filteredResources?.length ?? 0;
+    const total = this.filteredResources.length;
     this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
     this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);
+
     const start = total === 0 ? 0 : (this.currentPage - 1) * this.pageSize;
-    const end   = total === 0 ? 0 : Math.min(start + this.pageSize, total);
-    this.paginatedResources = (this.filteredResources ?? []).slice(start, end);
+    const end = total === 0 ? 0 : Math.min(start + this.pageSize, total);
+
+    this.paginatedResources = this.filteredResources.slice(start, end);
     this.pageStartIndex = total === 0 ? 0 : start + 1;
     this.pageEndIndex = end;
   }
 
-  updatePaginationAfterChange(): void { this.currentPage = 1; this.recomputePagination(); }
+  updatePaginationAfterChange(): void {
+    this.currentPage = 1;
+    this.recomputePagination();
+  }
 
   getPageNumbers(): number[] {
-    const maxVisible = 7;
-    const half = Math.floor(maxVisible / 2);
-
-    if (this.totalPages <= maxVisible) {
-      return Array.from({ length: this.totalPages }, (_, i) => i + 1);
-    }
-
-    let start = Math.max(1, this.currentPage - half);
-    let end = Math.min(this.totalPages, this.currentPage + half);
-
-    if (this.currentPage <= half) {
-      end = Math.min(this.totalPages, maxVisible);
-    } else if (this.currentPage >= this.totalPages - half) {
-      start = Math.max(1, this.totalPages - maxVisible + 1);
-    }
-
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
   goToPage(page: number): void {
-    const clamped = Math.min(Math.max(page, 1), this.totalPages);
-    if (clamped !== this.currentPage) {
-      this.currentPage = clamped;
+    const target = Math.min(Math.max(page, 1), this.totalPages);
+    if (target !== this.currentPage) {
+      this.currentPage = target;
       this.recomputePagination();
     }
   }
-
   goToFirstPage(): void { if (this.currentPage !== 1) { this.currentPage = 1; this.recomputePagination(); } }
-  goToLastPage(): void  { if (this.currentPage !== this.totalPages) { this.currentPage = this.totalPages; this.recomputePagination(); } }
+  goToLastPage(): void { if (this.currentPage !== this.totalPages) { this.currentPage = this.totalPages; this.recomputePagination(); } }
   goToPreviousPage(): void { if (this.currentPage > 1) { this.currentPage--; this.recomputePagination(); } }
-  goToNextPage(): void     { if (this.currentPage < this.totalPages) { this.currentPage++; this.recomputePagination(); } }
+  goToNextPage(): void { if (this.currentPage < this.totalPages) { this.currentPage++; this.recomputePagination(); } }
 
-  // === Modal ===
-  showDetails(r: S3Bucket): void { this.selectedResource = r; }
-  closeDetails(): void { this.selectedResource = null; }
+  // ================== Modals ==================
+  showDetails(resource: S3Bucket): void {
+    this.selectedResource = resource;
+  }
 
-  // === Cell helpers ===
+  closeDetails(): void {
+    this.selectedResource = null;
+  }
+
+  // ================== Render helpers ==================
   getColumnValue(column: ColumnDefinition, resource: S3Bucket): string {
     if (column.transform) return column.transform(resource);
-    const value = (resource as any)[column.key as keyof S3Bucket];
+    const value = (resource as any)[column.key];
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (Array.isArray(value)) return value.join(', ');
     return String(value);
   }
 
+  getBooleanStatusClass(value: boolean | undefined | null): string {
+    return value ? 'status-available' : 'status-terminated';
+  }
+
   getColumnClass(key: ColumnKey, resource: S3Bucket): string {
-    if (key === 'hasLifecycleRules') return resource.hasLifecycleRules ? 'status-running' : 'status-stopped';
+    if (key === 'publicAccessBlock') {
+      return resource.publicAccessBlock ? 'status-running' : 'status-stopped';
+    }
+    if (key === 'hasLifecycleRules') {
+      return resource.hasLifecycleRules ? 'status-running' : 'status-stopped';
+    }
     return '';
   }
 
-  // === Export ===
+  getDisplayName(r: S3Bucket): string {
+    return r.bucketNameTag || r.bucketName || 'Unnamed Bucket';
+    }
+
+  getAccountLabel(resource: S3Bucket): string {
+    return resource.accountName || resource.accountId || 'Unknown Account';
+  }
+
+  // ================== Export ==================
   exportToCSV(): void {
     if (!this.filteredResources.length) return;
-    const filename = 's3-buckets.csv';
     const visible = this.getVisibleColumns();
-    const cols: ExportColumn[] = visible.map(col => ({
-      key: col.key,
-      label: col.label,
-      transform: col.transform ?? ((r: S3Bucket) => (r as any)[col.key] ?? '')
+    const columns: ExportColumn[] = visible.map((column) => ({
+      key: column.key,
+      label: column.label,
+      transform: column.transform ?? ((r: S3Bucket) => (r as any)[column.key] ?? '')
     }));
-    this.exportService.exportDataToCSV(this.filteredResources, cols, filename);
+    this.exportService.exportDataToCSV(this.filteredResources, columns, 's3-buckets.csv');
   }
 
   exportToXLSX(): void {
     if (!this.filteredResources.length) return;
-    const filename = 's3-buckets.xlsx';
     const visible = this.getVisibleColumns();
-    const cols: ExportColumn[] = visible.map(col => ({
-      key: col.key,
-      label: col.label,
-      transform: col.transform ?? ((r: S3Bucket) => (r as any)[col.key] ?? '')
+    const columns: ExportColumn[] = visible.map((column) => ({
+      key: column.key,
+      label: column.label,
+      transform: column.transform ?? ((r: S3Bucket) => (r as any)[column.key] ?? '')
     }));
-    this.exportService.exportDataToXLSX(this.filteredResources, cols, filename);
+    this.exportService.exportDataToXLSX(this.filteredResources, columns, 's3-buckets.xlsx');
   }
 
-  // === Utils ===
+  // ================== Utils ==================
+  private buildUniqueList(values: (string | undefined | null)[]): string[] {
+    return [...new Set(values.filter((v): v is string => !!v && v.trim().length > 0))].sort();
+  }
+
   formatDate(value?: string): string {
     if (!value) return 'N/A';
-    const d = new Date(value);
-    return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString();
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? 'N/A' : date.toLocaleString();
   }
 
-  formatNumber(n: number): string {
-    try { return new Intl.NumberFormat().format(n); } catch { return String(n); }
+  formatNumber(value: number | undefined | null): string {
+    if (value === undefined || value === null) return '0';
+    try {
+      return new Intl.NumberFormat().format(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  boolToYesNo(v: boolean | undefined | null): string {
+    if (v === undefined || v === null) return 'N/A';
+    return v ? 'Yes' : 'No';
+  }
+
+  // Converte "59.28 TB" -> bytes para sort
+  private parseHumanSizeToBytes(s?: string | null): number {
+    if (!s) return 0;
+    const str = String(s).trim();
+    const m = str.match(/^([\d.,]+)\s*([A-Za-z]+)$/);
+    if (!m) {
+      // pode estar em bytes numéricos direto
+      const num = Number(str.replace(/,/g, ''));
+      return isNaN(num) ? 0 : num;
+    }
+    const value = Number(m[1].replace(',', ''));
+    const unit = m[2].toUpperCase();
+    const map: Record<string, number> = {
+      B: 1,
+      KB: 1024,
+      MB: 1024 ** 2,
+      GB: 1024 ** 3,
+      TB: 1024 ** 4,
+      PB: 1024 ** 5
+    };
+    const mult = map[unit] ?? 1;
+    return value * mult;
   }
 }

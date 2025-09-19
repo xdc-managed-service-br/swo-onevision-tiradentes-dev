@@ -1,25 +1,25 @@
 {
   "id": {
-    "S": "767398083881-us-east-1-EBSVolume-vol-0d3f270460073721a"
+    "S": "992382742081-us-east-1-EBSVolume-vol-0d12f7eda503f89dc"
   },
   "accountId": {
-    "S": "767398083881"
+    "S": "992382742081"
   },
   "accountName": {
-    "S": "CustomAccount"
+    "S": "BackOffice"
   },
   "attachedInstances": {
     "L": [
       {
-        "S": "i-009e4ac1defebc994"
+        "S": "i-02dc8fb877acd50f4"
       }
     ]
   },
   "createdAt": {
-    "S": "2025-05-22T05:18:44.575Z"
+    "S": "2024-07-09T19:05:20.298Z"
   },
   "encrypted": {
-    "BOOL": false
+    "BOOL": true
   },
   "region": {
     "S": "us-east-1"
@@ -28,19 +28,19 @@
     "S": "EBSVolume"
   },
   "size": {
-    "N": "100"
+    "N": "300"
   },
   "tags": {
-    "S": "[{\"Key\": \"swoBackup\", \"Value\": \"0\"}]"
+    "S": "[{\"Key\": \"AWSApplicationMigrationServiceManaged\", \"Value\": \"mgn.amazonaws.com\"}, {\"Key\": \"AWSApplicationMigrationServiceSourceServerID\", \"Value\": \"s-301e17353ee53e0c1\"}, {\"Key\": \"map-migrated\", \"Value\": \"DATH74P7VG\"}, {\"Key\": \"Name\", \"Value\": \"awssrvbirs01\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}]"
   },
   "updatedAt": {
-    "S": "2025-09-14T20:46:41.699Z"
+    "S": "2025-09-18T04:40:32.938Z"
   },
   "volumeId": {
-    "S": "vol-0d3f270460073721a"
+    "S": "vol-0d12f7eda503f89dc"
   },
   "volumeName": {
-    "S": "N/A"
+    "S": "awssrvbirs01"
   },
   "volumeState": {
     "S": "in-use"

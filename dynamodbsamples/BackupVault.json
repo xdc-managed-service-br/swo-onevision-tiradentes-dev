@@ -1,0 +1,38 @@
+{
+  "id": {
+    "S": "339712694259-us-east-1-BackupVault-sysops-us-east-1-patching-backup-vault"
+  },
+  "accountId": {
+    "S": "339712694259"
+  },
+  "accountName": {
+    "S": "MagisterApps Dev/Hom"
+  },
+  "backupVaultName": {
+    "S": "sysops-us-east-1-patching-backup-vault"
+  },
+  "createdAt": {
+    "S": "2024-12-13T01:42:01.279Z"
+  },
+  "encryptionKeyArn": {
+    "S": "arn:aws:kms:us-east-1:339712694259:key/1d0fdea7-ec95-4231-a928-0a9ac598b664"
+  },
+  "latestRecoveryPointAgeDays": {
+    "N": "-1"
+  },
+  "locked": {
+    "BOOL": false
+  },
+  "numberOfRecoveryPoints": {
+    "N": "0"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "BackupVault"
+  },
+  "updatedAt": {
+    "S": "2025-09-18T04:42:06.566Z"
+  }
+}

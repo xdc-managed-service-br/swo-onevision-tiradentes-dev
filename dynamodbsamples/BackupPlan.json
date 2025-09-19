@@ -1,0 +1,51 @@
+{
+  "id": {
+    "S": "590184023510-us-east-1-BackupPlan-d4cfbb5c-3e45-4a02-aadc-b9f67dce7891"
+  },
+  "accountId": {
+    "S": "590184023510"
+  },
+  "accountName": {
+    "S": "Biblioteca"
+  },
+  "backupPlanId": {
+    "S": "d4cfbb5c-3e45-4a02-aadc-b9f67dce7891"
+  },
+  "backupPlanName": {
+    "S": "sysops-us-east-1-abp-1"
+  },
+  "createdAt": {
+    "S": "2024-04-18T16:04:22.140Z"
+  },
+  "lastExecutionDate": {
+    "S": "2025-09-18T04:11:29.392Z"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "BackupPlan"
+  },
+  "schedules": {
+    "L": [
+      {
+        "S": "cron(0 * * * ? *)"
+      }
+    ]
+  },
+  "selectionResourceTypes": {
+    "L": []
+  },
+  "targetBackupVault": {
+    "S": "sysops-us-east-1-abv-primary"
+  },
+  "updatedAt": {
+    "S": "2025-09-18T04:40:41.297Z"
+  },
+  "windowDuration": {
+    "N": "180"
+  },
+  "windowStart": {
+    "N": "60"
+  }
+}

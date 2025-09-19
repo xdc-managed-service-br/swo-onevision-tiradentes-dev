@@ -1,0 +1,66 @@
+{
+  "id": {
+    "S": "533267337185-us-east-1-FSxFileSystem-fs-0a578a594c1a0396a"
+  },
+  "accountId": {
+    "S": "533267337185"
+  },
+  "accountName": {
+    "S": "File Service"
+  },
+  "automaticBackupRetentionDays": {
+    "N": "5"
+  },
+  "copyTagsToBackups": {
+    "BOOL": false
+  },
+  "createdAt": {
+    "S": "2025-09-18T04:40:53.619Z"
+  },
+  "dailyAutomaticBackupStartTime": {
+    "S": "05:00"
+  },
+  "deploymentType": {
+    "S": "SINGLE_AZ_2"
+  },
+  "fileSystemId": {
+    "S": "fs-0a578a594c1a0396a"
+  },
+  "fileSystemType": {
+    "S": "WINDOWS"
+  },
+  "lifecycle": {
+    "S": "AVAILABLE"
+  },
+  "metrics": {
+    "M": {
+      "freeStorage_avg": {
+        "S": "980.19 GB"
+      },
+      "readBytes_48h": {
+        "S": "1.17 GB"
+      },
+      "writeBytes_48h": {
+        "S": "384.12 MB"
+      }
+    }
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "FSxFileSystem"
+  },
+  "storageCapacity": {
+    "N": "3000"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"Billing-FS\", \"Value\": \"0\"}, {\"Key\": \"swoMonitor\", \"Value\": \"1\"}, {\"Key\": \"Name\", \"Value\": \"facipe.edu.br\"}, {\"Key\": \"swoRiskClass\", \"Value\": \"1\"}]"
+  },
+  "throughputCapacity": {
+    "N": "64"
+  },
+  "updatedAt": {
+    "S": "2025-09-18T04:40:53.619Z"
+  }
+}

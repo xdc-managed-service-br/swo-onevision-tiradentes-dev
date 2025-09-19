@@ -1,5 +1,6 @@
 // src/app/models/resource.model.ts
 import { Schema } from "../../../amplify/data/resource";
+
 // ========================================
 // RESOURCE INTERFACES
 // ========================================
@@ -10,13 +11,17 @@ export interface BaseResource {
   region: string;
   createdAt: string;
   updatedAt: string;
-  
+
   accountName?: string;
   tags?: any; // JSON object
+  metrics?: any; // JSON object (coletado pelos coletores)
   availabilityZones?: string[];
-  resourceTypeRegionId?: string;
+  resourceTypeRegionId?: string; // helper calculado no frontend, se usado
 }
-
+export interface TagKV {
+  Key: string;
+  Value: string;
+}
 // AMI
 export interface AMI extends BaseResource {
   imageId: string;
@@ -96,30 +101,30 @@ export interface EC2Instance extends BaseResource {
   iamRole?: string;
   isWindows?: boolean;
   patchGroup?: string;
-  
+
   instancePrivateIps?: string[];
   instancePublicIps?: string[];
-  
+
   healthStatus?: string;
   healthChecksPassed?: number;
   healthChecksTotal?: number;
   systemStatus?: string;
   instanceStatus?: string;
   ebsStatus?: string;
-  
+
   ssmStatus?: string;
   ssmPingStatus?: string;
   ssmVersion?: string;
   ssmLastPingTime?: string;
-  
+
   cwAgentMemoryDetected?: boolean;
   cwAgentDiskDetected?: boolean;
-  
+
   swoMonitor?: string;
   swoPatch?: string;
   swoBackup?: string;
   swoRiskClass?: string;
-  
+
   instanceId?: string;
   autoStart?: number;
   autoShutdown?: number;
@@ -238,6 +243,55 @@ export interface S3Bucket extends BaseResource {
   hasLifecycleRules?: boolean;
   objectCount?: number;
   storageBytes?: string;
+  encryption?: string;         // NOVO
+  versioning?: string;         // NOVO
+  publicAccessBlock?: boolean; // NOVO
+}
+
+// EFS File System
+export interface EFSFileSystem extends BaseResource {
+  fileSystemId?: string;
+  performanceMode?: string;
+  throughputMode?: string;
+  provisionedThroughputInMibps?: number;
+  lifecyclePolicies?: string[];
+  backupPolicyEnabled?: boolean;
+  mountTargetsCount?: number;
+  sizeInBytes?: string; // human-readable
+}
+
+// FSx File System
+export interface FSxFileSystem extends BaseResource {
+  fileSystemId?: string;
+  fileSystemType?: string; // WINDOWS | ONTAP | LUSTRE | OPENZFS
+  deploymentType?: string;
+  storageCapacity?: number;
+  throughputCapacity?: number;
+  automaticBackupRetentionDays?: number;
+  dailyAutomaticBackupStartTime?: string;
+  copyTagsToBackups?: boolean;
+  lifecycle?: string;
+}
+
+// AWS Backup - Plan
+export interface BackupPlan extends BaseResource {
+  backupPlanId?: string;
+  backupPlanName?: string;
+  schedules?: string[];
+  selectionResourceTypes?: string[];
+  targetBackupVault?: string;
+  lastExecutionDate?: string; // datetime
+  windowStart?: number;       // minutos
+  windowDuration?: number;    // minutos
+}
+
+// AWS Backup - Vault
+export interface BackupVault extends BaseResource {
+  backupVaultName?: string;
+  encryptionKeyArn?: string;
+  numberOfRecoveryPoints?: number;
+  latestRecoveryPointAgeDays?: number;
+  locked?: boolean;
 }
 
 // Security Group
@@ -362,7 +416,6 @@ export interface ResourceComment {
 
 export type AWSResourceModel = Schema['AWSResource']['type'];
 
-
 export type AWSResource =
   | AMI
   | AutoScalingGroup
@@ -379,6 +432,10 @@ export type AWSResource =
   | RDSInstance
   | RouteTable
   | S3Bucket
+  | EFSFileSystem
+  | FSxFileSystem
+  | BackupPlan
+  | BackupVault
   | SecurityGroup
   | Subnet
   | TransitGateway

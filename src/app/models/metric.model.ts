@@ -1,25 +1,39 @@
-// src/app/models/resource.model.ts
+// src/app/models/metric.model.ts
 import { Schema } from "../../../amplify/data/resource";
+
 // ========================================
 // METRICS INTERFACES
 // ========================================
 export interface BaseMetric {
   id: string;
+
+  // Do backend
+  resourceType?: string; // e.g., METRIC_SUMMARY, METRIC_EC2_HEALTH, etc.
+  accountId?: string;    // normalmente "GLOBAL"
+  region?: string;       // normalmente "global"
+
+  // Carimbos de data
   metricDate?: string;
-  lastUpdated?: string;
   createdAt?: string;
   updatedAt?: string;
+
+  // Extras úteis
+  isMetric?: boolean;
+  processingDurationSeconds?: number;
 }
 
+// ---------- GLOBAL SUMMARY ----------
 export interface MetricGlobalSummary extends BaseMetric {
   totalResources?: number;
   resourceRegionsFound?: number;
   regionsCollected?: number;
-  
-  accountDistribution?: any;  // JSON field
-  regionDistribution?: any;   // JSON field
-  recentResources?: any;      // JSON field
-  
+
+  // JSON blobs (mantidos como any)
+  accountDistribution?: any;  // [{ accountId, accountName, count }, ...]
+  regionDistribution?: any;   // [{ region, count }, ...]
+  recentResources?: any;      // últimos recursos vistos
+
+  // Resource counts (flatten)
   resourceCounts_AMI?: number;
   resourceCounts_AutoScalingGroup?: number;
   resourceCounts_DirectConnectConnection?: number;
@@ -42,40 +56,52 @@ export interface MetricGlobalSummary extends BaseMetric {
   resourceCounts_VPC?: number;
   resourceCounts_VPCEndpoint?: number;
   resourceCounts_VPNConnection?: number;
+
+  // Novos resourceCounts para storage/backup
+  resourceCounts_EFSFileSystem?: number;
+  resourceCounts_FSxFileSystem?: number;
+  resourceCounts_BackupPlan?: number;
+  resourceCounts_BackupVault?: number;
+  resourceCounts_BackupRecoveryPoint?: number;
 }
 
+// ---------- EC2 HEALTH ----------
 export interface MetricEC2Health extends BaseMetric {
   total?: number;
+
   byState_running?: number;
   byState_stopped?: number;
-  
+
   healthStatus_Healthy?: number;
   healthStatus_Stopped?: number;
-  
+
   cloudwatchAgent_bothEnabled?: number;
   cloudwatchAgent_diskMonitoring?: number;
   cloudwatchAgent_memoryMonitoring?: number;
   cloudwatchAgent_noneEnabled?: number;
   cloudwatchAgent_percentageWithDisk?: number;
   cloudwatchAgent_percentageWithMemory?: number;
-  
+
   ssmAgent_connected?: number;
   ssmAgent_notConnected?: number;
   ssmAgent_notInstalled?: number;
   ssmAgent_percentageConnected?: number;
 }
 
+// ---------- COST OPTIMIZATION ----------
 export interface MetricCostOptimization extends BaseMetric {
   potentialMonthlySavings?: number;
   unassociatedElasticIPs?: number;
   unattachedEBSVolumes?: number;
 }
 
+// ---------- SECURITY ----------
 export interface MetricSecurity extends BaseMetric {
   exposedSecurityGroups?: number;
   percentageExposed?: number;
 }
 
+// ---------- RDS ----------
 export interface MetricRDS extends BaseMetric {
   total?: number;
   available?: number;
@@ -86,17 +112,28 @@ export interface MetricRDS extends BaseMetric {
   percentageWithPerfInsights?: number;
 }
 
+// ---------- STORAGE (S3/EBS/EFS/FSx/Backup) ----------
 export interface MetricStorage extends BaseMetric {
+  // já existiam
   amiSnapshots?: number;
   ebsSnapshots?: number;
   ebsVolumes?: number;
   s3Buckets?: number;
   s3WithLifecycle?: number;
+
+  // novos agregados
+  efsFileSystems?: number;
+  fsxFileSystems?: number;
+  backupPlans?: number;
+  backupVaults?: number;
+  backupRecoveryPoints?: number;
 }
 
+// Tipos derivados do schema Amplify
 export type AWSMetricsModel = Schema['AWSMetrics']['type'];
 
-export type AWSMetric = 
+// União útil para telas/consumo
+export type AWSMetric =
   | MetricGlobalSummary
   | MetricEC2Health
   | MetricCostOptimization

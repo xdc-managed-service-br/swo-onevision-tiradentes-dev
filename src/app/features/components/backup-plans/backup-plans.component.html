@@ -1,58 +1,59 @@
-<!-- src/app/features/components/s3-buckets/s3-buckets.component.html -->
-<article class="ov-container" aria-labelledby="s3-buckets-title">
+<!-- src/app/features/components/backup-plans/backup-plans.component.html -->
+<article class="ov-container" aria-labelledby="backup-plans-title">
 
   <div class="ov-section">
     <div class="ov-header ov-bleed">
-      <h1 id="s3-buckets-title" class="ov-title">S3 Buckets</h1>
+      <h1 id="backup-plans-title" class="ov-title">Backup Plans</h1>
 
       <div class="ov-filterbar">
         <div class="ov-filter">
-          <label for="s3AccountFilter">Account</label>
-          <select id="s3AccountFilter" (change)="filterByAccount($event)">
+          <label for="bpAccountFilter">Account</label>
+          <select id="bpAccountFilter" (change)="filterByAccount($event)">
             <option value="">All Accounts</option>
             <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="s3RegionFilter">Region</label>
-          <select id="s3RegionFilter" (change)="filterByRegion($event)">
+          <label for="bpRegionFilter">Region</label>
+          <select id="bpRegionFilter" (change)="filterByRegion($event)">
             <option value="">All Regions</option>
             <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="s3LifecycleFilter">Lifecycle</label>
-          <select id="s3LifecycleFilter" (change)="filterByLifecycle($event)">
+          <label for="bpVaultFilter">Target Vault</label>
+          <select id="bpVaultFilter" (change)="filterByVault($event)">
             <option value="">All</option>
-            <option value="yes">With Rules</option>
-            <option value="no">No Rules</option>
+            <option *ngFor="let v of uniqueVaults" [value]="v">{{ v }}</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="s3EncryptionFilter">Encryption</label>
-          <select id="s3EncryptionFilter" (change)="filterByEncryption($event)">
+          <label for="bpScheduleFilter">Schedule</label>
+          <select id="bpScheduleFilter" (change)="filterBySchedulePresence($event)">
             <option value="">All</option>
-            <option *ngFor="let enc of uniqueEncryptions" [value]="enc">{{ enc }}</option>
+            <option value="with">With schedule</option>
+            <option value="without">No schedule</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="s3VersioningFilter">Versioning</label>
-          <select id="s3VersioningFilter" (change)="filterByVersioning($event)">
+          <label for="bpResTypeFilter">Resource Type</label>
+          <select id="bpResTypeFilter" (change)="filterByResourceType($event)">
             <option value="">All</option>
-            <option *ngFor="let v of uniqueVersioning" [value]="v">{{ v }}</option>
+            <option *ngFor="let t of uniqueSelectionTypes" [value]="t">{{ t }}</option>
           </select>
         </div>
 
         <div class="ov-filter">
-          <label for="s3PabFilter">Public Access Block</label>
-          <select id="s3PabFilter" (change)="filterByPAB($event)">
-            <option value="">All</option>
-            <option value="enabled">Enabled</option>
-            <option value="disabled">Disabled</option>
+          <label for="bpLastExecFilter">Last Execution</label>
+          <select id="bpLastExecFilter" (change)="filterByLastExecution($event)">
+            <option value="">Any</option>
+            <option value="recent">Last 24h</option>
+            <option value="stale">Older</option>
+            <option value="never">Never</option>
           </select>
         </div>
       </div>
@@ -60,10 +61,10 @@
       <div class="ov-header-actions">
         <div class="ov-search">
           <input
-            id="s3BucketSearch"
+            id="bpSearch"
             type="search"
-            placeholder="Search by Name, Bucket, Account, Encryption…"
-            (input)="searchBuckets($event)"
+            placeholder="Search by Plan ID, Name, Account, Vault, schedule"
+            (input)="searchPlans($event)"
             #searchInput />
           <button
             type="button"
@@ -84,13 +85,13 @@
     </div>
   </div>
 
-  <div *ngIf="loading" class="ov-loading">Loading S3 buckets…</div>
+  <div *ngIf="loading" class="ov-loading">Loading backup plans…</div>
   <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
-    No S3 buckets found matching the current filters.
+    No backup plans found matching the current filters.
   </div>
 
   <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
-    <table class="ov-table" aria-label="S3 buckets table">
+    <table class="ov-table" aria-label="Backup plans table">
       <thead>
         <tr>
           <th *ngFor="let column of getVisibleColumns()"
@@ -122,70 +123,71 @@
   </section>
 
   <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
-    <article class="ov-card" *ngFor="let bucket of paginatedResources">
+    <article class="ov-card" *ngFor="let resource of paginatedResources">
       <header class="ov-card__head">
         <div>
-          <div class="ov-card__title">{{ getDisplayName(bucket) }}</div>
-          <div class="ov-card__sub ov-text--mono">{{ bucket.bucketName }}</div>
+          <div class="ov-card__title">{{ getDisplayName(resource) }}</div>
+          <div class="ov-card__sub ov-text--mono">{{ resource.backupPlanId }}</div>
         </div>
-        <span [ngClass]="bucket.publicAccessBlock ? 'status-running' : 'status-stopped'">
-          {{ bucket.publicAccessBlock ? 'Public Access Block: Enabled' : 'Public Access Block: Disabled' }}
-        </span>
+        <span [ngClass]="getExecutionBadgeClass(resource)">{{ getExecutionBadgeLabel(resource) }}</span>
       </header>
 
       <div class="ov-card__grid">
         <div>
           <div class="ov-k">Region</div>
-          <div class="ov-v">{{ bucket.region || 'N/A' }}</div>
+          <div class="ov-v">{{ resource.region || 'N/A' }}</div>
         </div>
         <div>
           <div class="ov-k">Account</div>
-          <div class="ov-v">{{ getAccountLabel(bucket) }}</div>
+          <div class="ov-v">{{ getAccountLabel(resource) }}</div>
         </div>
         <div>
-          <div class="ov-k">Objects</div>
-          <div class="ov-v">{{ formatNumber(bucket.objectCount) }}</div>
+          <div class="ov-k">Vault</div>
+          <div class="ov-v">{{ resource.targetBackupVault || 'N/A' }}</div>
         </div>
         <div>
-          <div class="ov-k">Storage</div>
-          <div class="ov-v">{{ bucket.storageBytes || 'N/A' }}</div>
+          <div class="ov-k">Schedules</div>
+          <div class="ov-v">{{ formatSchedules(resource.schedules) }}</div>
         </div>
         <div>
-          <div class="ov-k">Encryption</div>
-          <div class="ov-v">{{ bucket.encryption || 'None' }}</div>
+          <div class="ov-k">Resource Types</div>
+          <div class="ov-v">{{ formatSelectionTypes(resource.selectionResourceTypes) }}</div>
         </div>
         <div>
-          <div class="ov-k">Versioning</div>
-          <div class="ov-v">{{ bucket.versioning || 'None' }}</div>
+          <div class="ov-k">Start Window</div>
+          <div class="ov-v">{{ formatMinutes(resource.windowStart) }}</div>
         </div>
         <div>
-          <div class="ov-k">Lifecycle</div>
-          <div class="ov-v">{{ bucket.hasLifecycleRules ? 'Yes' : 'No' }}</div>
+          <div class="ov-k">Duration</div>
+          <div class="ov-v">{{ formatMinutes(resource.windowDuration) }}</div>
+        </div>
+        <div>
+          <div class="ov-k">Last Execution</div>
+          <div class="ov-v">{{ formatDate(resource.lastExecutionDate) }}</div>
         </div>
         <div>
           <div class="ov-k">Created</div>
-          <div class="ov-v">{{ formatDate(bucket.createdAt) }}</div>
+          <div class="ov-v">{{ formatDate(resource.createdAt) }}</div>
         </div>
         <div>
           <div class="ov-k">Updated</div>
-          <div class="ov-v">{{ formatDate(bucket.updatedAt) }}</div>
+          <div class="ov-v">{{ formatDate(resource.updatedAt) }}</div>
         </div>
       </div>
 
       <div class="ov-card__footer">
-        <app-resource-tags *ngIf="bucket.tags" [tags]="bucket.tags"></app-resource-tags>
+        <app-resource-tags *ngIf="resource.tags" [tags]="resource.tags"></app-resource-tags>
         <div class="ov-actions">
-          <button class="ov-btn ov-btn--primary" (click)="showDetails(bucket)">View Details</button>
+          <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
         </div>
       </div>
     </article>
   </div>
 
-  <!-- Column customizer -->
   <div class="ov-modal" *ngIf="showColumnCustomizer" (click)="closeColumnCustomizer()">
-    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="s3-columns-title" (click)="$event.stopPropagation()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="bp-columns-title" (click)="$event.stopPropagation()">
       <div class="ov-modal__head">
-        <h2 id="s3-columns-title" class="ov-modal__title">Customize Columns</h2>
+        <h2 id="bp-columns-title" class="ov-modal__title">Customize Columns</h2>
         <button class="ov-btn" (click)="closeColumnCustomizer()" aria-label="Close dialog">×</button>
       </div>
       <div class="ov-modal__body">
@@ -213,48 +215,55 @@
     </div>
   </div>
 
-  <!-- Details modal -->
-  <div class="ov-modal" *ngIf="selectedResource as bucket" (click)="closeDetails()">
-    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="s3-details-title" (click)="$event.stopPropagation()" style="max-width: 720px;">
+  <div class="ov-modal" *ngIf="selectedResource as plan" (click)="closeDetails()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="bp-details-title" (click)="$event.stopPropagation()" style="max-width: 780px;">
       <div class="ov-modal__head">
-        <h2 id="s3-details-title" class="ov-modal__title">S3 Bucket Details — {{ bucket.bucketName }}</h2>
+        <h2 id="bp-details-title" class="ov-modal__title">Backup Plan Details — {{ plan.backupPlanId }}</h2>
         <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
       </div>
 
       <div class="ov-modal__body">
-        <section aria-labelledby="s3-info-section">
-          <h3 id="s3-info-section">Bucket Information</h3>
+        <section aria-labelledby="bp-info-section">
+          <h3 id="bp-info-section">Plan Information</h3>
           <table class="ov-details-table">
-            <tr><th>Name</th><td>{{ getDisplayName(bucket) }}</td></tr>
-            <tr><th>Bucket</th><td class="ov-text--mono">{{ bucket.bucketName }}</td></tr>
-            <tr><th>Region</th><td>{{ bucket.region || 'N/A' }}</td></tr>
-            <tr><th>Account</th><td>{{ getAccountLabel(bucket) }}</td></tr>
+            <tr><th>Plan ID</th><td class="ov-text--mono">{{ plan.backupPlanId }}</td></tr>
+            <tr><th>Name</th><td>{{ getDisplayName(plan) }}</td></tr>
+            <tr><th>Account</th><td>{{ getAccountLabel(plan) }}</td></tr>
+            <tr><th>Region</th><td>{{ plan.region || 'N/A' }}</td></tr>
+            <tr><th>Target Vault</th><td>{{ plan.targetBackupVault || 'N/A' }}</td></tr>
           </table>
         </section>
 
-        <section aria-labelledby="s3-config-section">
-          <h3 id="s3-config-section">Configuration</h3>
+        <section aria-labelledby="bp-schedule-section">
+          <h3 id="bp-schedule-section">Schedules</h3>
+          <p *ngIf="!normalizeStringArray(plan.schedules).length">No schedules configured.</p>
+          <ul *ngIf="normalizeStringArray(plan.schedules).length">
+            <li *ngFor="let s of normalizeStringArray(plan.schedules)" class="ov-text--mono">{{ s }}</li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="bp-selection-section">
+          <h3 id="bp-selection-section">Resource Selection</h3>
+          <p *ngIf="!normalizeStringArray(plan.selectionResourceTypes).length">No resource types defined.</p>
+          <ul *ngIf="normalizeStringArray(plan.selectionResourceTypes).length">
+            <li *ngFor="let t of normalizeStringArray(plan.selectionResourceTypes)">{{ t }}</li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="bp-windows-section">
+          <h3 id="bp-windows-section">Windows</h3>
           <table class="ov-details-table">
-            <tr><th>Lifecycle Rules</th><td>{{ bucket.hasLifecycleRules ? 'Yes' : 'No' }}</td></tr>
-            <tr><th>Encryption</th><td>{{ bucket.encryption || 'None' }}</td></tr>
-            <tr><th>Versioning</th><td>{{ bucket.versioning || 'None' }}</td></tr>
-            <tr><th>Public Access Block</th><td>{{ bucket.publicAccessBlock ? 'Enabled' : 'Disabled' }}</td></tr>
+            <tr><th>Start Window</th><td>{{ formatMinutes(plan.windowStart) }}</td></tr>
+            <tr><th>Duration</th><td>{{ formatMinutes(plan.windowDuration) }}</td></tr>
+            <tr><th>Last Execution</th><td>{{ formatDate(plan.lastExecutionDate) }}</td></tr>
+            <tr><th>Created</th><td>{{ formatDate(plan.createdAt) }}</td></tr>
+            <tr><th>Updated</th><td>{{ formatDate(plan.updatedAt) }}</td></tr>
           </table>
         </section>
 
-        <section aria-labelledby="s3-stats-section">
-          <h3 id="s3-stats-section">Statistics</h3>
-          <table class="ov-details-table">
-            <tr><th>Objects</th><td>{{ formatNumber(bucket.objectCount) }}</td></tr>
-            <tr><th>Storage</th><td>{{ bucket.storageBytes || 'N/A' }}</td></tr>
-            <tr><th>Created</th><td>{{ formatDate(bucket.createdAt) }}</td></tr>
-            <tr><th>Updated</th><td>{{ formatDate(bucket.updatedAt) }}</td></tr>
-          </table>
-        </section>
-
-        <section *ngIf="bucket.tags" aria-labelledby="s3-tags-section">
-          <h3 id="s3-tags-section">Tags</h3>
-          <app-resource-tags [tags]="bucket.tags"></app-resource-tags>
+        <section *ngIf="plan.tags" aria-labelledby="bp-tags-section">
+          <h3 id="bp-tags-section">Tags</h3>
+          <app-resource-tags [tags]="plan.tags"></app-resource-tags>
         </section>
       </div>
 
@@ -264,7 +273,6 @@
     </div>
   </div>
 
-  <!-- Pagination -->
   <div class="ov-pagination" *ngIf="!loading && filteredResources.length > 0">
     <div class="ov-pagination__info">
       Showing {{ pageStartIndex }} - {{ pageEndIndex }} of {{ filteredResources.length }} items

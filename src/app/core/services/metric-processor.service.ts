@@ -120,8 +120,6 @@ export class MetricProcessorService {
    * Processa dados de métrica com suporte completo a formato DynamoDB
    */
   public processMetricData(metric: any): AWSMetricsModel {
-    console.log('[MetricProcessor] Processing metric:', metric.id);
-    
     // Primeiro, processa todos os campos para extrair valores do DynamoDB
     const processed: any = {};
     
@@ -284,6 +282,7 @@ export class MetricProcessorService {
 
   /**
    * Extrai contagens de recursos para um Map
+   * CORREÇÃO: Não formatar as chaves, manter como estão no DynamoDB
    */
   public extractResourceCounts(metric: AWSMetricsModel): Map<string, number> {
     const counts = new Map<string, number>();
@@ -293,7 +292,8 @@ export class MetricProcessorService {
         const resourceType = key.replace('resourceCounts_', '');
         const value = (metric as any)[key];
         if (typeof value === 'number' && value > 0) {
-          counts.set(this.formatResourceType(resourceType), value);
+          // IMPORTANTE: Não formatar a chave, manter como está
+          counts.set(resourceType, value);
         }
       }
     });

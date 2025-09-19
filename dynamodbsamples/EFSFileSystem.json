@@ -1,0 +1,70 @@
+{
+  "id": {
+    "S": "058264393294-us-east-1-EFSFileSystem-fs-01f3e6829069bf332"
+  },
+  "accountId": {
+    "S": "058264393294"
+  },
+  "accountName": {
+    "S": "Banco de Dados"
+  },
+  "backupPolicyEnabled": {
+    "BOOL": true
+  },
+  "createdAt": {
+    "S": "2025-09-18T04:40:38.064Z"
+  },
+  "fileSystemId": {
+    "S": "fs-01f3e6829069bf332"
+  },
+  "lifecyclePolicies": {
+    "L": [
+      {
+        "S": "AFTER_30_DAYS"
+      }
+    ]
+  },
+  "metrics": {
+    "M": {
+      "burstCreditBalance_min": {
+        "N": "0"
+      },
+      "clientConnections_max": {
+        "N": "1"
+      },
+      "percentIOLimit_avg": {
+        "N": "0.23"
+      },
+      "permittedThroughput_avg": {
+        "N": "1073741824"
+      }
+    }
+  },
+  "mountTargetsCount": {
+    "N": "1"
+  },
+  "performanceMode": {
+    "S": "generalPurpose"
+  },
+  "provisionedThroughputInMibps": {
+    "N": "0"
+  },
+  "region": {
+    "S": "us-east-1"
+  },
+  "resourceType": {
+    "S": "EFSFileSystem"
+  },
+  "sizeInBytes": {
+    "S": "59.28 TB"
+  },
+  "tags": {
+    "S": "[{\"Key\": \"Name\", \"Value\": \"Oracle Support\"}, {\"Key\": \"aws:elasticfilesystem:default-backup\", \"Value\": \"enabled\"}, {\"Key\": \"map-migrated\", \"Value\": \"migDATH74P7VG\"}, {\"Key\": \"swoBackup\", \"Value\": \"0\"}]"
+  },
+  "throughputMode": {
+    "S": "elastic"
+  },
+  "updatedAt": {
+    "S": "2025-09-18T04:40:38.064Z"
+  }
+}
