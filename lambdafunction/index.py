@@ -21,7 +21,7 @@ from collectors.base import (
 )
 from collectors.ec2_collector import EC2Collector
 from collectors.rds_collector import RDSCollector
-from collectors.s3_collector import S3Collector
+from collectors.storage_collector import StorageCollector
 from collectors.networking_collector import NetworkingCollector
 
 # Import metrics calculator
@@ -41,6 +41,7 @@ def process_region(account_id, account_name, region, credentials, tables, metric
     region_total_items_saved = 0
 
     # List of regional collector classes to run
+    # Note: StorageCollector handles EBS, EFS, FSx which are regional services internally
     regional_collectors = [EC2Collector, RDSCollector, NetworkingCollector]
 
     # Instantiate collectors for this specific region/account/creds
@@ -78,7 +79,7 @@ def process_region(account_id, account_name, region, credentials, tables, metric
 
 
 def process_account(account_id, account_name, tables, metrics_accumulator=None):
-    """Processes a single account: assumes role, collects S3, processes regions concurrently."""
+    """Processes a single account: assumes role, collects storage resources, processes regions concurrently."""
     account_start_time = datetime.now(timezone.utc)
     logger.info(f"=== Starting collection for account {account_name} ({account_id}) ===")
     total_items_saved_for_account = 0
@@ -103,39 +104,47 @@ def process_account(account_id, account_name, tables, metrics_accumulator=None):
             logger.error(f"Unexpected error assuming role in account {account_id}: {str(e)}. Skipping account.", exc_info=True)
             return 0
 
-        # 2. Collect S3 Buckets (Global Resource)
-        s3_items_saved = 0
-        logger.info(f"Collecting S3 buckets for account {account_name}...")
-        
-        try:
-            s3_collector = S3Collector(account_id, account_name, credentials, tables)
-            s3_collected_items = s3_collector.collect()
-            
-            if s3_collected_items:
-                # Accumulate S3 metrics
-                if metrics_accumulator:
-                    for item in s3_collected_items:
-                        try:
-                            metrics_accumulator.add_resource(item)
-                        except Exception as e:
-                            logger.warning(f"Error accumulating S3 metrics: {e}")
-                
-                s3_items_saved = s3_collector.save()
-                total_items_saved_for_account += s3_items_saved
-                logger.info(f"Collected and saved {s3_items_saved} S3 buckets for account {account_name}.")
-            else:
-                logger.info(f"No S3 buckets found or saved for account {account_name}.")
-        except Exception as e:
-            logger.error(f"Error during S3 collection for account {account_id}: {str(e)}", exc_info=True)
-
-        # 3. Get Available Regions for this Account
+        # 2. Get Available Regions for this Account
         regions = get_available_regions(credentials)
         if not regions or regions == DEFAULT_REGIONS:
             logger.warning(f"Using default or potentially limited region list for account {account_id}.")
         sorted_regions = sorted(regions)
 
-        # 4. Process Regions Concurrently
-        logger.info( f"Processing {len(sorted_regions)} regions for account {account_name} " f"using up to {min(MAX_WORKERS, len(sorted_regions))} workers...")
+        # 3. Collect Storage Resources (S3 global + EBS/EFS/FSx/Backup regional)
+        storage_items_saved = 0
+        logger.info(f"Collecting storage resources for account {account_name}...")
+        
+        try:
+            # StorageCollector now handles S3, EBS, EFS, FSx, and Backup
+            storage_collector = StorageCollector(
+                account_id, 
+                account_name, 
+                credentials, 
+                tables,
+                regions=sorted_regions  # Pass regions for regional services
+            )
+            storage_collected_items = storage_collector.collect()
+            
+            if storage_collected_items:
+                # Accumulate storage metrics
+                if metrics_accumulator:
+                    for item in storage_collected_items:
+                        try:
+                            metrics_accumulator.add_resource(item)
+                        except Exception as e:
+                            logger.warning(f"Error accumulating storage metrics: {e}")
+                
+                storage_items_saved = storage_collector.save()
+                total_items_saved_for_account += storage_items_saved
+                logger.info(f"Collected and saved {storage_items_saved} storage resources for account {account_name}.")
+            else:
+                logger.info(f"No storage resources found or saved for account {account_name}.")
+        except Exception as e:
+            logger.error(f"Error during storage collection for account {account_id}: {str(e)}", exc_info=True)
+
+        # 4. Process Other Regional Resources Concurrently
+        logger.info(f"Processing {len(sorted_regions)} regions for other resources in account {account_name} "
+                    f"using up to {min(MAX_WORKERS, len(sorted_regions))} workers...")
         region_results = {}
         
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -319,11 +328,16 @@ def lambda_handler(event, context):
             logger.info(f"  - EC2 Instances: {metrics['ec2']['total']} (Running: {global_metrics_accumulator.ec2_running})")
         if metrics.get('rds'):
             logger.info(f"  - RDS Instances: {metrics['rds']['total']} (Available: {metrics['rds']['available']})")
+        if metrics.get('storage'):
+            logger.info(f"  - Storage Resources: S3 Buckets: {global_metrics_accumulator.s3_buckets}, "
+                       f"EBS Volumes: {global_metrics_accumulator.ebs_volumes}, "
+                       f"EFS FileSystems: {global_metrics_accumulator.efs_filesystems}")
         if metrics.get('cost'):
             logger.info(f"  - Potential Monthly Savings: ${metrics['cost']['potentialMonthlySavings']}")
         
         # Save metrics to DynamoDB metrics tables only
-        metrics_saved = save_metrics_to_dynamodb(metrics_tables, metrics, overall_duration)
+        processing_duration = overall_duration  # Assuming you want to use the overall duration
+        metrics_saved = save_metrics_to_dynamodb(metrics_tables, metrics, processing_duration)
         logger.info(f"Successfully saved {metrics_saved} metric items to DynamoDB metrics tables")
         
     except Exception as e:
