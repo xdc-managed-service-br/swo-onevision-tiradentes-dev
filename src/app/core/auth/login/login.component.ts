@@ -1,5 +1,5 @@
 // src/app/core/auth/login/login.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
@@ -18,7 +18,7 @@ import {
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   username: string = '';
   password: string = '';
   errorMessage: string = '';
@@ -29,6 +29,8 @@ export class LoginComponent implements OnInit {
   resetErrorMessage: string = '';
   resetCode: string = '';
   resetConfirmMode: boolean = false;
+  logoSrc: string = '/assets/icons/swoDarkMode.svg';
+  private themeObserver?: MutationObserver;
 
   // Add new properties for new password challenge
   newPasswordChallengeMode: boolean = false;
@@ -41,6 +43,8 @@ export class LoginComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     // FIRST: Check if user is already authenticated
     await this.checkExistingAuth();
+
+    this.initThemeLogoSync();
     
     // Then check for success message from password reset
     this.route.queryParams.subscribe(params => {
@@ -48,6 +52,38 @@ export class LoginComponent implements OnInit {
         this.errorMessage = ''; // Clear any existing error messages
         alert('Password reset successful. Please log in with your new password.');
       }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.themeObserver?.disconnect();
+  }
+
+  private initThemeLogoSync(): void {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    const root = document.documentElement;
+    const apply = () => {
+      const theme = root.getAttribute('data-theme');
+      this.logoSrc = theme === 'light'
+        ? '/assets/icons/swoLightMode.svg'
+        : '/assets/icons/swoDarkMode.svg';
+    };
+
+    apply();
+
+    this.themeObserver?.disconnect();
+
+    if (typeof MutationObserver === 'undefined') {
+      return;
+    }
+
+    this.themeObserver = new MutationObserver(() => apply());
+    this.themeObserver.observe(root, {
+      attributes: true,
+      attributeFilter: ['data-theme']
     });
   }
 

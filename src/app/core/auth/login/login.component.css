@@ -1,3 +1,4 @@
+/* src/app/core/auth/login/login.component.css */
 /* ===============================
    OneVision — Auth (Dark Theme)
    =============================== */
@@ -18,14 +19,22 @@
   --ov-input: #111a2e;
   --ov-input-border: #1f2a44;
   --ov-input-border-hover: #29385b;
+  --ov-input-hover: #16203a;
   --ov-input-placeholder: #7a859c;
   --ov-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
   --ov-button-text: #fff;
+  --ov-primary-hover: #4a8bff;
+}
+#ov-auth-title {
+  font-size: 32px;   /* ou 32px, se quiser bem grande */
 }
 
 /* Light theme */
-:root.light {
+:root.light,
+:root[data-theme="light"] {
   --ov-button-text: #000;   /* preto no light */
+  --ov-input-hover: #f3f4f6;
+  --ov-primary-hover: #60a5fa;
 }
 
 /* ===== Container ===== */
@@ -60,16 +69,13 @@
   gap: 6px;                   /* espaço entre título e subtítulo */
 }
 
-.login-header__logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, var(--ov-primary), var(--ov-primary-700));
-  display: grid;
-  place-items: center;
-  color: white;
-  font-weight: 800;
-  letter-spacing: .5px;
+.login-header__brand {
+  width: 160px;
+  max-width: 80%;
+  height: auto;
+  margin-bottom: 8px;
+  display: block;
+  object-fit: contain;
 }
 
 .login-header h1 {
@@ -154,7 +160,7 @@
 /* hover / focus */
 .form-group input:hover {
   border-color: var(--ov-input-border-hover);
-  background: #121d38;
+  background: var(--ov-input-hover);
 }
 
 .form-group input:focus {
@@ -195,7 +201,8 @@
 }
 
 .primary-button:hover {
-  filter: brightness(1.06);
+  background: linear-gradient(180deg, var(--ov-primary-hover), var(--ov-primary-600));
+  filter: brightness(1.04);
 }
 
 .primary-button:active {
@@ -344,3 +351,5 @@
 *::after {
   box-sizing: border-box;
 }
+
+

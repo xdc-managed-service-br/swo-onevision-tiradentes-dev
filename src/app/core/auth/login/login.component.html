@@ -1,18 +1,22 @@
+<!-- /src/app/core/auth/login/login.component.html -->
 <div class="login-container">
   <div class="login-card" role="region" aria-labelledby="ov-auth-title">
     <!-- Header / Brand -->
     <div class="login-header">
-      <div class="login-header__logo" aria-hidden="true"></div>
+      <img
+        class="login-header__brand"
+        [src]="logoSrc"
+        alt="SoftwareOne logo"
+        loading="lazy"
+      />
       <div>
-        <h1 id="ov-auth-title">OneVision</h1>
+        <h1 id="ov-auth-title">OneVision - Sign in</h1>
         <p>AWS Resource Management Platform</p>
       </div>
     </div>
 
     <!-- =============== Sign In =============== -->
     <div *ngIf="!forgotPasswordMode && !newPasswordChallengeMode" class="login-form">
-      <h2>Sign In</h2>
-
       <form (ngSubmit)="handleSignIn()" autocomplete="on">
         <div class="form-group">
           <label for="username">Email</label>
