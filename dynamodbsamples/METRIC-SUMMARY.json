@@ -273,7 +273,7 @@
     "S": "Global Metrics"
   },
   "createdAt": {
-    "S": "2025-09-20T05:50:10.281Z"
+    "S": "2025-09-20T18:24:31.968Z"
   },
   "isMetric": {
     "BOOL": true
@@ -281,8 +281,56 @@
   "metricDate": {
     "S": "2025-09-20"
   },
+  "networkHealth_directConnectConnections_healthy": {
+    "N": "1"
+  },
+  "networkHealth_directConnectConnections_healthyPercentage": {
+    "N": "100"
+  },
+  "networkHealth_directConnectConnections_total": {
+    "N": "1"
+  },
+  "networkHealth_directConnectConnections_unhealthy": {
+    "N": "0"
+  },
+  "networkHealth_directConnectVirtualInterfaces_healthy": {
+    "N": "1"
+  },
+  "networkHealth_directConnectVirtualInterfaces_healthyPercentage": {
+    "N": "100"
+  },
+  "networkHealth_directConnectVirtualInterfaces_total": {
+    "N": "1"
+  },
+  "networkHealth_directConnectVirtualInterfaces_unhealthy": {
+    "N": "0"
+  },
+  "networkHealth_transitGateways_healthy": {
+    "N": "20"
+  },
+  "networkHealth_transitGateways_healthyPercentage": {
+    "N": "100"
+  },
+  "networkHealth_transitGateways_total": {
+    "N": "20"
+  },
+  "networkHealth_transitGateways_unhealthy": {
+    "N": "0"
+  },
+  "networkHealth_vpnConnections_healthy": {
+    "N": "2"
+  },
+  "networkHealth_vpnConnections_healthyPercentage": {
+    "N": "100"
+  },
+  "networkHealth_vpnConnections_total": {
+    "N": "2"
+  },
+  "networkHealth_vpnConnections_unhealthy": {
+    "N": "0"
+  },
   "processingDurationSeconds": {
-    "N": "260.407"
+    "N": "272.427"
   },
   "region": {
     "S": "global"
@@ -385,7 +433,7 @@
             "N": "160"
           },
           "region": {
-            "S": "ap-northeast-1"
+            "S": "ap-northeast-3"
           }
         }
       },
@@ -395,7 +443,7 @@
             "N": "160"
           },
           "region": {
-            "S": "ap-northeast-3"
+            "S": "ap-northeast-1"
           }
         }
       },
@@ -542,54 +590,6 @@
   "resourceCounts_VPNConnection": {
     "N": "2"
   },
-  "networkHealth_directConnectConnections_total": {
-    "N": "1"
-  },
-  "networkHealth_directConnectConnections_healthy": {
-    "N": "1"
-  },
-  "networkHealth_directConnectConnections_unhealthy": {
-    "N": "0"
-  },
-  "networkHealth_directConnectConnections_healthyPercentage": {
-    "N": "100"
-  },
-  "networkHealth_directConnectVirtualInterfaces_total": {
-    "N": "1"
-  },
-  "networkHealth_directConnectVirtualInterfaces_healthy": {
-    "N": "1"
-  },
-  "networkHealth_directConnectVirtualInterfaces_unhealthy": {
-    "N": "0"
-  },
-  "networkHealth_directConnectVirtualInterfaces_healthyPercentage": {
-    "N": "100"
-  },
-  "networkHealth_vpnConnections_total": {
-    "N": "2"
-  },
-  "networkHealth_vpnConnections_healthy": {
-    "N": "1"
-  },
-  "networkHealth_vpnConnections_unhealthy": {
-    "N": "1"
-  },
-  "networkHealth_vpnConnections_healthyPercentage": {
-    "N": "50"
-  },
-  "networkHealth_transitGateways_total": {
-    "N": "20"
-  },
-  "networkHealth_transitGateways_healthy": {
-    "N": "18"
-  },
-  "networkHealth_transitGateways_unhealthy": {
-    "N": "2"
-  },
-  "networkHealth_transitGateways_healthyPercentage": {
-    "N": "90"
-  },
   "resourceRegionsFound": {
     "N": "17"
   },
@@ -600,6 +600,6 @@
     "N": "11915"
   },
   "updatedAt": {
-    "S": "2025-09-20T05:50:10.281Z"
+    "S": "2025-09-20T18:24:31.968Z"
   }
 }

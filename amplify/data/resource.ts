@@ -409,6 +409,24 @@ const schema = a.schema({
     resourceCounts_BackupPlan: a.integer(),
     resourceCounts_BackupVault: a.integer(),
     resourceCounts_BackupRecoveryPoint: a.integer(),
+
+    // Network health aggregates flattened by lambda
+    networkHealth_directConnectConnections_total: a.integer(),
+    networkHealth_directConnectConnections_healthy: a.integer(),
+    networkHealth_directConnectConnections_unhealthy: a.integer(),
+    networkHealth_directConnectConnections_healthyPercentage: a.integer(),
+    networkHealth_directConnectVirtualInterfaces_total: a.integer(),
+    networkHealth_directConnectVirtualInterfaces_healthy: a.integer(),
+    networkHealth_directConnectVirtualInterfaces_unhealthy: a.integer(),
+    networkHealth_directConnectVirtualInterfaces_healthyPercentage: a.integer(),
+    networkHealth_vpnConnections_total: a.integer(),
+    networkHealth_vpnConnections_healthy: a.integer(),
+    networkHealth_vpnConnections_unhealthy: a.integer(),
+    networkHealth_vpnConnections_healthyPercentage: a.integer(),
+    networkHealth_transitGateways_total: a.integer(),
+    networkHealth_transitGateways_healthy: a.integer(),
+    networkHealth_transitGateways_unhealthy: a.integer(),
+    networkHealth_transitGateways_healthyPercentage: a.integer(),
   })
   .authorization(allow => [
     allow.authenticated().to(['read']),
