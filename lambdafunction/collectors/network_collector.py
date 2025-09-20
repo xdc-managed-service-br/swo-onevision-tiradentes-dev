@@ -904,6 +904,27 @@ class NetworkCollector(ResourceCollector):
                 route_filter_prefixes = vif.get('routeFilterPrefixes', [])
                 bgp_peers = vif.get('bgpPeers', [])
 
+                # ===== Novo: extrair status de BGP para atributos de topo =====
+                def _status_of_family(peers, fam):
+                    fam = (fam or "").lower()
+                    for p in peers or []:
+                        if (p.get('addressFamily') or "").lower() == fam:
+                            return (p.get('bgpStatus') or 'unknown').lower()
+                    return None
+
+                status_ipv4 = _status_of_family(bgp_peers, 'ipv4')
+                status_ipv6 = _status_of_family(bgp_peers, 'ipv6')
+
+                # primário: prioriza IPv4, depois IPv6, senão o primeiro peer
+                primary_status = (
+                    status_ipv4
+                    or status_ipv6
+                    or ((bgp_peers[0].get('bgpStatus') or 'unknown').lower() if bgp_peers else 'unknown')
+                )
+
+                any_up = any((p.get('bgpStatus') or '').lower() == 'up' for p in (bgp_peers or []))
+                all_up = bool(bgp_peers) and all((p.get('bgpStatus') or '').lower() == 'up' for p in bgp_peers)
+
                 item_data = {
                     'virtualInterfaceId': vif_id,
                     'virtualInterfaceName': vif_name,
@@ -923,11 +944,19 @@ class NetworkCollector(ResourceCollector):
                     'directConnectGatewayId': vif.get('directConnectGatewayId'),
                     'tags': json.dumps(vif.get('tags', [])) if vif.get('tags') else '[]',
                     'routeFilterPrefixes': route_filter_prefixes,
-                    'bgpPeers': bgp_peers
+                    'bgpPeers': bgp_peers,
+
+                    # ===== Novos campos “flat” para o front =====
+                    'bgpStatus': primary_status,      # up/down/unknown (prioriza IPv4)
+                    'bgpStatusIpv4': status_ipv4,     # ex.: up / down / None
+                    'bgpStatusIpv6': status_ipv6,     # ex.: up / down / None
+                    'bgpAnyUp': any_up,               # True se qualquer peer estiver up
+                    'bgpAllUp': all_up,               # True se todos estiverem up
                 }
+
                 self.add_item('DirectConnectVirtualInterface', vif_id, to_dynamodb_format(item_data))
                 vif_count += 1
-            
+
             if vif_count > 0:
                 logger.debug(f"Added {vif_count} Direct Connect Virtual Interfaces from region {self.region} to the item list.")
             return vif_count

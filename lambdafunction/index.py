@@ -16,10 +16,10 @@ from collectors.base import (
     DEFAULT_REGIONS
 )
 
-from lambdafunction.collectors.compute_collector import ComputeCollector
-from lambdafunction.collectors.database_collector import DatabaseCollector
+from collectors.compute_collector import ComputeCollector
+from collectors.database_collector import DatabaseCollector
 from collectors.storage_collector import StorageCollector
-from lambdafunction.collectors.network_collector import NetworkCollector
+from collectors.network_collector import NetworkCollector
 from collectors.metrics_calculator import MetricsAccumulator, save_metrics_to_dynamodb
 
 logger = logging.getLogger()

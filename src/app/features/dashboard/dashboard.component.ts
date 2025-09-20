@@ -1,9 +1,16 @@
 // src/app/features/dashboard/dashboard.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, forkJoin, takeUntil } from 'rxjs';
 import { MetricService } from '../../core/services/metric.service';
 import { MetricProcessorService, ProcessedMetricData } from '../../core/services/metric-processor.service';
+import { ResourceService } from '../../core/services/resource.service';
+
+interface ResourceHealthState {
+  total: number;
+  healthy: number;
+  unhealthy: number;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -18,10 +25,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isLoading = false;
   dashboardData: ProcessedMetricData | null = null;
   resourceTypes: { name: string; count: number }[] = [];
+  networkHealth = {
+    directConnectConnections: this.createEmptyHealthState(),
+    directConnectVirtualInterfaces: this.createEmptyHealthState(),
+    vpnConnections: this.createEmptyHealthState(),
+    transitGateways: this.createEmptyHealthState()
+  };
 
   constructor(
     private metricService: MetricService,
-    private metricProcessor: MetricProcessorService
+    private metricProcessor: MetricProcessorService,
+    private resourceService: ResourceService
   ) {}
 
   ngOnInit() {
@@ -45,7 +59,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
           
           // Extrai tipos de recursos
           this.extractResourceTypes();
-          
+
+          // Atualiza cards de saúde para recursos de rede
+          this.loadNetworkResourceHealth();
+
           this.isLoading = false;
         },
         error: (error) => {
@@ -176,6 +193,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         value: this.formatNumber(this.getResourceCount('S3Bucket'))
       },
       {
+        label: 'Transit Gateways',
+        value: this.formatNumber(this.getResourceCount('TransitGateway'))
+      },
+      {
         label: 'EBS Volumes',
         value: this.formatNumber(this.getResourceCount('EBSVolume'))
       },
@@ -193,6 +214,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const ec2Running = ec2?.running || 0;
     const ec2Stopped = ec2?.stopped || 0;
     const ec2Other = Math.max(ec2Total - ec2Running - ec2Stopped, 0);
+
+    const directConnectHealth = this.networkHealth.directConnectConnections;
+    const vifHealth = this.networkHealth.directConnectVirtualInterfaces;
+    const vpnHealth = this.networkHealth.vpnConnections;
+    const transitGatewayHealth = this.networkHealth.transitGateways;
 
     const cards = [
       {
@@ -229,19 +255,77 @@ export class DashboardComponent implements OnInit, OnDestroy {
         ],
         status: this.getResourceCount('EBSVolume') > 0 ? '100% Healthy' : 'No data',
         description: 'Volume health overview'
-      },
-      {
-        key: 's3',
-        title: 'S3 Buckets',
-        total: this.getResourceCount('S3Bucket'),
-        badge: this.getResourceCount('S3Bucket'),
-        segments: [
-          { value: this.getResourceCount('S3Bucket'), color: 'good' }
-        ],
-        status: this.getResourceCount('S3Bucket') > 0 ? '100% Healthy' : 'No buckets',
-        description: 'Storage overview'
       }
     ];
+
+    cards.push({
+      key: 'direct-connect-connections',
+      title: 'Direct Connect Links',
+      total: directConnectHealth.total,
+      badge: directConnectHealth.total,
+      segments: [
+        { value: directConnectHealth.healthy, color: 'good' },
+        { value: directConnectHealth.unhealthy, color: 'critical' }
+      ].filter(segment => segment.value > 0),
+      status: directConnectHealth.total > 0
+        ? `${this.getPercentage(directConnectHealth.healthy, directConnectHealth.total)}% Available`
+        : 'No data',
+      description: directConnectHealth.total > 0
+        ? `${directConnectHealth.healthy} available / ${directConnectHealth.unhealthy} other states`
+        : 'Direct Connect overview'
+    });
+
+    cards.push({
+      key: 'direct-connect-vifs',
+      title: 'Direct Connect VIFs',
+      total: vifHealth.total,
+      badge: vifHealth.total,
+      segments: [
+        { value: vifHealth.healthy, color: 'good' },
+        { value: vifHealth.unhealthy, color: 'critical' }
+      ].filter(segment => segment.value > 0),
+      status: vifHealth.total > 0
+        ? `${this.getPercentage(vifHealth.healthy, vifHealth.total)}% BGP Available`
+        : 'No data',
+      description: vifHealth.total > 0
+        ? `${vifHealth.healthy} stable / ${vifHealth.unhealthy} with BGP issues`
+        : 'Virtual interface overview'
+    });
+
+    cards.push({
+      key: 'vpn-connections',
+      title: 'VPN Connections',
+      total: vpnHealth.total,
+      badge: vpnHealth.total,
+      segments: [
+        { value: vpnHealth.healthy, color: 'good' },
+        { value: vpnHealth.unhealthy, color: 'critical' }
+      ].filter(segment => segment.value > 0),
+      status: vpnHealth.total > 0
+        ? `${this.getPercentage(vpnHealth.healthy, vpnHealth.total)}% Available`
+        : 'No data',
+      description: vpnHealth.total > 0
+        ? `${vpnHealth.healthy} available / ${vpnHealth.unhealthy} other states`
+        : 'VPN availability overview'
+    });
+
+    cards.push({
+      key: 'transit-gateways',
+      title: 'Transit Gateways',
+      total: transitGatewayHealth.total,
+      badge: transitGatewayHealth.total,
+      segments: [
+        { value: transitGatewayHealth.healthy, color: 'good' },
+        { value: transitGatewayHealth.unhealthy, color: 'critical' }
+      ].filter(segment => segment.value > 0),
+      status: transitGatewayHealth.total > 0
+        ? `${this.getPercentage(transitGatewayHealth.healthy, transitGatewayHealth.total)}% Available`
+        : 'No data',
+      description: transitGatewayHealth.total > 0
+        ? `${transitGatewayHealth.healthy} available / ${transitGatewayHealth.unhealthy} other states`
+        : 'Transit gateway overview'
+    });
+
     return cards;
   }
 
@@ -305,5 +389,103 @@ export class DashboardComponent implements OnInit, OnDestroy {
   formatNumber(value: number | undefined): string {
     const formatter = new Intl.NumberFormat('en-US');
     return formatter.format(value || 0);
+  }
+
+  private loadNetworkResourceHealth(): void {
+    forkJoin({
+      directConnectConnections: this.resourceService.getResourcesByType('DirectConnectConnection'),
+      directConnectVirtualInterfaces: this.resourceService.getResourcesByType('DirectConnectVirtualInterface'),
+      vpnConnections: this.resourceService.getResourcesByType('VPNConnection'),
+      transitGateways: this.resourceService.getResourcesByType('TransitGateway')
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({
+          directConnectConnections,
+          directConnectVirtualInterfaces,
+          vpnConnections,
+          transitGateways
+        }) => {
+          this.networkHealth.directConnectConnections = this.calculateStateHealth(
+            directConnectConnections,
+            (resource) => (resource as any)?.connectionState,
+            ['available']
+          );
+
+          this.networkHealth.directConnectVirtualInterfaces = this.calculateDirectConnectVirtualInterfaceHealth(
+            directConnectVirtualInterfaces as any[]
+          );
+
+          this.networkHealth.vpnConnections = this.calculateStateHealth(
+            vpnConnections,
+            (resource) => (resource as any)?.state,
+            ['available']
+          );
+
+          this.networkHealth.transitGateways = this.calculateStateHealth(
+            transitGateways,
+            (resource) => (resource as any)?.state,
+            ['available']
+          );
+        },
+        error: (error) => {
+          console.error('[Dashboard] Error loading network resource health:', error);
+          this.networkHealth = {
+            directConnectConnections: this.createEmptyHealthState(),
+            directConnectVirtualInterfaces: this.createEmptyHealthState(),
+            vpnConnections: this.createEmptyHealthState(),
+            transitGateways: this.createEmptyHealthState()
+          };
+        }
+      });
+  }
+
+  private calculateStateHealth<T>(items: T[], extractor: (item: T) => unknown, healthyStates: string[]): ResourceHealthState {
+    const normalizedHealthy = healthyStates.map(state => state.toLowerCase());
+    const total = items?.length || 0;
+
+    const healthy = (items || []).reduce((count, item) => {
+      const value = extractor(item);
+      const normalized = this.normalizeState(value);
+      return normalized && normalizedHealthy.includes(normalized) ? count + 1 : count;
+    }, 0);
+
+    return {
+      total,
+      healthy,
+      unhealthy: Math.max(total - healthy, 0)
+    };
+  }
+
+  private calculateDirectConnectVirtualInterfaceHealth(interfaces: any[]): ResourceHealthState {
+    const total = interfaces?.length || 0;
+    let healthy = 0;
+
+    (interfaces || []).forEach(iface => {
+      const peers = Array.isArray(iface?.bgpPeers) ? iface.bgpPeers : [];
+      const hasHealthyPeer = peers.some(peer => this.normalizeState((peer as any)?.bgpStatus) === 'up');
+      if (hasHealthyPeer) {
+        healthy += 1;
+      }
+    });
+
+    return {
+      total,
+      healthy,
+      unhealthy: Math.max(total - healthy, 0)
+    };
+  }
+
+  private normalizeState(value: unknown): string | undefined {
+    if (value === null || value === undefined) {
+      return undefined;
+    }
+
+    const normalized = String(value).trim().toLowerCase();
+    return normalized || undefined;
+  }
+
+  private createEmptyHealthState(): ResourceHealthState {
+    return { total: 0, healthy: 0, unhealthy: 0 };
   }
 }

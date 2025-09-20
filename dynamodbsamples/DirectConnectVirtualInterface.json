@@ -6,7 +6,7 @@
     "S": "905418331872"
   },
   "accountName": {
-    "S": "CustomAccount"
+    "S": "Network"
   },
   "amazonAddress": {
     "S": "169.254.10.2/30"
@@ -19,6 +19,12 @@
   },
   "authKey": {
     "S": "REDACTED"
+  },
+  "bgpAllUp": {
+    "BOOL": true
+  },
+  "bgpAnyUp": {
+    "BOOL": true
   },
   "bgpPeers": {
     "L": [
@@ -58,11 +64,17 @@
       }
     ]
   },
+  "bgpStatus": {
+    "S": "up"
+  },
+  "bgpStatusIpv4": {
+    "S": "up"
+  },
   "connectionId": {
     "S": "dxcon-fh5mqy42"
   },
   "createdAt": {
-    "S": "2025-09-14T20:14:14.953Z"
+    "S": "2025-09-20T07:47:03.665Z"
   },
   "customerAddress": {
     "S": "169.254.10.1/30"
@@ -92,7 +104,7 @@
     "S": "[]"
   },
   "updatedAt": {
-    "S": "2025-09-14T20:14:14.953Z"
+    "S": "2025-09-20T07:47:03.665Z"
   },
   "virtualGatewayId": {
     "S": ""
