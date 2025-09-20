@@ -3,7 +3,16 @@
     "S": "METRICS-GLOBAL-CURRENT"
   },
   "accountDistribution": {
-    "S": "[{\"accountId\": \"767398083881\", \"accountName\": \"CustomAccount\", \"count\": 1370}, {\"accountId\": \"905418331872\", \"accountName\": \"CustomAccount\", \"count\": 1106}, {\"accountId\": \"058264393294\", \"accountName\": \"CustomAccount\", \"count\": 180}, {\"accountId\": \"533267337185\", \"accountName\": \"CustomAccount\", \"count\": 25}]"
+    "S": "[{\"accountId\": \"767398083881\", \"accountName\": \"Infra\", \"count\": 1576}, 
+    {\"accountId\": \"767397734112\", \"accountName\": \"Arquiteturas e Sistemas\", \"count\": 1408}, 
+    {\"accountId\": \"381492155025\", \"accountName\": \"MagisterApps Prod\", \"count\": 1357}, 
+    {\"accountId\": \"905418331872\", \"accountName\": \"Network\", \"count\": 1261}, 
+    {\"accountId\": \"767397916042\", \"accountName\": \"Operacional\", \"count\": 1099}, 
+    {\"accountId\": \"992382742081\", \"accountName\": \"BackOffice\", \"count\": 765}, 
+    {\"accountId\": \"654654547936\", \"accountName\": \"ITP\", \"count\": 607}, 
+    {\"accountId\": \"058264289687\", \"accountName\": \"Terminal Service\", \"count\": 479}, 
+    {\"accountId\": \"590184023510\", \"accountName\": \"Biblioteca\", \"count\": 474}, 
+    {\"accountId\": \"654654498954\", \"accountName\": \"Ficou Facil\", \"count\": 446}]"
   },
   "accountId": {
     "S": "GLOBAL"
@@ -12,31 +21,43 @@
     "S": "Global Metrics"
   },
   "createdAt": {
-    "S": "2025-09-15T03:24:19.021Z"
+    "S": "2025-09-20T05:01:08.826Z"
   },
   "isMetric": {
     "BOOL": true
   },
   "metricDate": {
-    "S": "2025-09-15"
+    "S": "2025-09-20"
+  },
+  "processingDurationSeconds": {
+    "N": "271.437"
   },
   "recentResources": {
-    "S": "[{\"resourceType\": \"DirectConnectVirtualInterface\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:40.022Z\", \"identifier\": \"905418331872-us-east-1-DirectConnectVirtualInterface-dxvif-fh6ecnf3\"}, {\"resourceType\": \"DirectConnectConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:39.447Z\", \"identifier\": \"905418331872-us-east-1-DirectConnectConnection-dxcon-fh5mqy42\"}, {\"resourceType\": \"VPNConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:35.874Z\", \"identifier\": \"905418331872-us-east-1-VPNConnection-vpn-0e5ab7950e87fb08c\"}, {\"resourceType\": \"VPNConnection\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:35.873Z\", \"identifier\": \"905418331872-us-east-1-VPNConnection-vpn-0ec51f21a36a93a93\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.898Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-0f909b34ecfbfe24a\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.898Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-0a567bf486b888e2d\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.898Z\", \"identifier\": \"905418331872-us-east-1-NetworkACL-acl-04fa0dd7114da2307\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.707Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-0de4a3fa7ca060bec\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.707Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-087424ba5978a0d2e\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-1\", \"createdAt\": \"2025-09-15T03:23:34.707Z\", \"identifier\": \"905418331872-us-east-1-RouteTable-rtb-006c1f0572535a269\"}]"
+    "S": "[{\"resourceType\": \"NetworkACL\", \"region\": \"us-west-2\", \"createdAt\": \"2025-09-20T05:00:54.010000+00:00\", \"identifier\": \"058264289687-us-west-2-NetworkACL-acl-0abceb4d198b9bf36\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-west-1\", \"createdAt\": \"2025-09-20T05:00:53.789000+00:00\", \"identifier\": \"058264289687-us-west-1-NetworkACL-acl-0242c744d4bb42da9\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-west-2\", \"createdAt\": \"2025-09-20T05:00:53.768000+00:00\", \"identifier\": \"058264289687-us-west-2-RouteTable-rtb-0c19ae09253fd7705\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-west-1\", \"createdAt\": \"2025-09-20T05:00:53.562000+00:00\", \"identifier\": \"058264289687-us-west-1-RouteTable-rtb-0382c38abf5bddcc6\"}, {\"resourceType\": \"InternetGateway\", \"region\": \"us-west-2\", \"createdAt\": \"2025-09-20T05:00:53.267000+00:00\", \"identifier\": \"igw-05739c653774dee89\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-2\", \"createdAt\": \"2025-09-20T05:00:53.214000+00:00\", \"identifier\": \"058264289687-us-east-2-NetworkACL-acl-09f09a5787370dfaa\"}, {\"resourceType\": \"InternetGateway\", \"region\": \"us-west-1\", \"createdAt\": \"2025-09-20T05:00:53.085000+00:00\", \"identifier\": \"igw-0d9879e9d4cec6b86\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-2\", \"createdAt\": \"2025-09-20T05:00:53.037000+00:00\", \"identifier\": \"058264289687-us-east-2-RouteTable-rtb-0b2f96e5d08fa5da7\"}, {\"resourceType\": \"Subnet\", \"region\": \"us-west-2\", \"createdAt\": \"2025-09-20T05:00:52.832000+00:00\", \"identifier\": \"058264289687-us-west-2-Subnet-subnet-02c4bd1f6724fc9f6\"}, {\"resourceType\": \"Subnet\", \"region\": \"us-west-2\", \"createdAt\": \"2025-09-20T05:00:52.832000+00:00\", \"identifier\": \"058264289687-us-west-2-Subnet-subnet-0d8722ff23a5aa2f8\"}]"
   },
   "region": {
     "S": "global"
   },
   "regionDistribution": {
-    "S": "[{\"region\": \"us-east-1\", \"count\": 2680}, {\"region\": \"sa-east-1\", \"count\": 1}]"
+    "S": "[{\"region\": \"us-east-1\", \"count\": 9331}, {\"region\": \"ap-northeast-2\", \"count\": 180}, {\"region\": \"us-west-2\", \"count\": 180}, {\"region\": \"sa-east-1\", \"count\": 163}, {\"region\": \"us-east-2\", \"count\": 161}, {\"region\": \"ca-central-1\", \"count\": 160}, {\"region\": \"eu-west-1\", \"count\": 160}, {\"region\": \"eu-central-1\", \"count\": 160}, {\"region\": \"eu-north-1\", \"count\": 160}, {\"region\": \"ap-northeast-3\", \"count\": 160}]"
   },
   "regionsCollected": {
     "N": "0"
   },
   "resourceCounts_AMI": {
-    "N": "840"
+    "N": "3119"
   },
   "resourceCounts_AutoScalingGroup": {
     "N": "4"
+  },
+  "resourceCounts_BackupPlan": {
+    "N": "73"
+  },
+  "resourceCounts_BackupRecoveryPoint": {
+    "N": "0"
+  },
+  "resourceCounts_BackupVault": {
+    "N": "41"
   },
   "resourceCounts_DirectConnectConnection": {
     "N": "1"
@@ -45,69 +66,75 @@
     "N": "1"
   },
   "resourceCounts_EBSSnapshot": {
-    "N": "1478"
+    "N": "4727"
   },
   "resourceCounts_EBSVolume": {
-    "N": "78"
+    "N": "390"
   },
   "resourceCounts_EC2Instance": {
-    "N": "38"
+    "N": "126"
+  },
+  "resourceCounts_EFSFileSystem": {
+    "N": "1"
   },
   "resourceCounts_ElasticIP": {
     "N": "2"
   },
+  "resourceCounts_FSxFileSystem": {
+    "N": "6"
+  },
   "resourceCounts_InternetGateway": {
-    "N": "1"
+    "N": "325"
   },
   "resourceCounts_LoadBalancer": {
     "N": "2"
   },
   "resourceCounts_NetworkACL": {
-    "N": "9"
+    "N": "348"
   },
   "resourceCounts_RDSClusterSnapshot": {
-    "N": "1"
+    "N": "5"
   },
   "resourceCounts_RDSInstance": {
-    "N": "2"
+    "N": "10"
   },
   "resourceCounts_RouteTable": {
-    "N": "39"
+    "N": "431"
   },
   "resourceCounts_S3Bucket": {
-    "N": "36"
+    "N": "205"
   },
   "resourceCounts_SecurityGroup": {
-    "N": "60"
+    "N": "549"
   },
   "resourceCounts_Subnet": {
-    "N": "32"
+    "N": "1097"
   },
   "resourceCounts_TransitGateway": {
-    "N": "4"
+    "N": "20"
   },
   "resourceCounts_TransitGatewayAttachment": {
-    "N": "31"
+    "N": "44"
   },
   "resourceCounts_VPC": {
-    "N": "8"
+    "N": "346"
   },
   "resourceCounts_VPCEndpoint": {
-    "N": "12"
+    "N": "40"
   },
   "resourceCounts_VPNConnection": {
     "N": "2"
   },
   "resourceRegionsFound": {
-    "N": "2"
+    "N": "17"
   },
   "resourceType": {
     "S": "METRIC_SUMMARY"
   },
   "totalResources": {
-    "N": "2681"
+    "N": "11915"
   },
   "updatedAt": {
-    "S": "2025-09-15T03:24:19.021Z"
+    "S": "2025-09-20T05:01:08.826Z"
   }
 }

@@ -121,8 +121,6 @@ class MetricsAccumulator:
         self.eip_unassociated = 0
         self.snapshots_orphaned = 0
 
-        # Recent resources tracking (max 10)
-        self.recent_resources: List[Dict[str, Any]] = []
 
     # -----------------------------
     # Adders
@@ -154,25 +152,6 @@ class MetricsAccumulator:
         if region and region != 'global':
             self.region_counts[region] += 1
 
-        # Track recent resources (keep only the 10 most recent by createdAt)
-        created_at = item.get('createdAt')
-        if created_at:
-            dt = _parse_iso_dt(created_at)
-            self.recent_resources.append({
-                'resourceType': resource_type,
-                'region': region,
-                'createdAt': dt.isoformat() if dt else created_at,
-                'identifier': self._get_resource_identifier(item)
-            })
-            # Keep only the 10 most recent
-            try:
-                self.recent_resources = sorted(
-                    self.recent_resources,
-                    key=lambda x: _parse_iso_dt(x['createdAt']) or datetime.now(timezone.utc),
-                    reverse=True
-                )[:10]
-            except Exception:
-                self.recent_resources = self.recent_resources[-10:]
 
         # Process type-specific metrics
         if resource_type == 'EC2Instance':
@@ -362,7 +341,6 @@ class MetricsAccumulator:
             'resourceCounts': dict(self.resource_counts),
             'accountDistribution': account_dist,
             'regionDistribution': region_dist,
-            'recentResources': self.recent_resources[:10],
             'regionsCollected': len(self.regions_collected),
             'resourceRegionsFound': len(self.region_counts),
         }
@@ -512,9 +490,8 @@ def save_metrics_to_dynamodb(metrics_tables: List, metrics: Dict, processing_dur
         'processingDurationSeconds': round(float(processing_duration), 3),
     }
     global_item_current.update({
-        'accountDistribution': json.dumps(metrics['global'].get('accountDistribution', [])),
-        'regionDistribution': json.dumps(metrics['global'].get('regionDistribution', [])),
-        'recentResources': json.dumps(metrics['global'].get('recentResources', [])),
+        'accountDistribution': metrics['global'].get('accountDistribution', []),
+        'regionDistribution': metrics['global'].get('regionDistribution', []),
     })
     global_flat = flatten_metric({}, {
         'totalResources': metrics['global'].get('totalResources', 0),
