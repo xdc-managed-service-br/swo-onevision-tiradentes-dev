@@ -36,6 +36,7 @@ export interface ProcessedMetricData {
   regionDistribution: RegionDistribution[];
   recentResources: RecentResource[];
   resourceCounts: Map<string, number>;
+  networkHealth?: NetworkHealthMetrics;
   ec2Health?: {
     total: number;
     running: number;
@@ -61,6 +62,20 @@ export interface ProcessedMetricData {
     s3WithLifecycle: number;
     lifecyclePercentage: number;
   };
+}
+
+export interface HealthMetric {
+  total: number;
+  healthy: number;
+  unhealthy: number;
+  healthyPercentage?: number;
+}
+
+export interface NetworkHealthMetrics {
+  directConnectConnections: HealthMetric;
+  directConnectVirtualInterfaces: HealthMetric;
+  vpnConnections: HealthMetric;
+  transitGateways: HealthMetric;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -203,7 +218,25 @@ export class MetricProcessorService {
       'resourceCounts_NetworkACL', 'resourceCounts_RDSClusterSnapshot', 'resourceCounts_RDSInstance',
       'resourceCounts_RouteTable', 'resourceCounts_S3Bucket', 'resourceCounts_SecurityGroup',
       'resourceCounts_Subnet', 'resourceCounts_TransitGateway', 'resourceCounts_TransitGatewayAttachment',
-      'resourceCounts_VPC', 'resourceCounts_VPCEndpoint', 'resourceCounts_VPNConnection'
+      'resourceCounts_VPC', 'resourceCounts_VPCEndpoint', 'resourceCounts_VPNConnection',
+
+      // Network health aggregates
+      'networkHealth_directConnectConnections_total',
+      'networkHealth_directConnectConnections_healthy',
+      'networkHealth_directConnectConnections_unhealthy',
+      'networkHealth_directConnectConnections_healthyPercentage',
+      'networkHealth_directConnectVirtualInterfaces_total',
+      'networkHealth_directConnectVirtualInterfaces_healthy',
+      'networkHealth_directConnectVirtualInterfaces_unhealthy',
+      'networkHealth_directConnectVirtualInterfaces_healthyPercentage',
+      'networkHealth_vpnConnections_total',
+      'networkHealth_vpnConnections_healthy',
+      'networkHealth_vpnConnections_unhealthy',
+      'networkHealth_vpnConnections_healthyPercentage',
+      'networkHealth_transitGateways_total',
+      'networkHealth_transitGateways_healthy',
+      'networkHealth_transitGateways_unhealthy',
+      'networkHealth_transitGateways_healthyPercentage'
     ];
 
     numericFields.forEach(field => {
@@ -307,6 +340,35 @@ export class MetricProcessorService {
     return counts;
   }
 
+  private buildNetworkHealth(metric: AWSMetricsModel): NetworkHealthMetrics {
+    const buildBucket = (prefix: string): HealthMetric => {
+      const total = this.ensureNumber((metric as any)[`${prefix}_total`]);
+      const healthy = this.ensureNumber((metric as any)[`${prefix}_healthy`]);
+      const rawUnhealthy = (metric as any)[`${prefix}_unhealthy`];
+      const unhealthy = rawUnhealthy === undefined
+        ? Math.max(total - healthy, 0)
+        : this.ensureNumber(rawUnhealthy);
+      const pctRaw = this.ensureNumber((metric as any)[`${prefix}_healthyPercentage`]);
+      const healthyPercentage = total > 0
+        ? (pctRaw || Math.round((healthy / total) * 100))
+        : 0;
+
+      return {
+        total,
+        healthy,
+        unhealthy,
+        healthyPercentage
+      };
+    };
+
+    return {
+      directConnectConnections: buildBucket('networkHealth_directConnectConnections'),
+      directConnectVirtualInterfaces: buildBucket('networkHealth_directConnectVirtualInterfaces'),
+      vpnConnections: buildBucket('networkHealth_vpnConnections'),
+      transitGateways: buildBucket('networkHealth_transitGateways')
+    };
+  }
+
   /**
    * Processa todas as métricas em um objeto consolidado para dashboard
    */
@@ -338,6 +400,7 @@ export class MetricProcessorService {
       result.recentResources = this.normalizeRecentResources(globalMetric);
       result.resourceCounts = this.extractResourceCounts(globalMetric);
       result.summary.totalAccounts = result.accountDistribution.length;
+      result.networkHealth = this.buildNetworkHealth(globalMetric);
     }
     
     // Processa EC2 Health

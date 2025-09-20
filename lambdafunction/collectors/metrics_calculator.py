@@ -116,6 +116,14 @@ class MetricsAccumulator:
         self.vpc_total = 0
         self.subnet_total = 0
 
+        # Network resource health (totals/healthy counts mapped by key)
+        self.network_health: Dict[str, Dict[str, int]] = {
+            'directConnectConnections': {'total': 0, 'healthy': 0},
+            'directConnectVirtualInterfaces': {'total': 0, 'healthy': 0},
+            'vpnConnections': {'total': 0, 'healthy': 0},
+            'transitGateways': {'total': 0, 'healthy': 0},
+        }
+
         # Cost optimization opportunities
         self.ebs_unattached = 0
         self.eip_unassociated = 0
@@ -152,6 +160,9 @@ class MetricsAccumulator:
         if region and region != 'global':
             self.region_counts[region] += 1
 
+        # Track network health aggregates before type-specific handlers mutate
+        self._process_network_resource(resource_type, item)
+
 
         # Process type-specific metrics
         if resource_type == 'EC2Instance':
@@ -182,6 +193,78 @@ class MetricsAccumulator:
             self.backup_vaults += 1
         elif resource_type == 'BackupRecoveryPoint':
             self.backup_recovery_points += 1
+
+    def _process_network_resource(self, resource_type: str, item: Dict[str, Any]) -> None:
+        """Aggregate network health metrics for supported resource types."""
+        if resource_type == 'DirectConnectConnection':
+            state = self._normalize_state(item.get('connectionState'))
+            is_healthy = state in {'available'}
+            self._increment_network_health('directConnectConnections', is_healthy)
+        elif resource_type == 'DirectConnectVirtualInterface':
+            is_healthy = self._is_direct_connect_virtual_interface_healthy(item)
+            self._increment_network_health('directConnectVirtualInterfaces', is_healthy)
+        elif resource_type == 'VPNConnection':
+            state = self._normalize_state(item.get('state'))
+            is_healthy = state in {'available'}
+            self._increment_network_health('vpnConnections', is_healthy)
+        elif resource_type == 'TransitGateway':
+            state = self._normalize_state(item.get('state'))
+            is_healthy = state in {'available'}
+            self._increment_network_health('transitGateways', is_healthy)
+
+    def _increment_network_health(self, key: str, is_healthy: bool) -> None:
+        """Increment counters for a given network health bucket."""
+        bucket = self.network_health.get(key)
+        if bucket is None:
+            bucket = {'total': 0, 'healthy': 0}
+            self.network_health[key] = bucket
+
+        bucket['total'] += 1
+        if is_healthy:
+            bucket['healthy'] += 1
+
+    def _normalize_state(self, value: Any) -> Optional[str]:
+        """Normalize a state/string value for comparisons."""
+        if value is None:
+            return None
+        try:
+            normalized = str(value).strip().lower()
+            return normalized or None
+        except Exception:
+            return None
+
+    def _is_direct_connect_virtual_interface_healthy(self, item: Dict[str, Any]) -> bool:
+        """Evaluate Direct Connect virtual interface health using BGP data."""
+        if not item:
+            return False
+
+        bgp_all_up = item.get('bgpAllUp')
+        if isinstance(bgp_all_up, bool):
+            return bgp_all_up
+
+        bgp_any_up = item.get('bgpAnyUp')
+        if isinstance(bgp_any_up, bool):
+            return bgp_any_up
+
+        for key in ('bgpStatus', 'bgpStatusIpv4', 'bgpStatusIpv6'):
+            status = self._normalize_state(item.get(key))
+            if status:
+                return status == 'up'
+
+        peers = item.get('bgpPeers') if isinstance(item.get('bgpPeers'), list) else []
+        for peer in peers:
+            if not isinstance(peer, dict):
+                continue
+            peer_status = self._normalize_state(peer.get('bgpStatus'))
+            if peer_status:
+                if peer_status == 'up':
+                    return True
+                continue
+            peer_state = self._normalize_state(peer.get('bgpPeerState'))
+            if peer_state == 'available':
+                return True
+
+        return False
 
     # -----------------------------
     # Type-specific processors
@@ -310,6 +393,21 @@ class MetricsAccumulator:
         # Real orphan detection would need cross-referencing volumes/images
         return
 
+    def _build_network_health_metrics(self) -> Dict[str, Any]:
+        """Compose network health metrics with totals and percentages."""
+        metrics: Dict[str, Any] = {}
+        for key, bucket in self.network_health.items():
+            total = bucket.get('total', 0)
+            healthy = bucket.get('healthy', 0)
+            unhealthy = max(total - healthy, 0)
+            metrics[key] = {
+                'total': total,
+                'healthy': healthy,
+                'unhealthy': unhealthy,
+                'healthyPercentage': _safe_pct(healthy, total),
+            }
+        return metrics
+
     # -----------------------------
     # Output
     # -----------------------------
@@ -409,6 +507,9 @@ class MetricsAccumulator:
             'percentageExposed': _safe_pct(self.sg_with_exposed_ports, self.sg_total),
         }
 
+        network_metrics = self._build_network_health_metrics()
+        global_metrics['networkHealth'] = network_metrics
+
         return {
             'global': global_metrics,
             'ec2': ec2_metrics,
@@ -416,6 +517,7 @@ class MetricsAccumulator:
             'storage': storage_metrics,
             'cost': cost_metrics,
             'security': security_metrics,
+            'network': network_metrics,
         }
 
     def _estimate_savings(self) -> float:
@@ -498,6 +600,7 @@ def save_metrics_to_dynamodb(metrics_tables: List, metrics: Dict, processing_dur
         'resourceCounts': metrics['global'].get('resourceCounts', {}),
         'regionsCollected': metrics['global'].get('regionsCollected', 0),
         'resourceRegionsFound': metrics['global'].get('resourceRegionsFound', 0),
+        'networkHealth': metrics['global'].get('networkHealth', {}),
     })
     global_item_current.update(global_flat)
     items_to_save.append(global_item_current)

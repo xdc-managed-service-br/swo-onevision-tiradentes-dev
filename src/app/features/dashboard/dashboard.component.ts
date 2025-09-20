@@ -2,10 +2,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Subject, forkJoin, takeUntil } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { MetricService } from '../../core/services/metric.service';
 import { MetricProcessorService, ProcessedMetricData } from '../../core/services/metric-processor.service';
-import { ResourceService } from '../../core/services/resource.service';
 
 interface ResourceHealthState {
   total: number;
@@ -38,8 +37,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private metricService: MetricService,
-    private metricProcessor: MetricProcessorService,
-    private resourceService: ResourceService
+    private metricProcessor: MetricProcessorService
   ) {}
 
   ngOnInit() {
@@ -462,132 +460,56 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadNetworkResourceHealth(): void {
-    forkJoin({
-      directConnectConnections: this.resourceService.getResourcesByType('DirectConnectConnection'),
-      directConnectVirtualInterfaces: this.resourceService.getResourcesByType('DirectConnectVirtualInterface'),
-      vpnConnections: this.resourceService.getResourcesByType('VPNConnection'),
-      transitGateways: this.resourceService.getResourcesByType('TransitGateway')
-    })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: ({
-          directConnectConnections,
-          directConnectVirtualInterfaces,
-          vpnConnections,
-          transitGateways
-        }) => {
-          this.networkHealth.directConnectConnections = this.calculateStateHealth(
-            directConnectConnections,
-            (resource) => (resource as any)?.connectionState,
-            ['available']
-          );
+    const networkMetrics = this.dashboardData?.networkHealth;
 
-          this.networkHealth.directConnectVirtualInterfaces = this.calculateDirectConnectVirtualInterfaceHealth(
-            directConnectVirtualInterfaces as any[]
-          );
+    if (!networkMetrics) {
+      this.networkHealth = {
+        directConnectConnections: this.createEmptyHealthState(),
+        directConnectVirtualInterfaces: this.createEmptyHealthState(),
+        vpnConnections: this.createEmptyHealthState(),
+        transitGateways: this.createEmptyHealthState()
+      };
+      return;
+    }
 
-          this.networkHealth.vpnConnections = this.calculateStateHealth(
-            vpnConnections,
-            (resource) => (resource as any)?.state,
-            ['available']
-          );
-
-          this.networkHealth.transitGateways = this.calculateStateHealth(
-            transitGateways,
-            (resource) => (resource as any)?.state,
-            ['available']
-          );
-        },
-        error: (error) => {
-          console.error('[Dashboard] Error loading network resource health:', error);
-          this.networkHealth = {
-            directConnectConnections: this.createEmptyHealthState(),
-            directConnectVirtualInterfaces: this.createEmptyHealthState(),
-            vpnConnections: this.createEmptyHealthState(),
-            transitGateways: this.createEmptyHealthState()
-          };
-        }
-      });
-  }
-
-  private calculateStateHealth<T>(items: T[], extractor: (item: T) => unknown, healthyStates: string[]): ResourceHealthState {
-    const normalizedHealthy = healthyStates.map(state => state.toLowerCase());
-    const total = items?.length || 0;
-
-    const healthy = (items || []).reduce((count, item) => {
-      const value = extractor(item);
-      const normalized = this.normalizeState(value);
-      return normalized && normalizedHealthy.includes(normalized) ? count + 1 : count;
-    }, 0);
-
-    return {
-      total,
-      healthy,
-      unhealthy: Math.max(total - healthy, 0)
+    this.networkHealth = {
+      directConnectConnections: this.coerceHealthState(networkMetrics.directConnectConnections),
+      directConnectVirtualInterfaces: this.coerceHealthState(networkMetrics.directConnectVirtualInterfaces),
+      vpnConnections: this.coerceHealthState(networkMetrics.vpnConnections),
+      transitGateways: this.coerceHealthState(networkMetrics.transitGateways)
     };
   }
 
-  private calculateDirectConnectVirtualInterfaceHealth(interfaces: any[]): ResourceHealthState {
-    const total = interfaces?.length || 0;
-    let healthy = 0;
+  private coerceHealthState(state?: Partial<ResourceHealthState>): ResourceHealthState {
+    if (!state) {
+      return this.createEmptyHealthState();
+    }
 
-    (interfaces || []).forEach(iface => {
-      if (this.isDirectConnectVirtualInterfaceHealthy(iface)) {
-        healthy += 1;
+    const toNumber = (value: unknown): number => {
+      if (typeof value === 'number' && !Number.isNaN(value)) {
+        return value;
       }
-    });
+      const parsed = Number(value);
+      return Number.isNaN(parsed) ? 0 : parsed;
+    };
+
+    const total = Math.max(0, Math.round(toNumber(state.total)));
+    const healthy = Math.min(total, Math.max(0, Math.round(toNumber(state.healthy))));
+    const hasUnhealthy = state.unhealthy !== undefined;
+    const computedUnhealthy = hasUnhealthy
+      ? Math.round(toNumber(state.unhealthy))
+      : total - healthy;
+    let unhealthy = Math.min(total, Math.max(0, computedUnhealthy));
+
+    if (healthy + unhealthy > total) {
+      unhealthy = Math.max(total - healthy, 0);
+    }
 
     return {
       total,
       healthy,
-      unhealthy: Math.max(total - healthy, 0)
+      unhealthy
     };
-  }
-
-  private isDirectConnectVirtualInterfaceHealthy(iface: any): boolean {
-    if (!iface) {
-      return false;
-    }
-
-    if (typeof iface?.bgpAllUp === 'boolean') {
-      return iface.bgpAllUp;
-    }
-
-    if (typeof iface?.bgpAnyUp === 'boolean') {
-      return iface.bgpAnyUp;
-    }
-
-    const status =
-      this.normalizeState(iface?.bgpStatus) ||
-      this.normalizeState(iface?.bgpStatusIpv4) ||
-      this.normalizeState(iface?.bgpStatusIpv6);
-
-    if (status) {
-      return status === 'up';
-    }
-
-    const peers = Array.isArray(iface?.bgpPeers) ? iface.bgpPeers : [];
-    if (peers.length) {
-      return peers.some((peer: any) => {
-        const peerStatus = this.normalizeState(peer?.bgpStatus);
-        if (peerStatus) {
-          return peerStatus === 'up';
-        }
-        const peerState = this.normalizeState(peer?.bgpPeerState);
-        return peerState === 'available';
-      });
-    }
-
-    return false;
-  }
-
-  private normalizeState(value: unknown): string | undefined {
-    if (value === null || value === undefined) {
-      return undefined;
-    }
-
-    const normalized = String(value).trim().toLowerCase();
-    return normalized || undefined;
   }
 
   private createEmptyHealthState(): ResourceHealthState {

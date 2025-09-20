@@ -63,6 +63,24 @@ export interface MetricGlobalSummary extends BaseMetric {
   resourceCounts_BackupPlan?: number;
   resourceCounts_BackupVault?: number;
   resourceCounts_BackupRecoveryPoint?: number;
+
+  // Network health aggregates (flattened keys)
+  networkHealth_directConnectConnections_total?: number;
+  networkHealth_directConnectConnections_healthy?: number;
+  networkHealth_directConnectConnections_unhealthy?: number;
+  networkHealth_directConnectConnections_healthyPercentage?: number;
+  networkHealth_directConnectVirtualInterfaces_total?: number;
+  networkHealth_directConnectVirtualInterfaces_healthy?: number;
+  networkHealth_directConnectVirtualInterfaces_unhealthy?: number;
+  networkHealth_directConnectVirtualInterfaces_healthyPercentage?: number;
+  networkHealth_vpnConnections_total?: number;
+  networkHealth_vpnConnections_healthy?: number;
+  networkHealth_vpnConnections_unhealthy?: number;
+  networkHealth_vpnConnections_healthyPercentage?: number;
+  networkHealth_transitGateways_total?: number;
+  networkHealth_transitGateways_healthy?: number;
+  networkHealth_transitGateways_unhealthy?: number;
+  networkHealth_transitGateways_healthyPercentage?: number;
 }
 
 // ---------- EC2 HEALTH ----------
