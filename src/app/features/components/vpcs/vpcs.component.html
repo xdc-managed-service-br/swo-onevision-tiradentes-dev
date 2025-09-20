@@ -1,0 +1,268 @@
+<!-- src/app/features/components/vpcs/vpcs.component.html -->
+<article class="ov-container" aria-labelledby="vpc-title">
+
+  <div class="ov-section">
+    <div class="ov-header ov-bleed">
+      <h1 id="vpc-title" class="ov-title">VPCs</h1>
+
+      <div class="ov-filterbar">
+        <div class="ov-filter">
+          <label for="vpcAccountFilter">Account</label>
+          <select id="vpcAccountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="vpcRegionFilter">Region</label>
+          <select id="vpcRegionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="vpcTenancyFilter">Tenancy</label>
+          <select id="vpcTenancyFilter" (change)="filterByTenancy($event)">
+            <option value="">All</option>
+            <option *ngFor="let tenancy of uniqueTenancies" [value]="tenancy">{{ tenancy }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="vpcStateFilter">State</label>
+          <select id="vpcStateFilter" (change)="filterByState($event)">
+            <option value="">All</option>
+            <option *ngFor="let state of uniqueStates" [value]="state">{{ state }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="vpcDefaultFilter">Default VPC</label>
+          <select id="vpcDefaultFilter" (change)="filterByDefault($event)">
+            <option value="">All</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="vpcFlowLogsFilter">Flow Logs</label>
+          <select id="vpcFlowLogsFilter" (change)="filterByFlowLogs($event)">
+            <option value="">All</option>
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="vpcDnsHostnamesFilter">DNS Hostnames</label>
+          <select id="vpcDnsHostnamesFilter" (change)="filterByDnsHostnames($event)">
+            <option value="">All</option>
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="vpcDnsSupportFilter">DNS Support</label>
+          <select id="vpcDnsSupportFilter" (change)="filterByDnsSupport($event)">
+            <option value="">All</option>
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ov-header-actions">
+        <div class="ov-search">
+          <input
+            id="vpcSearch"
+            type="search"
+            placeholder="Search by VPC ID, Name, or CIDR"
+            (input)="searchResources($event)"
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
+        </div>
+
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToCSV()">Export to CSV</button>
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToXLSX()">Export to XLSX</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="ov-loading">Loading VPCs…</div>
+  <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
+    No VPCs found matching the current filters.
+  </div>
+
+  <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
+    <table class="ov-table" aria-label="VPCs table">
+      <thead>
+        <tr>
+          <th *ngFor="let column of getVisibleColumns()"
+              (click)="column.sortable !== false ? sortData(column.key) : null"
+              [class.sortable]="column.sortable !== false">
+            {{ column.label }}
+            <span *ngIf="sortColumn === column.key && column.sortable !== false" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="ov-cell--right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let resource of paginatedResources">
+          <td *ngFor="let column of getVisibleColumns()">
+            <span [ngClass]="getColumnClass(column.key, resource)">
+              {{ getColumnValue(column, resource) }}
+            </span>
+          </td>
+          <td>
+            <div class="ov-actions">
+              <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
+    <article class="ov-card" *ngFor="let resource of paginatedResources">
+      <header class="ov-card__head">
+        <div>
+          <div class="ov-card__title">{{ resource.vpcName || 'Unnamed VPC' }}</div>
+          <div class="ov-card__sub ov-text--mono">{{ resource.vpcId }}</div>
+        </div>
+        <span [ngClass]="getColumnClass('state', resource)">{{ resource.state || 'Unknown' }}</span>
+      </header>
+
+      <div class="ov-card__grid">
+        <div><div class="ov-k">Account</div><div class="ov-v">{{ resource.accountName || resource.accountId }}</div></div>
+        <div><div class="ov-k">Region</div><div class="ov-v">{{ resource.region }}</div></div>
+        <div><div class="ov-k">CIDR</div><div class="ov-v ov-text--mono">{{ resource.cidrBlock || 'N/A' }}</div></div>
+        <div><div class="ov-k">Tenancy</div><div class="ov-v">{{ resource.instanceTenancy || 'N/A' }}</div></div>
+        <div><div class="ov-k">Flow Logs</div><div class="ov-v">{{ formatBoolean(resource.flowLogsEnabled) }}</div></div>
+        <div><div class="ov-k">Default</div><div class="ov-v">{{ formatBoolean(resource.isDefault) }}</div></div>
+      </div>
+
+      <div>
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="ov-modal" *ngIf="showColumnCustomizer" (click)="closeColumnCustomizer()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="vpc-columns-title" (click)="$event.stopPropagation()">
+      <div class="ov-modal__head">
+        <h2 id="vpc-columns-title" class="ov-modal__title">Customize Columns</h2>
+        <button class="ov-btn" (click)="closeColumnCustomizer()" aria-label="Close dialog">×</button>
+      </div>
+      <div class="ov-modal__body">
+        <div class="ov-actions" style="justify-content:flex-start; margin-bottom: var(--ov-space-4);">
+          <button class="ov-btn" (click)="selectAllColumns()">Select All</button>
+          <button class="ov-btn" (click)="deselectAllColumns()">Deselect All</button>
+        </div>
+        <div class="column-list">
+          <label *ngFor="let column of availableColumns">
+            <input type="checkbox"
+                   [checked]="isColumnSelected(column.key)"
+                   (change)="toggleColumn(column.key)"
+                   [disabled]="isRequiredColumn(column.key)" />
+            <span [class.required]="isRequiredColumn(column.key)">
+              {{ column.label }}
+              <span *ngIf="isRequiredColumn(column.key)" class="required-badge">Required</span>
+            </span>
+          </label>
+        </div>
+      </div>
+      <div class="ov-modal__foot">
+        <button class="ov-btn" (click)="applyColumnSelection()">Apply</button>
+        <button class="ov-btn ov-btn--primary" (click)="closeColumnCustomizer()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ov-modal" *ngIf="selectedResource as vpc" (click)="closeDetails()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="vpc-details-title" (click)="$event.stopPropagation()" style="max-width: 800px;">
+      <div class="ov-modal__head">
+        <h2 id="vpc-details-title" class="ov-modal__title">VPC Details — {{ vpc.vpcId }}</h2>
+        <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
+      </div>
+
+      <div class="ov-modal__body">
+        <section aria-labelledby="vpc-info-section">
+          <h3 id="vpc-info-section">VPC Information</h3>
+          <table class="ov-details-table">
+            <tr><th>VPC Name</th><td>{{ vpc.vpcName || 'N/A' }}</td></tr>
+            <tr><th>VPC ID</th><td class="ov-text--mono">{{ vpc.vpcId }}</td></tr>
+            <tr><th>State</th><td><span [ngClass]="getColumnClass('state', vpc)">{{ vpc.state || 'Unknown' }}</span></td></tr>
+            <tr><th>CIDR Block</th><td class="ov-text--mono">{{ vpc.cidrBlock || 'N/A' }}</td></tr>
+            <tr><th>Tenancy</th><td>{{ vpc.instanceTenancy || 'N/A' }}</td></tr>
+          </table>
+        </section>
+
+        <section aria-labelledby="vpc-network-section">
+          <h3 id="vpc-network-section">Networking & Settings</h3>
+          <table class="ov-details-table">
+            <tr><th>Flow Logs Enabled</th><td>{{ formatBoolean(vpc.flowLogsEnabled) }}</td></tr>
+            <tr><th>DNS Hostnames</th><td>{{ formatBoolean(vpc.enableDnsHostnames) }}</td></tr>
+            <tr><th>DNS Support</th><td>{{ formatBoolean(vpc.enableDnsSupport) }}</td></tr>
+            <tr><th>Default VPC</th><td>{{ formatBoolean(vpc.isDefault) }}</td></tr>
+          </table>
+        </section>
+
+        <section aria-labelledby="vpc-meta-section">
+          <h3 id="vpc-meta-section">Metadata</h3>
+          <table class="ov-details-table">
+            <tr><th>Account</th><td>{{ vpc.accountName || vpc.accountId }}</td></tr>
+            <tr><th>Region</th><td>{{ vpc.region }}</td></tr>
+            <tr><th>Created</th><td>{{ formatDate(vpc.createdAt) }}</td></tr>
+            <tr><th>Updated</th><td>{{ formatDate(vpc.updatedAt) }}</td></tr>
+          </table>
+        </section>
+
+        <section *ngIf="vpc.tags" aria-labelledby="vpc-tags-section">
+          <h3 id="vpc-tags-section">Tags</h3>
+          <app-resource-tags [tags]="vpc.tags"></app-resource-tags>
+        </section>
+      </div>
+
+      <div class="ov-modal__foot">
+        <button class="ov-btn ov-btn--primary" (click)="closeDetails()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ov-pagination" *ngIf="!loading && filteredResources.length > 0">
+    <div class="ov-pagination__info">
+      Showing {{ pageStartIndex }} - {{ pageEndIndex }} of {{ filteredResources.length }} items
+    </div>
+    <div class="ov-pagination__controls">
+      <button class="ov-btn ov-btn--subtle" (click)="goToFirstPage()" [disabled]="currentPage === 1">First</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToPreviousPage()" [disabled]="currentPage === 1">Previous</button>
+      <span class="ov-pagination__pages">
+        <button class="ov-btn" *ngFor="let page of getPageNumbers()"
+                (click)="goToPage(page)"
+                [class.is-active]="page === currentPage">{{ page }}</button>
+      </span>
+      <button class="ov-btn ov-btn--subtle" (click)="goToNextPage()" [disabled]="currentPage === totalPages">Next</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
+    </div>
+  </div>
+
+</article>

@@ -1,0 +1,113 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="header-subtitle">AWS environment overview</p>
+    </div>
+    <div class="header-actions">
+      <span class="last-updated">Updated {{ getFormattedDate(dashboardData?.summary?.lastUpdated) }}</span>
+      <button class="btn-refresh" (click)="refreshData()" [disabled]="isLoading">
+        <i class="fas fa-sync-alt" [class.spinning]="isLoading"></i>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <section class="summary-grid">
+    <article class="summary-card" *ngFor="let tile of summaryTiles">
+      <span class="summary-value">{{ tile.value }}</span>
+      <span class="summary-label">{{ tile.label }}</span>
+    </article>
+  </section>
+
+  <section class="section-card" *ngIf="resourceHealthCards.length">
+    <header class="section-header">
+      <h2>Resource Health</h2>
+      <span class="section-subtitle">Current status of core services</span>
+    </header>
+    <div class="health-grid">
+      <article class="health-card" *ngFor="let health of resourceHealthCards">
+        <header class="health-head">
+          <div>
+            <h3>{{ health.title }}</h3>
+            <span class="health-total">Total {{ health.badge }}</span>
+          </div>
+        </header>
+        <div class="health-bar">
+          <ng-container *ngFor="let segment of health.segments">
+            <div class="health-segment" [ngClass]="segment.color" [style.width.%]="getPercentage(segment.value, health.total)"
+                 *ngIf="segment.value">
+            </div>
+          </ng-container>
+        </div>
+        <footer class="health-foot">
+          <span class="health-status">{{ health.status }}</span>
+          <span class="health-description">{{ health.description }}</span>
+        </footer>
+      </article>
+    </div>
+  </section>
+
+  <section class="monitoring-grid">
+    <article class="monitor-card">
+      <header>
+        <h3>Resource Monitoring (CloudWatch)</h3>
+      </header>
+      <div class="monitor-row" *ngFor="let metric of monitoringMetrics">
+        <div class="monitor-info">
+          <span class="monitor-label">{{ metric.label }}</span>
+          <span class="monitor-value">{{ metric.value }}%</span>
+        </div>
+        <div class="monitor-bar">
+          <div class="monitor-fill" [style.width.%]="metric.value"></div>
+        </div>
+        <p class="monitor-description">{{ metric.description }}</p>
+      </div>
+    </article>
+
+    <article class="monitor-card">
+      <header>
+        <h3>Instance Status</h3>
+      </header>
+      <div class="instance-status">
+        <div class="status-metric">
+          <span class="status-label">Total</span>
+          <span class="status-value">{{ formatNumber(ec2InstanceStatus.total) }}</span>
+        </div>
+        <div class="status-metric">
+          <span class="status-label">Running</span>
+          <span class="status-value running">{{ formatNumber(ec2InstanceStatus.running) }}</span>
+        </div>
+        <div class="status-metric">
+          <span class="status-label">Stopped</span>
+          <span class="status-value stopped">{{ formatNumber(ec2InstanceStatus.stopped) }}</span>
+        </div>
+      </div>
+      <div class="monitor-bar compact">
+        <div class="monitor-fill success" [style.width.%]="ec2InstanceStatus.runningPercent"></div>
+      </div>
+      <p class="monitor-description">{{ ec2InstanceStatus.runningPercent }}% of instances running</p>
+    </article>
+
+    <article class="monitor-card">
+      <header>
+        <h3>SSM Agent Status</h3>
+      </header>
+      <div class="monitor-row single">
+        <div class="monitor-info">
+          <span class="monitor-label">SSM Agent</span>
+          <span class="monitor-value">{{ ssmCoverage }}%</span>
+        </div>
+        <div class="monitor-bar">
+          <div class="monitor-fill success" [style.width.%]="ssmCoverage"></div>
+        </div>
+        <p class="monitor-description">Instances with SSM Agent connected</p>
+      </div>
+    </article>
+  </section>
+
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading metrics data...</p>
+  </div>
+</div>

@@ -1,0 +1,193 @@
+<article class="ov-container" aria-labelledby="rds-title">
+  <div class="ov-section">
+    <div class="ov-header ov-bleed">
+      <h1 id="rds-title" class="ov-title">RDS Instances</h1>
+
+      <div class="ov-filterbar">
+        <div class="ov-filter">
+          <label for="regionFilter">Region</label>
+          <select id="regionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let r of uniqueRegions" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+        <div class="ov-filter">
+          <label for="accountFilter">Account</label>
+          <select id="accountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let a of uniqueAccounts" [value]="a">{{ a }}</option>
+          </select>
+        </div>
+        <div class="ov-filter">
+          <label for="engineFilter">Engine</label>
+          <select id="engineFilter" (change)="filterByEngine($event)">
+            <option value="">All Engines</option>
+            <option *ngFor="let e of uniqueEngines" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+        <div class="ov-filter">
+          <label for="statusFilter">State</label>
+          <select id="statusFilter" (change)="filterByStatus($event)">
+            <option value="">All States</option>
+            <option *ngFor="let s of uniqueStatuses" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="ov-filter">
+          <label for="storageTypeFilter">Storage Type</label>
+          <select id="storageTypeFilter" (change)="filterByStorageType($event)">
+            <option value="">All</option>
+            <option *ngFor="let st of uniqueStorageTypes" [value]="st">{{ st }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ov-header-actions">
+        <div class="ov-search">
+          <input
+            id="rdsSearch"
+            type="search"
+            placeholder="Search by DB Identifier or Name"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
+        </div>
+
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToCSV()">Export to CSV</button>
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToXLSX()">Export to XLSX</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="loadResources()">Refresh</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="ov-loading">Loading RDS instances…</div>
+  <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
+    No RDS instances found matching your filters.
+  </div>
+
+  <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
+    <table class="ov-table" aria-label="RDS instances table">
+      <thead>
+        <tr>
+          <th *ngFor="let column of getVisibleColumns()"
+              (click)="column.sortable !== false && sortData(column.key)"
+              [class.sortable]="column.sortable !== false">
+            {{ column.label }}
+            <span *ngIf="sortColumn === column.key && column.sortable !== false" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="ov-cell--right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of paginatedResources">
+          <td *ngFor="let column of getVisibleColumns()">
+            <ng-container [ngSwitch]="column.key">
+              <span *ngSwitchCase="'status'" [ngClass]="getStatusClass(r.status)">
+                {{ getCellValue(column, r) }}
+              </span>
+              <span *ngSwitchDefault [ngClass]="getColumnClass(column.key, r)">
+                {{ getCellValue(column, r) }}
+              </span>
+            </ng-container>
+          </td>
+          <td>
+            <div class="ov-actions">
+              <button class="ov-btn ov-btn--primary" (click)="showDetails(r)">View Details</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
+    <article class="ov-card" *ngFor="let r of paginatedResources">
+      <header class="ov-card__head">
+        <div>
+          <div class="ov-card__title">{{ r.dbInstanceId }}</div>
+          <div class="ov-card__sub">{{ r.dbInstanceName || 'N/A' }}</div>
+        </div>
+        <span [ngClass]="getStatusClass(r.status)">{{ r.status || 'N/A' }}</span>
+      </header>
+      <div class="ov-card__grid">
+        <div><div class="ov-k">Engine</div><div class="ov-v">{{ r.engine }} {{ r.engineVersion }}</div></div>
+        <div><div class="ov-k">Class</div><div class="ov-v">{{ r.instanceClass }}</div></div>
+        <div><div class="ov-k">Allocated</div><div class="ov-v">{{ r.allocatedStorage || 'N/A' }}</div></div>
+        <div><div class="ov-k">Region</div><div class="ov-v">{{ r.region }}</div></div>
+        <div><div class="ov-k">Account</div><div class="ov-v">{{ r.accountName || r.accountId }}</div></div>
+        <div><div class="ov-k">Created</div><div class="ov-v">{{ formatDate(r.createdAt) }}</div></div>
+      </div>
+      <div style="margin-top:12px;">
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--primary" (click)="showDetails(r)">View Details</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="ov-pagination" *ngIf="!loading && filteredResources.length > 0">
+    <div class="ov-pagination__info">
+      Showing {{ pageStartIndex }} - {{ pageEndIndex }} of {{ filteredResources.length }} items
+    </div>
+    <div class="ov-pagination__controls">
+      <button class="ov-btn ov-btn--subtle" (click)="goToFirstPage()" [disabled]="currentPage === 1">First</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToPreviousPage()" [disabled]="currentPage === 1">Previous</button>
+
+      <span class="ov-pagination__pages">
+        <button
+          class="ov-btn"
+          *ngFor="let p of getPageNumbers()"
+          (click)="goToPage(p)"
+          [class.is-active]="p === currentPage">{{ p }}</button>
+      </span>
+
+      <button class="ov-btn ov-btn--subtle" (click)="goToNextPage()" [disabled]="currentPage === totalPages">Next</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
+    </div>
+  </div>
+
+  <!-- Modal de detalhes -->
+  <div class="ov-modal" *ngIf="selectedResource as resource" (click)="closeDetails()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="rds-details-title" (click)="$event.stopPropagation()" style="max-width:800px;">
+      <div class="ov-modal__head">
+        <h2 id="rds-details-title" class="ov-modal__title">
+          RDS Instance — {{ resource.dbInstanceId }}
+        </h2>
+        <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
+      </div>
+      <div class="ov-modal__body">
+        <table class="ov-details-table">
+          <tr><th>DB Identifier</th><td>{{ resource.dbInstanceId }}</td></tr>
+          <tr><th>Name</th><td>{{ resource.dbInstanceName || 'N/A' }}</td></tr>
+          <tr><th>Status</th><td><span [ngClass]="getStatusClass(resource.status)">{{ resource.status || 'N/A' }}</span></td></tr>
+          <tr><th>Engine</th><td>{{ resource.engine }} {{ resource.engineVersion }}</td></tr>
+          <tr><th>Class</th><td>{{ resource.instanceClass }}</td></tr>
+          <tr><th>Allocated Storage</th><td>{{ resource.allocatedStorage || 'N/A' }}</td></tr>
+          <tr><th>Storage Type</th><td>{{ resource.storageType || 'N/A' }}</td></tr>
+          <tr><th>Region</th><td>{{ resource.region }}</td></tr>
+          <tr><th>Account</th><td>{{ resource.accountName || resource.accountId }}</td></tr>
+          <tr><th>Created</th><td>{{ formatDate(resource.createdAt) }}</td></tr>
+        </table>
+
+        <!-- ✅ usa ResourceTagsComponent, elimina o warning -->
+        <section *ngIf="resource.tags">
+          <h3>Tags</h3>
+          <app-resource-tags [tags]="resource.tags"></app-resource-tags>
+        </section>
+      </div>
+      <div class="ov-modal__foot">
+        <button class="ov-btn ov-btn--primary" (click)="closeDetails()">Close</button>
+      </div>
+    </div>
+  </div>
+</article>

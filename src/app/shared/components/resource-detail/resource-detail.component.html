@@ -1,0 +1,41 @@
+<!-- src/app/shared/components/resource-detail/resource-detail.component.html -->
+<div class="resource-details-container">
+    <div class="resource-details-header">
+      <h2>{{ getTitle() }}</h2>
+      <button *ngIf="showClose" class="close-button" (click)="onClose()">&times;</button>
+    </div>
+    
+    <div class="resource-details-content" *ngIf="resource">
+      <ng-container *ngFor="let section of getSections()">
+        <div class="detail-section" *ngIf="section.fields.length > 0">
+          <h3>{{ section.title }}</h3>
+          
+          <table class="details-table">
+            <tbody>
+              <tr *ngFor="let field of section.fields">
+                <ng-container *ngIf="resource[field.key] !== undefined && resource[field.key] !== null">
+                  <th>{{ field.label }}</th>
+                  <td [ngClass]="{'json-content': field.format === 'json'}">
+                    <pre *ngIf="field.format === 'json'">{{ formatValue(resource[field.key], field.format) }}</pre>
+                    <span *ngIf="field.format !== 'json'">{{ formatValue(resource[field.key], field.format) }}</span>
+                  </td>
+                </ng-container>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+      
+      <!-- Tags Section - Special handling for EC2 tags -->
+      <div class="detail-section" *ngIf="resource.tags">
+        <h3>Tags</h3>
+        <app-resource-tags [tags]="resource.tags"></app-resource-tags>
+      </div>
+    </div>
+    
+    <div class="resource-details-footer" *ngIf="resource">
+      <p class="last-updated" *ngIf="resource.lastUpdated">
+        Last updated: {{ formatDate(resource.lastUpdated) }}
+      </p>
+    </div>
+  </div>

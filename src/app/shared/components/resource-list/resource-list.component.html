@@ -1,0 +1,189 @@
+<!-- src/app/shared/components/resource-list/resource-list.component.html -->
+<article class="ov-container" aria-labelledby="resource-list-title">
+  <div class="ov-header">
+    <div class="ov-filterbar" *ngIf="filters && filters.length > 0">
+      <div class="ov-filter" *ngFor="let filter of filters">
+        <label [for]="'filter-' + filter.key">{{ filter.label }}:</label>
+        
+        <!-- Select filter -->
+        <select 
+          *ngIf="filter.type === 'select'" 
+          [id]="'filter-' + filter.key" 
+          (change)="applyFilter(filter.key, $event)">
+          <option value="">All {{ filter.label }}</option>
+          <option *ngFor="let option of filter.options" [value]="option">{{ option }}</option>
+        </select>
+        
+        <!-- Text filter -->
+        <input 
+          *ngIf="filter.type === 'text'" 
+          [id]="'filter-' + filter.key" 
+          type="text" 
+          [placeholder]="'Filter by ' + filter.label.toLowerCase()"
+          (input)="applyFilter(filter.key, $event)">
+      </div>
+      
+      <button (click)="resetFilters()" class="ov-btn ov-btn--subtle">Reset Filters</button>
+    </div>
+  </div>
+  
+  <div *ngIf="loading" class="ov-loading">
+    Loading resources...
+  </div>
+  
+  <div *ngIf="error" class="ov-error">
+    {{ error }}
+  </div>
+  
+  <div *ngIf="!loading && !error && filteredResources.length === 0" class="ov-empty">
+    No resources found matching the current filters.
+  </div>
+  
+  <section *ngIf="!loading && !error && filteredResources.length > 0" class="ov-tablewrap">
+    <table class="ov-table">
+      <thead>
+        <tr>
+          <th *ngFor="let column of columns" 
+              (click)="column.sortable !== false ? sortData(column.key) : null"
+              [class.sortable]="column.sortable !== false">
+            {{ column.label }}
+            <span *ngIf="sortColumn === column.key">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let resource of filteredResources">
+          <ng-container *ngFor="let column of columns">
+            <td>
+              <!-- Custom template handling -->
+              <ng-container *ngIf="column.templateRef && $any(this)[column.templateRef]">
+                <ng-container *ngTemplateOutlet="$any(this)[column.templateRef]; context: {$implicit: resource}"></ng-container>
+              </ng-container>
+              
+              <!-- Standard display with formatting -->
+              <ng-container *ngIf="!column.templateRef || !$any(this)[column.templateRef]">
+                <ng-container [ngSwitch]="column.format">
+                  <!-- Status format -->
+                  <span *ngSwitchCase="'status'" [ngClass]="getStatusClass(getResourceValue(resource, column.key))">
+                    {{ column.transform ? column.transform(resource) : getResourceValue(resource, column.key) }}
+                  </span>
+                  
+                  <!-- Boolean format -->
+                  <span *ngSwitchCase="'boolean'">
+                    {{ column.transform ? column.transform(resource) : 
+                       (getResourceValue(resource, column.key) ? 'Yes' : 'No') }}
+                  </span>
+                  
+                  <!-- Date format -->
+                  <span *ngSwitchCase="'date'">
+                    {{ column.transform ? column.transform(resource) : 
+                       formatDate(getResourceValue(resource, column.key)) }}
+                  </span>
+                  
+                  <!-- Size format -->
+                  <span *ngSwitchCase="'size'">
+                    {{ column.transform ? column.transform(resource) : 
+                       (getResourceValue(resource, column.key) + ' GB') }}
+                  </span>
+                  
+                  <!-- URL format -->
+                  <a *ngSwitchCase="'url'" 
+                     [href]="column.transform ? column.transform(resource) : getResourceValue(resource, column.key)" 
+                     target="_blank">
+                    {{ column.transform ? column.transform(resource) : getResourceValue(resource, column.key) }}
+                  </a>
+                  
+                  <!-- Default text format -->
+                  <span *ngSwitchDefault>
+                    {{ column.transform ? column.transform(resource) : getResourceValue(resource, column.key) }}
+                  </span>
+                </ng-container>
+              </ng-container>
+            </td>
+          </ng-container>
+          <td>
+            <button (click)="showDetails(resource)" class="ov-btn ov-btn--primary">View Details</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div *ngIf="!loading && !error && filteredResources.length > 0" class="ov-actions">
+    <button (click)="exportToCSV()" class="ov-btn ov-btn--subtle">Export to CSV</button>
+    
+    <!-- Custom export actions template -->
+    <ng-container *ngIf="exportActionsTemplate">
+      <ng-container *ngTemplateOutlet="exportActionsTemplate"></ng-container>
+    </ng-container>
+  </div>
+  
+  <!-- Resource Details Modal -->
+  <div *ngIf="selectedResource" class="ov-modal">
+    <div class="ov-modal__dialog">
+      <div class="ov-modal__head">
+        <h2>{{ resourceType }} Details: {{ getResourceValue(selectedResource, identifierKey || 'id') }}</h2>
+        <button (click)="closeDetails()" class="ov-btn">&times;</button>
+      </div>
+      <div class="ov-modal__body">
+        <!-- Custom detail template if provided -->
+        <ng-container *ngIf="customDetailTemplate">
+          <ng-container *ngTemplateOutlet="customDetailTemplate; context: {$implicit: selectedResource}"></ng-container>
+        </ng-container>
+        
+        <!-- Standard detail sections -->
+        <ng-container *ngIf="!customDetailTemplate">
+          <div *ngFor="let section of detailSections" class="ov-detail-section">
+            <h3>{{ section.title }}</h3>
+            <table class="ov-details-table">
+              <tbody>
+                <tr *ngFor="let field of section.fields">
+                  <ng-container *ngIf="getResourceValue(selectedResource, field.key) !== undefined && 
+                                       getResourceValue(selectedResource, field.key) !== null">
+                    <th>{{ field.label }}</th>
+                    <td [ngSwitch]="field.format">
+                      <!-- JSON Format -->
+                      <pre *ngSwitchCase="'json'">{{ field.transform ? 
+                        field.transform(selectedResource) : 
+                        formatValue(getResourceValue(selectedResource, field.key), 'json') }}</pre>
+                      
+                      <!-- Status Format -->
+                      <span *ngSwitchCase="'status'" [ngClass]="getStatusClass(getResourceValue(selectedResource, field.key))">
+                        {{ field.transform ? field.transform(selectedResource) : 
+                           getResourceValue(selectedResource, field.key) }}
+                      </span>
+                      
+                      <!-- URL Format -->
+                      <a *ngSwitchCase="'url'" 
+                         [href]="field.transform ? field.transform(selectedResource) : 
+                                getResourceValue(selectedResource, field.key)" 
+                         target="_blank">
+                        {{ field.transform ? field.transform(selectedResource) : 
+                           getResourceValue(selectedResource, field.key) }}
+                      </a>
+                      
+                      <!-- Default formats -->
+                      <span *ngSwitchDefault>
+                        {{ field.transform ? field.transform(selectedResource) : 
+                           formatValue(getResourceValue(selectedResource, field.key), field.format) }}
+                      </span>
+                    </td>
+                  </ng-container>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Tags Section -->
+          <div *ngIf="selectedResource.tags" class="ov-detail-section">
+            <h3>Tags</h3>
+            <app-resource-tags [tags]="selectedResource.tags"></app-resource-tags>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</article>

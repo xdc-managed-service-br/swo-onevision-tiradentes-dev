@@ -1,0 +1,119 @@
+:host {
+  display: block;
+}
+
+.dashboard-card {
+  background: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius-lg);
+  padding: var(--ov-space-4);
+  box-shadow: var(--ov-shadow-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ov-space-4);
+  color: var(--ov-text);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--ov-space-2);
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: var(--ov-text-lg);
+  font-weight: 600;
+  color: var(--ov-text);
+}
+
+.total-count {
+  font-size: var(--ov-text-xs);
+  color: var(--ov-text-secondary);
+}
+
+.resources-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ov-space-3);
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.resource-item {
+  display: flex;
+  align-items: center;
+  gap: var(--ov-space-3);
+  padding: var(--ov-space-3);
+  background: var(--ov-surface-overlay);
+  border-radius: var(--ov-radius);
+  transition: var(--ov-transition-fast);
+  cursor: pointer;
+}
+
+.resource-item:hover {
+  background: var(--ov-surface-raised);
+  box-shadow: var(--ov-shadow-1);
+}
+
+.resource-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--ov-radius);
+  background: linear-gradient(135deg, var(--ov-accent), var(--ov-accent-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ov-accent-contrast);
+  flex-shrink: 0;
+}
+
+.resource-icon i {
+  font-size: var(--ov-text-lg);
+}
+
+.resource-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.resource-name {
+  font-size: var(--ov-text-sm);
+  font-weight: 600;
+  color: var(--ov-text);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resource-info {
+  display: flex;
+  align-items: center;
+  gap: var(--ov-space-2);
+  font-size: var(--ov-text-xs);
+  color: var(--ov-text-secondary);
+}
+
+.resource-type {
+  color: var(--ov-accent);
+}
+
+.resource-region {
+  color: var(--ov-info);
+}
+
+.resource-time {
+  color: var(--ov-success);
+}
+
+.separator {
+  color: var(--ov-muted);
+}
+
+.no-resources {
+  padding: var(--ov-space-6);
+  text-align: center;
+  color: var(--ov-text-secondary);
+}

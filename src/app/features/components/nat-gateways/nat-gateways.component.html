@@ -1,0 +1,269 @@
+<!-- src/app/features/components/nat-gateways/nat-gateways.component.html -->
+<article class="ov-container" aria-labelledby="nat-gateway-title">
+
+  <div class="ov-section">
+    <div class="ov-header ov-bleed">
+      <h1 id="nat-gateway-title" class="ov-title">NAT Gateways</h1>
+
+      <div class="ov-filterbar">
+        <div class="ov-filter">
+          <label for="natGatewayAccountFilter">Account</label>
+          <select id="natGatewayAccountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="natGatewayRegionFilter">Region</label>
+          <select id="natGatewayRegionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="natGatewayStateFilter">State</label>
+          <select id="natGatewayStateFilter" (change)="filterByState($event)">
+            <option value="">All States</option>
+            <option *ngFor="let state of uniqueStates" [value]="state">{{ state }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="natGatewayConnectivityFilter">Connectivity</label>
+          <select id="natGatewayConnectivityFilter" (change)="filterByConnectivity($event)">
+            <option value="">All Types</option>
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="natGatewayAttachmentFilter">Elastic IPs</label>
+          <select id="natGatewayAttachmentFilter" (change)="filterByAttachmentState($event)">
+            <option value="">All</option>
+            <option value="attached">Has Elastic IPs</option>
+            <option value="detached">No Elastic IPs</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ov-header-actions">
+        <div class="ov-search">
+          <input
+            id="natGatewaySearch"
+            type="search"
+            placeholder="Search by NAT Gateway ID, Name, or VPC"
+            (input)="searchGateways($event)"
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
+        </div>
+
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToCSV()">Export to CSV</button>
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToXLSX()">Export to XLSX</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="ov-loading">Loading NAT gateways…</div>
+  <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
+    No NAT gateways found matching the current filters.
+  </div>
+
+  <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
+    <table class="ov-table" aria-label="NAT gateways table">
+      <thead>
+        <tr>
+          <th *ngFor="let column of getVisibleColumns()"
+              (click)="column.sortable !== false ? sortData(column.key) : null"
+              [class.sortable]="column.sortable !== false">
+            {{ column.label }}
+            <span *ngIf="sortColumn === column.key && column.sortable !== false" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="ov-cell--right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let resource of paginatedResources">
+          <td *ngFor="let column of getVisibleColumns()">
+            <span [ngClass]="column.key === 'state' ? getStateClass(resource) : ''">
+              {{ getColumnValue(column, resource) }}
+            </span>
+          </td>
+          <td>
+            <div class="ov-actions">
+              <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
+    <article class="ov-card" *ngFor="let resource of paginatedResources">
+      <header class="ov-card__head">
+        <div>
+          <div class="ov-card__title">{{ resource.natGatewayName || 'Unnamed NAT Gateway' }}</div>
+          <div class="ov-card__sub ov-text--mono">{{ resource.natGatewayId }}</div>
+        </div>
+        <span [ngClass]="getStateClass(resource)">{{ (resource.state || 'Unknown') | titlecase }}</span>
+      </header>
+
+      <div class="ov-card__grid">
+        <div><div class="ov-k">Region</div><div class="ov-v">{{ resource.region || 'N/A' }}</div></div>
+        <div><div class="ov-k">Account</div><div class="ov-v">{{ getAccountLabel(resource) }}</div></div>
+        <div><div class="ov-k">VPC</div><div class="ov-v ov-text--mono">{{ resource.vpcId || 'N/A' }}</div></div>
+        <div><div class="ov-k">Subnet</div><div class="ov-v ov-text--mono">{{ resource.subnetId || 'N/A' }}</div></div>
+        <div><div class="ov-k">Connectivity</div><div class="ov-v">{{ resource.connectivityType ? (formatCapitalized(resource.connectivityType)) : 'N/A' }}</div></div>
+        <div><div class="ov-k">Elastic IPs</div><div class="ov-v">{{ getAttachmentLabel(resource) }}</div></div>
+      </div>
+
+      <div class="ov-card__footer">
+        <app-resource-tags *ngIf="resource.tags" [tags]="resource.tags"></app-resource-tags>
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="ov-modal" *ngIf="showColumnCustomizer" (click)="closeColumnCustomizer()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="nat-gateway-columns-title" (click)="$event.stopPropagation()">
+      <div class="ov-modal__head">
+        <h2 id="nat-gateway-columns-title" class="ov-modal__title">Customize Columns</h2>
+        <button class="ov-btn" (click)="closeColumnCustomizer()" aria-label="Close dialog">×</button>
+      </div>
+      <div class="ov-modal__body">
+        <div class="ov-actions" style="justify-content:flex-start; margin-bottom: var(--ov-space-4);">
+          <button class="ov-btn" (click)="selectAllColumns()">Select All</button>
+          <button class="ov-btn" (click)="deselectAllColumns()">Deselect All</button>
+        </div>
+        <div class="column-list">
+          <label *ngFor="let column of availableColumns">
+            <input type="checkbox"
+                   [checked]="isColumnSelected(column.key)"
+                   (change)="toggleColumn(column.key)"
+                   [disabled]="isRequiredColumn(column.key)" />
+            <span [class.required]="isRequiredColumn(column.key)">
+              {{ column.label }}
+              <span *ngIf="isRequiredColumn(column.key)" class="required-badge">Required</span>
+            </span>
+          </label>
+        </div>
+      </div>
+      <div class="ov-modal__foot">
+        <button class="ov-btn" (click)="applyColumnSelection()">Apply</button>
+        <button class="ov-btn ov-btn--primary" (click)="closeColumnCustomizer()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ov-modal" *ngIf="selectedResource as gateway" (click)="closeDetails()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="nat-gateway-details-title" (click)="$event.stopPropagation()" style="max-width: 760px;">
+      <div class="ov-modal__head">
+        <h2 id="nat-gateway-details-title" class="ov-modal__title">NAT Gateway Details — {{ gateway.natGatewayId }}</h2>
+        <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
+      </div>
+
+      <div class="ov-modal__body">
+        <section aria-labelledby="nat-gateway-info-section">
+          <h3 id="nat-gateway-info-section">Gateway Information</h3>
+          <table class="ov-details-table">
+            <tr><th>Name</th><td>{{ gateway.natGatewayName || 'Unnamed NAT Gateway' }}</td></tr>
+            <tr><th>Gateway ID</th><td class="ov-text--mono">{{ gateway.natGatewayId }}</td></tr>
+            <tr><th>State</th><td><span [ngClass]="getStateClass(gateway)">{{ (gateway.state || 'Unknown') | titlecase }}</span></td></tr>
+            <tr><th>Type</th><td>{{ gateway.natGatewayType ? formatCapitalized(gateway.natGatewayType) : 'N/A' }}</td></tr>
+            <tr><th>Connectivity</th><td>{{ gateway.connectivityType ? formatCapitalized(gateway.connectivityType) : 'N/A' }}</td></tr>
+            <tr><th>Account</th><td>{{ getAccountLabel(gateway) }}</td></tr>
+          </table>
+        </section>
+
+        <section aria-labelledby="nat-gateway-network-section">
+          <h3 id="nat-gateway-network-section">Network</h3>
+          <table class="ov-details-table">
+            <tr><th>VPC</th><td class="ov-text--mono">{{ gateway.vpcId || 'N/A' }}</td></tr>
+            <tr><th>Subnet</th><td class="ov-text--mono">{{ gateway.subnetId || 'N/A' }}</td></tr>
+            <tr><th>Public IP</th><td class="ov-text--mono">{{ gateway.primaryPublicIp || gateway.publicIp || 'N/A' }}</td></tr>
+            <tr><th>Private IP</th><td class="ov-text--mono">{{ gateway.primaryPrivateIp || gateway.privateIp || 'N/A' }}</td></tr>
+            <tr><th>Elastic IP Allocation</th><td class="ov-text--mono">{{ gateway.primaryAllocationId || gateway.elasticIpAllocationId || 'N/A' }}</td></tr>
+          </table>
+        </section>
+
+        <section aria-labelledby="nat-gateway-addresses-section">
+          <h3 id="nat-gateway-addresses-section">Elastic IPs</h3>
+          <p *ngIf="gateway.normalizedAddresses.length === 0">No Elastic IPs attached.</p>
+          <table *ngIf="gateway.normalizedAddresses.length > 0" class="ov-details-table">
+            <tr>
+              <th>Public IP</th>
+              <th>Private IP</th>
+              <th>Allocation ID</th>
+              <th>Network Interface</th>
+            </tr>
+            <tr *ngFor="let addr of gateway.normalizedAddresses">
+              <td class="ov-text--mono">{{ addr.publicIp || '—' }}</td>
+              <td class="ov-text--mono">{{ addr.privateIp || '—' }}</td>
+              <td class="ov-text--mono">{{ addr.allocationId || '—' }}</td>
+              <td class="ov-text--mono">{{ addr.networkInterfaceId || '—' }}</td>
+            </tr>
+          </table>
+        </section>
+
+        <section *ngIf="gateway.networkInterfaceIds?.length" aria-labelledby="nat-gateway-eni-section">
+          <h3 id="nat-gateway-eni-section">Network Interfaces</h3>
+          <ul>
+            <li *ngFor="let eni of gateway.networkInterfaceIds" class="ov-text--mono">{{ eni }}</li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nat-gateway-metadata-section">
+          <h3 id="nat-gateway-metadata-section">Metadata</h3>
+          <table class="ov-details-table">
+            <tr><th>Created</th><td>{{ formatDate(gateway.createdAt) }}</td></tr>
+            <tr><th>Updated</th><td>{{ formatDate(gateway.updatedAt) }}</td></tr>
+          </table>
+        </section>
+
+        <section *ngIf="gateway.tags" aria-labelledby="nat-gateway-tags-section">
+          <h3 id="nat-gateway-tags-section">Tags</h3>
+          <app-resource-tags [tags]="gateway.tags"></app-resource-tags>
+        </section>
+      </div>
+
+      <div class="ov-modal__foot">
+        <button class="ov-btn ov-btn--primary" (click)="closeDetails()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ov-pagination" *ngIf="!loading && filteredResources.length > 0">
+    <div class="ov-pagination__info">
+      Showing {{ pageStartIndex }} - {{ pageEndIndex }} of {{ filteredResources.length }} items
+    </div>
+    <div class="ov-pagination__controls">
+      <button class="ov-btn ov-btn--subtle" (click)="goToFirstPage()" [disabled]="currentPage === 1">First</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToPreviousPage()" [disabled]="currentPage === 1">Previous</button>
+      <span class="ov-pagination__pages">
+        <button class="ov-btn" *ngFor="let page of getPageNumbers()"
+                (click)="goToPage(page)"
+                [class.is-active]="page === currentPage">{{ page }}</button>
+      </span>
+      <button class="ov-btn ov-btn--subtle" (click)="goToNextPage()" [disabled]="currentPage === totalPages">Next</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
+    </div>
+  </div>
+
+</article>

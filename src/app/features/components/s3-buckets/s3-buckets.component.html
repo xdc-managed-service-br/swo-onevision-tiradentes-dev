@@ -1,0 +1,285 @@
+<!-- src/app/features/components/s3-buckets/s3-buckets.component.html -->
+<article class="ov-container" aria-labelledby="s3-buckets-title">
+
+  <div class="ov-section">
+    <div class="ov-header ov-bleed">
+      <h1 id="s3-buckets-title" class="ov-title">S3 Buckets</h1>
+
+      <div class="ov-filterbar">
+        <div class="ov-filter">
+          <label for="s3AccountFilter">Account</label>
+          <select id="s3AccountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="s3RegionFilter">Region</label>
+          <select id="s3RegionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="s3LifecycleFilter">Lifecycle</label>
+          <select id="s3LifecycleFilter" (change)="filterByLifecycle($event)">
+            <option value="">All</option>
+            <option value="yes">With Rules</option>
+            <option value="no">No Rules</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="s3EncryptionFilter">Encryption</label>
+          <select id="s3EncryptionFilter" (change)="filterByEncryption($event)">
+            <option value="">All</option>
+            <option *ngFor="let enc of uniqueEncryptions" [value]="enc">{{ enc }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="s3VersioningFilter">Versioning</label>
+          <select id="s3VersioningFilter" (change)="filterByVersioning($event)">
+            <option value="">All</option>
+            <option *ngFor="let v of uniqueVersioning" [value]="v">{{ v }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="s3PabFilter">Public Access Block</label>
+          <select id="s3PabFilter" (change)="filterByPAB($event)">
+            <option value="">All</option>
+            <option value="enabled">Enabled</option>
+            <option value="disabled">Disabled</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ov-header-actions">
+        <div class="ov-search">
+          <input
+            id="s3BucketSearch"
+            type="search"
+            placeholder="Search by Name, Bucket, Account, Encryption…"
+            (input)="searchBuckets($event)"
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
+        </div>
+
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToCSV()">Export to CSV</button>
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToXLSX()">Export to XLSX</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="ov-loading">Loading S3 buckets…</div>
+  <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
+    No S3 buckets found matching the current filters.
+  </div>
+
+  <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
+    <table class="ov-table" aria-label="S3 buckets table">
+      <thead>
+        <tr>
+          <th *ngFor="let column of getVisibleColumns()"
+              (click)="column.sortable !== false ? sortData(column.key) : null"
+              [class.sortable]="column.sortable !== false">
+            {{ column.label }}
+            <span *ngIf="sortColumn === column.key && column.sortable !== false" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="ov-cell--right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let resource of paginatedResources">
+          <td *ngFor="let column of getVisibleColumns()">
+            <span [ngClass]="getColumnClass(column.key, resource)">
+              {{ getColumnValue(column, resource) }}
+            </span>
+          </td>
+          <td>
+            <div class="ov-actions">
+              <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
+    <article class="ov-card" *ngFor="let bucket of paginatedResources">
+      <header class="ov-card__head">
+        <div>
+          <div class="ov-card__title">{{ getDisplayName(bucket) }}</div>
+          <div class="ov-card__sub ov-text--mono">{{ bucket.bucketName }}</div>
+        </div>
+        <span [ngClass]="bucket.publicAccessBlock ? 'status-running' : 'status-stopped'">
+          {{ bucket.publicAccessBlock ? 'Public Access Block: Enabled' : 'Public Access Block: Disabled' }}
+        </span>
+      </header>
+
+      <div class="ov-card__grid">
+        <div>
+          <div class="ov-k">Region</div>
+          <div class="ov-v">{{ bucket.region || 'N/A' }}</div>
+        </div>
+        <div>
+          <div class="ov-k">Account</div>
+          <div class="ov-v">{{ getAccountLabel(bucket) }}</div>
+        </div>
+        <div>
+          <div class="ov-k">Objects</div>
+          <div class="ov-v">{{ formatNumber(bucket.objectCount) }}</div>
+        </div>
+        <div>
+          <div class="ov-k">Storage</div>
+          <div class="ov-v">{{ bucket.storageBytes || 'N/A' }}</div>
+        </div>
+        <div>
+          <div class="ov-k">Encryption</div>
+          <div class="ov-v">{{ bucket.encryption || 'None' }}</div>
+        </div>
+        <div>
+          <div class="ov-k">Versioning</div>
+          <div class="ov-v">{{ bucket.versioning || 'None' }}</div>
+        </div>
+        <div>
+          <div class="ov-k">Lifecycle</div>
+          <div class="ov-v">{{ bucket.hasLifecycleRules ? 'Yes' : 'No' }}</div>
+        </div>
+        <div>
+          <div class="ov-k">Created</div>
+          <div class="ov-v">{{ formatDate(bucket.createdAt) }}</div>
+        </div>
+        <div>
+          <div class="ov-k">Updated</div>
+          <div class="ov-v">{{ formatDate(bucket.updatedAt) }}</div>
+        </div>
+      </div>
+
+      <div class="ov-card__footer">
+        <app-resource-tags *ngIf="bucket.tags" [tags]="bucket.tags"></app-resource-tags>
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--primary" (click)="showDetails(bucket)">View Details</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- Column customizer -->
+  <div class="ov-modal" *ngIf="showColumnCustomizer" (click)="closeColumnCustomizer()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="s3-columns-title" (click)="$event.stopPropagation()">
+      <div class="ov-modal__head">
+        <h2 id="s3-columns-title" class="ov-modal__title">Customize Columns</h2>
+        <button class="ov-btn" (click)="closeColumnCustomizer()" aria-label="Close dialog">×</button>
+      </div>
+      <div class="ov-modal__body">
+        <div class="ov-actions" style="justify-content:flex-start; margin-bottom: var(--ov-space-4);">
+          <button class="ov-btn" (click)="selectAllColumns()">Select All</button>
+          <button class="ov-btn" (click)="deselectAllColumns()">Deselect All</button>
+        </div>
+        <div class="column-list">
+          <label *ngFor="let column of availableColumns">
+            <input type="checkbox"
+                   [checked]="isColumnSelected(column.key)"
+                   (change)="toggleColumn(column.key)"
+                   [disabled]="isRequiredColumn(column.key)" />
+            <span [class.required]="isRequiredColumn(column.key)">
+              {{ column.label }}
+              <span *ngIf="isRequiredColumn(column.key)" class="required-badge">Required</span>
+            </span>
+          </label>
+        </div>
+      </div>
+      <div class="ov-modal__foot">
+        <button class="ov-btn" (click)="applyColumnSelection()">Apply</button>
+        <button class="ov-btn ov-btn--primary" (click)="closeColumnCustomizer()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Details modal -->
+  <div class="ov-modal" *ngIf="selectedResource as bucket" (click)="closeDetails()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="s3-details-title" (click)="$event.stopPropagation()" style="max-width: 720px;">
+      <div class="ov-modal__head">
+        <h2 id="s3-details-title" class="ov-modal__title">S3 Bucket Details — {{ bucket.bucketName }}</h2>
+        <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
+      </div>
+
+      <div class="ov-modal__body">
+        <section aria-labelledby="s3-info-section">
+          <h3 id="s3-info-section">Bucket Information</h3>
+          <table class="ov-details-table">
+            <tr><th>Name</th><td>{{ getDisplayName(bucket) }}</td></tr>
+            <tr><th>Bucket</th><td class="ov-text--mono">{{ bucket.bucketName }}</td></tr>
+            <tr><th>Region</th><td>{{ bucket.region || 'N/A' }}</td></tr>
+            <tr><th>Account</th><td>{{ getAccountLabel(bucket) }}</td></tr>
+          </table>
+        </section>
+
+        <section aria-labelledby="s3-config-section">
+          <h3 id="s3-config-section">Configuration</h3>
+          <table class="ov-details-table">
+            <tr><th>Lifecycle Rules</th><td>{{ bucket.hasLifecycleRules ? 'Yes' : 'No' }}</td></tr>
+            <tr><th>Encryption</th><td>{{ bucket.encryption || 'None' }}</td></tr>
+            <tr><th>Versioning</th><td>{{ bucket.versioning || 'None' }}</td></tr>
+            <tr><th>Public Access Block</th><td>{{ bucket.publicAccessBlock ? 'Enabled' : 'Disabled' }}</td></tr>
+          </table>
+        </section>
+
+        <section aria-labelledby="s3-stats-section">
+          <h3 id="s3-stats-section">Statistics</h3>
+          <table class="ov-details-table">
+            <tr><th>Objects</th><td>{{ formatNumber(bucket.objectCount) }}</td></tr>
+            <tr><th>Storage</th><td>{{ bucket.storageBytes || 'N/A' }}</td></tr>
+            <tr><th>Created</th><td>{{ formatDate(bucket.createdAt) }}</td></tr>
+            <tr><th>Updated</th><td>{{ formatDate(bucket.updatedAt) }}</td></tr>
+          </table>
+        </section>
+
+        <section *ngIf="bucket.tags" aria-labelledby="s3-tags-section">
+          <h3 id="s3-tags-section">Tags</h3>
+          <app-resource-tags [tags]="bucket.tags"></app-resource-tags>
+        </section>
+      </div>
+
+      <div class="ov-modal__foot">
+        <button class="ov-btn ov-btn--primary" (click)="closeDetails()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="ov-pagination" *ngIf="!loading && filteredResources.length > 0">
+    <div class="ov-pagination__info">
+      Showing {{ pageStartIndex }} - {{ pageEndIndex }} of {{ filteredResources.length }} items
+    </div>
+    <div class="ov-pagination__controls">
+      <button class="ov-btn ov-btn--subtle" (click)="goToFirstPage()" [disabled]="currentPage === 1">First</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToPreviousPage()" [disabled]="currentPage === 1">Previous</button>
+      <span class="ov-pagination__pages">
+        <button class="ov-btn" *ngFor="let page of getPageNumbers()"
+                (click)="goToPage(page)"
+                [class.is-active]="page === currentPage">{{ page }}</button>
+      </span>
+      <button class="ov-btn ov-btn--subtle" (click)="goToNextPage()" [disabled]="currentPage === totalPages">Next</button>
+      <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">Last</button>
+    </div>
+  </div>
+
+</article>
