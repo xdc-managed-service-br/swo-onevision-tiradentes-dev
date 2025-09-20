@@ -7,7 +7,7 @@ from .base import ResourceCollector, format_aws_datetime
 logger = logging.getLogger()
 
 
-class EC2Collector(ResourceCollector):
+class ComputeCollector(ResourceCollector):
     """
     Collects various EC2 resources: Instances, Volumes, Snapshots, AMIs, Elastic IPs.
     Also attempts to detect CloudWatch Agent presence by checking for specific

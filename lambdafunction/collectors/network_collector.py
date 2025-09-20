@@ -25,7 +25,7 @@ def to_dynamodb_format(data: dict) -> dict:
             dynamodb_item[key] = str(value)
     return dynamodb_item
 
-class NetworkingCollector(ResourceCollector):
+class NetworkCollector(ResourceCollector):
     """
     Collects networking and VPC resources including security analysis.
     Resources: VPCs, Security Groups, Subnets, NAT Gateways, Internet Gateways,

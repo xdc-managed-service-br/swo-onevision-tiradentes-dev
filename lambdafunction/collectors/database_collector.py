@@ -6,7 +6,7 @@ from .base import ResourceCollector, format_aws_datetime
 logger = logging.getLogger()
 
 
-class RDSCollector(ResourceCollector):
+class DatabaseCollector(ResourceCollector):
     """Collects RDS instances and snapshots."""
     
     def collect(self):

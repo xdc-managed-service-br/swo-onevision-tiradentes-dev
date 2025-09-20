@@ -6,11 +6,7 @@ import logging
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from botocore.exceptions import ClientError
-
-# Import ResourceCollector for parallel regional collection
 from collectors.base import ResourceCollector
-
-# Import from collectors module
 from collectors.base import (
     get_dynamodb_table, 
     get_all_organization_accounts,
@@ -19,20 +15,16 @@ from collectors.base import (
     MAX_WORKERS,
     DEFAULT_REGIONS
 )
-from collectors.ec2_collector import EC2Collector
-from collectors.rds_collector import RDSCollector
-from collectors.storage_collector import StorageCollector
-from collectors.networking_collector import NetworkingCollector
 
-# Import metrics calculator
+from lambdafunction.collectors.compute_collector import ComputeCollector
+from lambdafunction.collectors.database_collector import DatabaseCollector
+from collectors.storage_collector import StorageCollector
+from lambdafunction.collectors.network_collector import NetworkCollector
 from collectors.metrics_calculator import MetricsAccumulator, save_metrics_to_dynamodb
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-# Global metrics accumulator
 global_metrics_accumulator = MetricsAccumulator()
-
 
 def process_region(account_id, account_name, region, credentials, tables, metrics_accumulator=None):
     """Processes a single region for an account, running all regional collectors in parallel."""
@@ -40,11 +32,8 @@ def process_region(account_id, account_name, region, credentials, tables, metric
     logger.info(f"Processing region {region} for account {account_id} ({account_name})")
     region_total_items_saved = 0
 
-    # List of regional collector classes to run
-    # Note: StorageCollector handles EBS, EFS, FSx which are regional services internally
-    regional_collectors = [EC2Collector, RDSCollector, NetworkingCollector]
+    regional_collectors = [ComputeCollector, DatabaseCollector, NetworkCollector]
 
-    # Instantiate collectors for this specific region/account/creds
     collector_instances = [
         collector_class(account_id, account_name, region, credentials, tables)
         for collector_class in regional_collectors
