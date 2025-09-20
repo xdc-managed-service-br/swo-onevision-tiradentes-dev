@@ -320,19 +320,19 @@ class MetricsAccumulator:
         """
         total_resources = sum(self.resource_counts.values())
 
-        # Format account distribution with names (Top 10)
+        # Format account distribution with names (all accounts)
         account_dist: List[Dict[str, Any]] = []
-        for account_id, count in sorted(self.account_counts.items(), key=lambda x: x[1], reverse=True)[:10]:
+        for account_id, count in sorted(self.account_counts.items(), key=lambda x: x[1], reverse=True):
             account_dist.append({
                 'accountId': account_id,
                 'accountName': self.account_names.get(account_id, account_id),
                 'count': count
             })
 
-        # Format region distribution (Top 10)
+        # Format region distribution (all regions)
         region_dist: List[Dict[str, Any]] = [
             {'region': region, 'count': count}
-            for region, count in sorted(self.region_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+            for region, count in sorted(self.region_counts.items(), key=lambda x: x[1], reverse=True)
         ]
 
         # Global metrics

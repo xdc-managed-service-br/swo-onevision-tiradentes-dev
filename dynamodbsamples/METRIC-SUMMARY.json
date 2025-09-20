@@ -3,16 +3,268 @@
     "S": "METRICS-GLOBAL-CURRENT"
   },
   "accountDistribution": {
-    "S": "[{\"accountId\": \"767398083881\", \"accountName\": \"Infra\", \"count\": 1576}, 
-    {\"accountId\": \"767397734112\", \"accountName\": \"Arquiteturas e Sistemas\", \"count\": 1408}, 
-    {\"accountId\": \"381492155025\", \"accountName\": \"MagisterApps Prod\", \"count\": 1357}, 
-    {\"accountId\": \"905418331872\", \"accountName\": \"Network\", \"count\": 1261}, 
-    {\"accountId\": \"767397916042\", \"accountName\": \"Operacional\", \"count\": 1099}, 
-    {\"accountId\": \"992382742081\", \"accountName\": \"BackOffice\", \"count\": 765}, 
-    {\"accountId\": \"654654547936\", \"accountName\": \"ITP\", \"count\": 607}, 
-    {\"accountId\": \"058264289687\", \"accountName\": \"Terminal Service\", \"count\": 479}, 
-    {\"accountId\": \"590184023510\", \"accountName\": \"Biblioteca\", \"count\": 474}, 
-    {\"accountId\": \"654654498954\", \"accountName\": \"Ficou Facil\", \"count\": 446}]"
+    "L": [
+      {
+        "M": {
+          "accountId": {
+            "S": "767398083881"
+          },
+          "accountName": {
+            "S": "Infra"
+          },
+          "count": {
+            "N": "1576"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "767397734112"
+          },
+          "accountName": {
+            "S": "Arquiteturas e Sistemas"
+          },
+          "count": {
+            "N": "1408"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "381492155025"
+          },
+          "accountName": {
+            "S": "MagisterApps Prod"
+          },
+          "count": {
+            "N": "1357"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "905418331872"
+          },
+          "accountName": {
+            "S": "Network"
+          },
+          "count": {
+            "N": "1261"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "767397916042"
+          },
+          "accountName": {
+            "S": "Operacional"
+          },
+          "count": {
+            "N": "1099"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "992382742081"
+          },
+          "accountName": {
+            "S": "BackOffice"
+          },
+          "count": {
+            "N": "765"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "654654547936"
+          },
+          "accountName": {
+            "S": "ITP"
+          },
+          "count": {
+            "N": "607"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "058264289687"
+          },
+          "accountName": {
+            "S": "Terminal Service"
+          },
+          "count": {
+            "N": "479"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "590184023510"
+          },
+          "accountName": {
+            "S": "Biblioteca"
+          },
+          "count": {
+            "N": "474"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "654654498954"
+          },
+          "accountName": {
+            "S": "Ficou Facil"
+          },
+          "count": {
+            "N": "446"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "211125526410"
+          },
+          "accountName": {
+            "S": "TOTVS - Legado"
+          },
+          "count": {
+            "N": "436"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "767397744237"
+          },
+          "accountName": {
+            "S": "Gestao de Seguranca"
+          },
+          "count": {
+            "N": "431"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "058264393294"
+          },
+          "accountName": {
+            "S": "Banco de Dados"
+          },
+          "count": {
+            "N": "345"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "590183843163"
+          },
+          "accountName": {
+            "S": "A4L"
+          },
+          "count": {
+            "N": "299"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "533267337185"
+          },
+          "accountName": {
+            "S": "File Service"
+          },
+          "count": {
+            "N": "165"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "985539761262"
+          },
+          "accountName": {
+            "S": "SandBox + BedRock"
+          },
+          "count": {
+            "N": "161"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "339712694259"
+          },
+          "accountName": {
+            "S": "MagisterApps Dev/Hom"
+          },
+          "count": {
+            "N": "160"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "992382800151"
+          },
+          "accountName": {
+            "S": "Log Archive"
+          },
+          "count": {
+            "N": "153"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "339712896448"
+          },
+          "accountName": {
+            "S": "Audit"
+          },
+          "count": {
+            "N": "151"
+          }
+        }
+      },
+      {
+        "M": {
+          "accountId": {
+            "S": "786960299620"
+          },
+          "accountName": {
+            "S": "RM Desenvolvimento"
+          },
+          "count": {
+            "N": "142"
+          }
+        }
+      }
+    ]
   },
   "accountId": {
     "S": "GLOBAL"
@@ -21,7 +273,7 @@
     "S": "Global Metrics"
   },
   "createdAt": {
-    "S": "2025-09-20T05:01:08.826Z"
+    "S": "2025-09-20T05:50:10.281Z"
   },
   "isMetric": {
     "BOOL": true
@@ -30,16 +282,184 @@
     "S": "2025-09-20"
   },
   "processingDurationSeconds": {
-    "N": "271.437"
-  },
-  "recentResources": {
-    "S": "[{\"resourceType\": \"NetworkACL\", \"region\": \"us-west-2\", \"createdAt\": \"2025-09-20T05:00:54.010000+00:00\", \"identifier\": \"058264289687-us-west-2-NetworkACL-acl-0abceb4d198b9bf36\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-west-1\", \"createdAt\": \"2025-09-20T05:00:53.789000+00:00\", \"identifier\": \"058264289687-us-west-1-NetworkACL-acl-0242c744d4bb42da9\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-west-2\", \"createdAt\": \"2025-09-20T05:00:53.768000+00:00\", \"identifier\": \"058264289687-us-west-2-RouteTable-rtb-0c19ae09253fd7705\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-west-1\", \"createdAt\": \"2025-09-20T05:00:53.562000+00:00\", \"identifier\": \"058264289687-us-west-1-RouteTable-rtb-0382c38abf5bddcc6\"}, {\"resourceType\": \"InternetGateway\", \"region\": \"us-west-2\", \"createdAt\": \"2025-09-20T05:00:53.267000+00:00\", \"identifier\": \"igw-05739c653774dee89\"}, {\"resourceType\": \"NetworkACL\", \"region\": \"us-east-2\", \"createdAt\": \"2025-09-20T05:00:53.214000+00:00\", \"identifier\": \"058264289687-us-east-2-NetworkACL-acl-09f09a5787370dfaa\"}, {\"resourceType\": \"InternetGateway\", \"region\": \"us-west-1\", \"createdAt\": \"2025-09-20T05:00:53.085000+00:00\", \"identifier\": \"igw-0d9879e9d4cec6b86\"}, {\"resourceType\": \"RouteTable\", \"region\": \"us-east-2\", \"createdAt\": \"2025-09-20T05:00:53.037000+00:00\", \"identifier\": \"058264289687-us-east-2-RouteTable-rtb-0b2f96e5d08fa5da7\"}, {\"resourceType\": \"Subnet\", \"region\": \"us-west-2\", \"createdAt\": \"2025-09-20T05:00:52.832000+00:00\", \"identifier\": \"058264289687-us-west-2-Subnet-subnet-02c4bd1f6724fc9f6\"}, {\"resourceType\": \"Subnet\", \"region\": \"us-west-2\", \"createdAt\": \"2025-09-20T05:00:52.832000+00:00\", \"identifier\": \"058264289687-us-west-2-Subnet-subnet-0d8722ff23a5aa2f8\"}]"
+    "N": "260.407"
   },
   "region": {
     "S": "global"
   },
   "regionDistribution": {
-    "S": "[{\"region\": \"us-east-1\", \"count\": 9331}, {\"region\": \"ap-northeast-2\", \"count\": 180}, {\"region\": \"us-west-2\", \"count\": 180}, {\"region\": \"sa-east-1\", \"count\": 163}, {\"region\": \"us-east-2\", \"count\": 161}, {\"region\": \"ca-central-1\", \"count\": 160}, {\"region\": \"eu-west-1\", \"count\": 160}, {\"region\": \"eu-central-1\", \"count\": 160}, {\"region\": \"eu-north-1\", \"count\": 160}, {\"region\": \"ap-northeast-3\", \"count\": 160}]"
+    "L": [
+      {
+        "M": {
+          "count": {
+            "N": "9331"
+          },
+          "region": {
+            "S": "us-east-1"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "180"
+          },
+          "region": {
+            "S": "ap-northeast-2"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "180"
+          },
+          "region": {
+            "S": "us-west-2"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "163"
+          },
+          "region": {
+            "S": "sa-east-1"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "161"
+          },
+          "region": {
+            "S": "us-east-2"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "160"
+          },
+          "region": {
+            "S": "ca-central-1"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "160"
+          },
+          "region": {
+            "S": "eu-west-1"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "160"
+          },
+          "region": {
+            "S": "eu-central-1"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "160"
+          },
+          "region": {
+            "S": "eu-north-1"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "160"
+          },
+          "region": {
+            "S": "ap-northeast-1"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "160"
+          },
+          "region": {
+            "S": "ap-northeast-3"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "160"
+          },
+          "region": {
+            "S": "ap-southeast-2"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "160"
+          },
+          "region": {
+            "S": "ap-southeast-1"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "160"
+          },
+          "region": {
+            "S": "eu-west-2"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "160"
+          },
+          "region": {
+            "S": "ap-south-1"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "160"
+          },
+          "region": {
+            "S": "eu-west-3"
+          }
+        }
+      },
+      {
+        "M": {
+          "count": {
+            "N": "140"
+          },
+          "region": {
+            "S": "us-west-1"
+          }
+        }
+      }
+    ]
   },
   "regionsCollected": {
     "N": "0"
@@ -52,9 +472,6 @@
   },
   "resourceCounts_BackupPlan": {
     "N": "73"
-  },
-  "resourceCounts_BackupRecoveryPoint": {
-    "N": "0"
   },
   "resourceCounts_BackupVault": {
     "N": "41"
@@ -135,6 +552,6 @@
     "N": "11915"
   },
   "updatedAt": {
-    "S": "2025-09-20T05:01:08.826Z"
+    "S": "2025-09-20T05:50:10.281Z"
   }
 }
