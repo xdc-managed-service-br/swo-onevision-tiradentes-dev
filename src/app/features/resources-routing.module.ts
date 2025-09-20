@@ -125,10 +125,10 @@ const routes: Routes = [
         .then(m => m.RouteTablesComponent)
   },
   {
-    path: 'vpn-gateways',
+    path: 'vpn-connections',
     loadComponent: () =>
-      import('./components/vpn-gateways/vpn-gateways.component')
-        .then(m => m.VpnGatewaysComponent)
+      import('./components/vpn-connections/vpn-connections.component')
+        .then(m => m.VpnConnectionsComponent)
   },
   {
     path: 'transit-gateways',

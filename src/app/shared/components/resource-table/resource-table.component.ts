@@ -1,20 +1,24 @@
 // src/app/shared/components/resource-table/resource-table.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { OvResizableColDirective } from '../../directives/ov-resizable-col.directive';
 
 @Component({
   selector: 'app-resource-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, OvResizableColDirective],
   templateUrl: './resource-table.component.html',
   styleUrls: ['./resource-table.component.css']
 })
 export class ResourceTableComponent {
   @Input() data: any[] = [];
-  @Input() columns: {key: string, label: string, type?: string}[] = [];
+  @Input() columns: {key: string, label: string, type?: string, minWidth?: number, maxWidth?: number}[] = [];
   @Input() sortColumn: string = '';
   @Input() sortDirection: 'asc' | 'desc' = 'asc';
   @Input() showActions: boolean = true;
+  @Input() tableId: string = 'resourceTable';
+  @Input() defaultColumnMin = 120;
+  @Input() actionColumnMin = 140;
   
   @Output() sort = new EventEmitter<string>();
   @Output() viewDetails = new EventEmitter<any>();

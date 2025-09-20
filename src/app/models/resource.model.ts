@@ -70,6 +70,33 @@ export interface DirectConnectConnection extends BaseResource {
   encryptionMode?: string;
 }
 
+// Direct Connect Virtual Interface
+export interface DirectConnectVirtualInterface extends BaseResource {
+  virtualInterfaceId: string;
+  virtualInterfaceName?: string;
+  virtualInterfaceType?: string;
+  virtualInterfaceState?: string;
+  connectionId?: string;
+  directConnectGatewayId?: string;
+  virtualGatewayId?: string;
+  amazonAddress?: string;
+  customerAddress?: string;
+  amazonSideAsn?: number;
+  asn?: number;
+  authKey?: string;
+  customerRouterConfig?: string;
+  mtu?: number;
+  vlan?: number;
+  jumboFrameCapable?: boolean;
+  bgpStatus?: string;
+  bgpStatusIpv4?: string;
+  bgpStatusIpv6?: string;
+  bgpAllUp?: boolean;
+  bgpAnyUp?: boolean;
+  bgpPeers?: Array<Record<string, any>>;
+  routeFilterPrefixes?: Array<Record<string, any>>;
+}
+
 // EBS Snapshot
 export interface EBSSnapshot extends BaseResource {
   snapshotId: string;
@@ -374,6 +401,7 @@ export interface VPNConnection extends BaseResource {
   vpnGatewayId?: string;
   customerGatewayId?: string;
   category?: string;
+  state?: string;
   tunnelCount?: number;
   tunnelsUp?: number;
   transitGatewayId?: string; // Generic field
@@ -420,6 +448,7 @@ export type AWSResource =
   | AMI
   | AutoScalingGroup
   | DirectConnectConnection
+  | DirectConnectVirtualInterface
   | EBSSnapshot
   | EBSVolume
   | EC2Instance

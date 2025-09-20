@@ -8,6 +8,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { TransitGateway } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -46,7 +47,7 @@ type NormalizedTransitGateway = TransitGateway & {
 @Component({
   selector: 'app-transit-gateways',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './transit-gateways.component.html'
 })
 export class TransitGatewaysComponent implements OnInit, OnDestroy {
@@ -99,6 +100,22 @@ export class TransitGatewaysComponent implements OnInit, OnDestroy {
     'accountName',
     'createdAt'
   ];
+
+  private readonly columnMinWidths: Record<string, number> = {
+    displayName: 200,
+    transitGatewayId: 190,
+    amazonSideAsn: 150,
+    ownerId: 170,
+    defaultRouteTableAssociation: 220,
+    defaultRouteTablePropagation: 220,
+    dnsSupport: 160,
+    multicastSupport: 160,
+    vpnEcmpSupport: 160,
+    region: 140,
+    accountName: 170,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   readonly availableColumns: ColumnDefinition[] = [
     { key: 'displayName', label: 'Name', sortable: true, transform: (r) => r.displayName },
@@ -537,7 +554,12 @@ export class TransitGatewaysComponent implements OnInit, OnDestroy {
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return this.formatBoolean(value);
     if (Array.isArray(value)) return value.join(', ');
+    if (typeof value === 'number') return value.toLocaleString();
     return String(value);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getStateClass(resource: NormalizedTransitGateway): string {

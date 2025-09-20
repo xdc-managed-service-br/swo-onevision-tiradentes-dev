@@ -7,6 +7,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { TagFormatter } from '../../../shared/utils/tag-formatter';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface Tag {
   Key: string;
@@ -23,7 +24,7 @@ interface ColumnDefinition {
 @Component({
   selector: 'app-ami-snapshots',
   standalone: true,
-  imports: [CommonModule, FormsModule, ResourceTagsComponent],
+  imports: [CommonModule, FormsModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './ami-snapshots.component.html',
 })
 export class AMISnapshotsComponent implements OnInit, OnDestroy {
@@ -83,6 +84,19 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
   defaultColumns = ['imageId', 'imageNameTag', 'amiName', 'platform', 'region', 'creationTime', 'accountName'];
   private readonly LS_KEY = 'amiSelectedColumns';
   selectedColumns = new Set<string>();
+  private readonly columnMinWidths: Record<string, number> = {
+    imageId: 180,
+    imageNameTag: 200,
+    amiName: 200,
+    imageState: 150,
+    state: 150,
+    platform: 150,
+    description: 240,
+    region: 140,
+    accountId: 170,
+    accountName: 170,
+    creationTime: 180,
+  };
   
   // Required columns that cannot be deselected
   requiredColumns = ['imageId'];
@@ -380,8 +394,15 @@ export class AMISnapshotsComponent implements OnInit, OnDestroy {
     if (typeof value === 'boolean') {
       return value ? 'Yes' : 'No';
     }
+    if (typeof value === 'number') {
+      return value.toLocaleString();
+    }
     
     return String(value);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
   getAmiStateClass(state?: string): string {
     const s = (state || '').toLowerCase();

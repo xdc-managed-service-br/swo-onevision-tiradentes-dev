@@ -6,6 +6,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService } from '../../../core/services/export.service';
 import { ErrorService } from '../../../core/services/error.service';
 import { ResourceTagsComponent } from '../resource-tags/resource-tags.component';
+import { OvResizableColDirective } from '../../directives/ov-resizable-col.directive';
 
 export interface ResourceColumn {
   key: string;
@@ -14,6 +15,7 @@ export interface ResourceColumn {
   format?: 'text' | 'date' | 'boolean' | 'size' | 'status' | 'json' | 'url';
   transform?: (resource: any) => any;
   templateRef?: string; // Name of the template reference to use
+  minWidth?: number;
 }
 
 export interface ResourceFilter {
@@ -38,7 +40,7 @@ export interface DetailField {
 @Component({
   selector: 'app-resource-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ResourceTagsComponent],
+  imports: [CommonModule, RouterModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './resource-list.component.html',
 })
 export class ResourceListComponent implements OnInit {
@@ -49,6 +51,8 @@ export class ResourceListComponent implements OnInit {
   @Input() detailSections: DetailSection[] = [];
   @Input() identifierKey?: string;
   @Input() graphqlQueryName?: string;
+  @Input() tableId: string = 'resourceListTable';
+  @Input() defaultColumnMin = 120;
 
   // ContentChild for custom templates
   @ContentChild('resourceTypeTemplate') resourceTypeTemplate?: TemplateRef<any>;

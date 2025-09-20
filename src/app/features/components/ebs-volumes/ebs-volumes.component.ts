@@ -7,6 +7,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { EBSVolume } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -22,7 +23,7 @@ type ColumnKey =
 @Component({
   selector: 'app-ebs-volumes',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './ebs-volumes.component.html',
 })
 export class EBSVolumesComponent implements OnInit, OnDestroy {
@@ -61,6 +62,20 @@ export class EBSVolumesComponent implements OnInit, OnDestroy {
   showColumnCustomizer = false;
   private readonly LS_KEY = 'ebs-columns';
   selectedColumns: Set<string> = new Set();
+  private readonly columnMinWidths: Record<string, number> = {
+    volumeId: 180,
+    volumeName: 200,
+    volumeType: 150,
+    volumeState: 140,
+    size: 140,
+    encrypted: 140,
+    attachedInstances: 220,
+    region: 140,
+    accountId: 170,
+    accountName: 170,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   availableColumns: ColumnDefinition[] = [
     { key: 'volumeId', label: 'Volume ID', sortable: true },
@@ -313,7 +328,12 @@ export class EBSVolumesComponent implements OnInit, OnDestroy {
     if (value === null || value === undefined) return 'N/A';
     if (Array.isArray(value)) return value.join(', ');
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value === 'number') return value.toLocaleString();
     return String(value);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getColumnClass(key: ColumnKey, r: EBSVolume): string {

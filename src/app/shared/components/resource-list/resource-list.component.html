@@ -44,6 +44,10 @@
       <thead>
         <tr>
           <th *ngFor="let column of columns" 
+              ovResizableCol
+              [tableId]="tableId"
+              [columnKey]="column.key"
+              [min]="column.minWidth ?? defaultColumnMin"
               (click)="column.sortable !== false ? sortData(column.key) : null"
               [class.sortable]="column.sortable !== false">
             {{ column.label }}
@@ -51,7 +55,7 @@
               {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
           </th>
-          <th>Actions</th>
+          <th class="ov-cell--right ov-col--actions">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -104,7 +108,7 @@
               </ng-container>
             </td>
           </ng-container>
-          <td>
+          <td class="ov-col--actions ov-cell--right">
             <button (click)="showDetails(resource)" class="ov-btn ov-btn--primary">View Details</button>
           </td>
         </tr>

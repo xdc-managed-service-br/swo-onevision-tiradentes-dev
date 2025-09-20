@@ -8,6 +8,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { S3Bucket } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -35,7 +36,7 @@ type ColumnKey =
 @Component({
   selector: 'app-s3-buckets',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './s3-buckets.component.html'
 })
 export class S3BucketsComponent implements OnInit, OnDestroy {
@@ -73,6 +74,20 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
 
   private readonly LS_KEY = 's3-buckets-columns';
   private readonly destroy$ = new Subject<void>();
+  private readonly columnMinWidths: Record<string, number> = {
+    displayName: 200,
+    bucketName: 180,
+    hasLifecycleRules: 150,
+    objectCount: 150,
+    storageBytes: 160,
+    encryption: 150,
+    versioning: 150,
+    publicAccessBlock: 200,
+    region: 140,
+    accountName: 170,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   // definição de colunas
   availableColumns: ColumnDefinition[] = [
@@ -463,7 +478,12 @@ export class S3BucketsComponent implements OnInit, OnDestroy {
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     if (Array.isArray(value)) return value.join(', ');
+    if (typeof value === 'number') return this.formatNumber(value);
     return String(value);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getBooleanStatusClass(value: boolean | undefined | null): string {

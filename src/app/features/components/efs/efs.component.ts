@@ -8,6 +8,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { EFSFileSystem } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -33,7 +34,7 @@ type ColumnKey =
 @Component({
   selector: 'app-efs-file-systems',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './efs.component.html'
 })
 export class EFSFileSystemsComponent implements OnInit, OnDestroy {
@@ -70,6 +71,20 @@ export class EFSFileSystemsComponent implements OnInit, OnDestroy {
 
   private readonly LS_KEY = 'efs-filesystems-columns';
   private readonly destroy$ = new Subject<void>();
+  private readonly columnMinWidths: Record<string, number> = {
+    fileSystemId: 180,
+    performanceMode: 140,
+    throughputMode: 160,
+    provisionedThroughputInMibps: 160,
+    mountTargetsCount: 140,
+    sizeInBytes: 160,
+    lifecyclePolicies: 220,
+    backupPolicyEnabled: 140,
+    region: 140,
+    accountName: 160,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   availableColumns: ColumnDefinition[] = [
     {
@@ -491,6 +506,10 @@ export class EFSFileSystemsComponent implements OnInit, OnDestroy {
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     if (Array.isArray(value)) return value.join(', ');
     return String(value);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getColumnClass(key: ColumnKey, resource: EFSFileSystem): string {

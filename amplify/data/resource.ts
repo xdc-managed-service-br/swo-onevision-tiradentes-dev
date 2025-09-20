@@ -103,6 +103,26 @@ const schema = a.schema({
     portEncryptionStatus: a.string(),
     encryptionMode: a.string(),
 
+    // ===== Direct Connect Virtual Interface FIELDS =====
+    virtualInterfaceId: a.string(),
+    virtualInterfaceName: a.string(),
+    virtualInterfaceType: a.string(),
+    virtualInterfaceState: a.string(),
+    directConnectGatewayId: a.string(),
+    virtualGatewayId: a.string(),
+    amazonAddress: a.string(),
+    customerAddress: a.string(),
+    customerRouterConfig: a.string(),
+    mtu: a.integer(),
+    jumboFrameCapable: a.boolean(),
+    bgpStatus: a.string(),
+    bgpStatusIpv4: a.string(),
+    bgpStatusIpv6: a.string(),
+    bgpAllUp: a.boolean(),
+    bgpAnyUp: a.boolean(),
+    bgpPeers: a.json(),
+    routeFilterPrefixes: a.json(),
+
     // ===== EBS Snapshot FIELDS =====
     snapshotId: a.string(),
     snapshotName: a.string(),

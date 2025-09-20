@@ -8,6 +8,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { LoadBalancer } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -52,7 +53,7 @@ type NormalizedLoadBalancer = LoadBalancer & {
 @Component({
   selector: 'app-load-balancers',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './load-balancers.component.html'
 })
 export class LoadBalancersComponent implements OnInit, OnDestroy {
@@ -109,6 +110,24 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     'securityGroupCount',
     'createdAt'
   ];
+
+  private readonly columnMinWidths: Record<string, number> = {
+    displayName: 200,
+    loadBalancerArn: 220,
+    dnsName: 220,
+    type: 150,
+    scheme: 150,
+    ipAddressType: 160,
+    state: 150,
+    vpcId: 180,
+    region: 140,
+    accountName: 170,
+    targetGroupCount: 160,
+    securityGroupCount: 160,
+    availabilityZoneCount: 170,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   readonly availableColumns: ColumnDefinition[] = [
     {
@@ -547,7 +566,12 @@ export class LoadBalancersComponent implements OnInit, OnDestroy {
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return this.formatBoolean(value);
     if (Array.isArray(value)) return value.join(', ');
+    if (typeof value === 'number') return value.toLocaleString();
     return String(value);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getStateClass(resource: NormalizedLoadBalancer): string {

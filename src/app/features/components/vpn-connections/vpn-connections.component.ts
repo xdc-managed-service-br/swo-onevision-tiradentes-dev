@@ -1,5 +1,5 @@
-// src/app/features/components/vpn-gateways/vpn-gateways.component.ts
-import { Component, OnDestroy, OnInit } from '@angular/core';
+// src/app/features/components/vpn-connections/vpn-connections.component.ts
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -7,95 +7,106 @@ import { takeUntil } from 'rxjs/operators';
 import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
-import { VPNGateway } from '../../../models/resource.model';
+import { VPNConnection } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
   label: string;
   sortable?: boolean;
-  transform?: (resource: NormalizedVpnGateway) => string;
+  transform?: (resource: NormalizedVpnConnection) => string;
 }
 
 type ColumnKey =
   | 'displayName'
-  | 'vpnGatewayId'
-  | 'type'
+  | 'vpnConnectionId'
   | 'state'
-  | 'amazonSideAsn'
-  | 'availabilityZone'
-  | 'attachedVpcCount'
-  | 'attachedVpcSummary'
+  | 'type'
+  | 'category'
+  | 'tunnelStatus'
+  | 'tunnelsUp'
+  | 'tunnelCount'
+  | 'transitGatewayId'
+  | 'vpnGatewayId'
+  | 'customerGatewayId'
   | 'region'
   | 'accountName'
   | 'createdAt'
   | 'updatedAt';
 
-type AttachmentFilter = '' | 'attached' | 'detached';
-
-type NormalizedVpnGateway = VPNGateway & {
+type NormalizedVpnConnection = VPNConnection & {
   displayName: string;
-  type?: string;
   state?: string;
-  availabilityZone?: string;
-  attachedVpcList: string[];
-  attachedVpcCount: number;
-  attachedVpcSummary: string;
+  tunnelStatus: string;
+  tunnelsDown: number;
 };
 
 @Component({
-  selector: 'app-vpn-gateways',
+  selector: 'app-vpn-connections',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
-  templateUrl: './vpn-gateways.component.html'
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
+  templateUrl: './vpn-connections.component.html'
 })
-export class VpnGatewaysComponent implements OnInit, OnDestroy {
-  resources: NormalizedVpnGateway[] = [];
-  filteredResources: NormalizedVpnGateway[] = [];
-  paginatedResources: NormalizedVpnGateway[] = [];
+export class VpnConnectionsComponent implements OnInit, OnDestroy {
+  resources: NormalizedVpnConnection[] = [];
+  filteredResources: NormalizedVpnConnection[] = [];
+  paginatedResources: NormalizedVpnConnection[] = [];
   loading = true;
-  selectedResource: NormalizedVpnGateway | null = null;
+  selectedResource: NormalizedVpnConnection | null = null;
 
-  // Filters
   searchTerm = '';
   regionFilter = '';
   accountFilter = '';
-  typeFilter = '';
   stateFilter = '';
-  attachmentFilter: AttachmentFilter = '';
-  availabilityZoneFilter = '';
+  typeFilter = '';
 
   uniqueRegions: string[] = [];
   uniqueAccounts: string[] = [];
-  uniqueTypes: string[] = [];
   uniqueStates: string[] = [];
-  uniqueAvailabilityZones: string[] = [];
+  uniqueTypes: string[] = [];
 
-  // Sorting
   sortColumn: ColumnKey | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  // Pagination
   pageSize = 50;
   currentPage = 1;
   totalPages = 1;
   pageStartIndex = 0;
   pageEndIndex = 0;
 
-  // Columns
   showColumnCustomizer = false;
   selectedColumns: Set<ColumnKey> = new Set();
-  private readonly requiredColumns: ColumnKey[] = ['vpnGatewayId'];
+  private readonly requiredColumns: ColumnKey[] = ['vpnConnectionId'];
   private readonly defaultColumns: ColumnKey[] = [
     'displayName',
-    'vpnGatewayId',
-    'type',
+    'vpnConnectionId',
     'state',
-    'availabilityZone',
-    'attachedVpcCount',
+    'tunnelStatus',
+    'tunnelsUp',
+    'tunnelCount',
+    'transitGatewayId',
     'region',
     'accountName',
     'createdAt'
   ];
+
+  private readonly columnMinWidths: Record<string, number> = {
+    displayName: 200,
+    vpnConnectionId: 190,
+    state: 150,
+    type: 150,
+    category: 150,
+    tunnelStatus: 220,
+    tunnelsUp: 150,
+    tunnelCount: 160,
+    transitGatewayId: 200,
+    vpnGatewayId: 200,
+    customerGatewayId: 200,
+    region: 140,
+    accountName: 170,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   readonly availableColumns: ColumnDefinition[] = [
     {
@@ -104,13 +115,7 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
       sortable: true,
       transform: (resource) => resource.displayName
     },
-    { key: 'vpnGatewayId', label: 'Gateway ID', sortable: true },
-    {
-      key: 'type',
-      label: 'Type',
-      sortable: true,
-      transform: (resource) => this.formatTitle(resource.type)
-    },
+    { key: 'vpnConnectionId', label: 'Connection ID', sortable: true },
     {
       key: 'state',
       label: 'State',
@@ -118,28 +123,52 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
       transform: (resource) => this.formatTitle(resource.state)
     },
     {
-      key: 'amazonSideAsn',
-      label: 'Amazon ASN',
+      key: 'type',
+      label: 'Type',
       sortable: true,
-      transform: (resource) => resource.amazonSideAsn ? String(resource.amazonSideAsn) : 'N/A'
+      transform: (resource) => this.formatTitle(resource.type)
     },
     {
-      key: 'availabilityZone',
-      label: 'Availability Zone',
+      key: 'category',
+      label: 'Category',
       sortable: true,
-      transform: (resource) => resource.availabilityZone || 'N/A'
+      transform: (resource) => this.formatTitle(resource.category)
     },
     {
-      key: 'attachedVpcCount',
-      label: 'Attached VPCs',
+      key: 'tunnelStatus',
+      label: 'Tunnels (Up/Total)',
       sortable: true,
-      transform: (resource) => this.formatNumber(resource.attachedVpcCount)
+      transform: (resource) => resource.tunnelStatus
     },
     {
-      key: 'attachedVpcSummary',
-      label: 'VPC Attachments',
-      sortable: false,
-      transform: (resource) => resource.attachedVpcSummary || 'None'
+      key: 'tunnelsUp',
+      label: 'Tunnels Up',
+      sortable: true,
+      transform: (resource) => this.formatNumber(resource.tunnelsUp)
+    },
+    {
+      key: 'tunnelCount',
+      label: 'Tunnel Count',
+      sortable: true,
+      transform: (resource) => this.formatNumber(resource.tunnelCount)
+    },
+    {
+      key: 'transitGatewayId',
+      label: 'Transit Gateway',
+      sortable: true,
+      transform: (resource) => resource.transitGatewayId || 'N/A'
+    },
+    {
+      key: 'vpnGatewayId',
+      label: 'VPN Gateway',
+      sortable: true,
+      transform: (resource) => resource.vpnGatewayId || 'N/A'
+    },
+    {
+      key: 'customerGatewayId',
+      label: 'Customer Gateway',
+      sortable: true,
+      transform: (resource) => resource.customerGatewayId || 'N/A'
     },
     { key: 'region', label: 'Region', sortable: true },
     {
@@ -162,7 +191,7 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
     }
   ];
 
-  private readonly LS_KEY = 'vpn-gateways-columns';
+  private readonly LS_KEY = 'vpn-connections-columns';
   private readonly destroy$ = new Subject<void>();
 
   constructor(
@@ -184,18 +213,17 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
   loadResources(): void {
     this.loading = true;
     this.resourceService
-      .getResourcesByType('VPNGateway')
+      .getResourcesByType('VPNConnection')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.resources = ((data as VPNGateway[]) || []).map((item) => this.normalizeVpnGateway(item));
+          this.resources = ((data as VPNConnection[]) || []).map((item) => this.normalizeVpnConnection(item));
           this.filteredResources = [...this.resources];
 
           this.uniqueRegions = this.buildUniqueList(this.resources.map((item) => item.region));
           this.uniqueAccounts = this.buildUniqueList(this.resources.map((item) => this.getAccountLabel(item)));
-          this.uniqueTypes = this.buildUniqueList(this.resources.map((item) => item.type));
           this.uniqueStates = this.buildUniqueList(this.resources.map((item) => item.state));
-          this.uniqueAvailabilityZones = this.buildUniqueList(this.resources.map((item) => item.availabilityZone));
+          this.uniqueTypes = this.buildUniqueList(this.resources.map((item) => item.type));
 
           this.loading = false;
           this.currentPage = 1;
@@ -206,7 +234,7 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Error loading VPN Gateways:', error);
+          console.error('Error loading VPN Connections:', error);
           this.loading = false;
         }
       });
@@ -258,31 +286,30 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
 
   private saveColumnPreferences(): void {
     try {
-      const preferences = Array.from(this.selectedColumns);
-      localStorage.setItem(this.LS_KEY, JSON.stringify(preferences));
+      const values = Array.from(this.selectedColumns);
+      localStorage.setItem(this.LS_KEY, JSON.stringify(values));
     } catch (error) {
-      console.warn('Could not save VPN Gateway column preferences:', error);
+      console.warn('[VPN Connections] Failed to save column preferences:', error);
     }
   }
 
   private loadColumnPreferences(): void {
     try {
-      const saved = localStorage.getItem(this.LS_KEY);
-      if (!saved) return;
-      const parsed = JSON.parse(saved) as ColumnKey[];
+      const stored = localStorage.getItem(this.LS_KEY);
+      if (!stored) return;
+      const parsed: ColumnKey[] = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length) {
         this.selectedColumns = new Set(parsed);
         this.requiredColumns.forEach((column) => this.selectedColumns.add(column));
       }
     } catch (error) {
-      console.warn('Could not load VPN Gateway column preferences:', error);
-      this.selectedColumns = new Set(this.defaultColumns);
+      console.warn('[VPN Connections] Failed to load column preferences:', error);
     }
   }
 
-  // Filters -------------------------------------------------------------------
-  searchVpnGateways(event: Event): void {
-    const value = (event.target as HTMLInputElement).value || '';
+  // Filtering -----------------------------------------------------------------
+  searchVpnConnections(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
     this.searchTerm = value.trim().toLowerCase();
     this.applyFilters();
   }
@@ -303,82 +330,60 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  filterByType(event: Event): void {
-    this.typeFilter = (event.target as HTMLSelectElement).value;
-    this.applyFilters();
-  }
-
   filterByState(event: Event): void {
     this.stateFilter = (event.target as HTMLSelectElement).value;
     this.applyFilters();
   }
 
-  filterByAvailabilityZone(event: Event): void {
-    this.availabilityZoneFilter = (event.target as HTMLSelectElement).value;
-    this.applyFilters();
-  }
-
-  filterByAttachment(event: Event): void {
-    this.attachmentFilter = (event.target as HTMLSelectElement).value as AttachmentFilter;
+  filterByType(event: Event): void {
+    this.typeFilter = (event.target as HTMLSelectElement).value;
     this.applyFilters();
   }
 
   resetFilters(): void {
+    this.searchTerm = '';
     this.regionFilter = '';
     this.accountFilter = '';
-    this.typeFilter = '';
     this.stateFilter = '';
-    this.attachmentFilter = '';
-    this.availabilityZoneFilter = '';
-    this.searchTerm = '';
-
-    const searchInput = document.getElementById('vpnGatewaySearch') as HTMLInputElement | null;
-    if (searchInput) searchInput.value = '';
-
-    this.filteredResources = [...this.resources];
-    if (this.sortColumn) {
-      this.sortData(this.sortColumn);
-    } else {
-      this.updatePaginationAfterChange();
-    }
+    this.typeFilter = '';
+    this.applyFilters();
   }
 
   private applyFilters(): void {
-    const term = this.searchTerm;
     this.filteredResources = this.resources.filter((resource) => {
-      if (term) {
+      if (this.searchTerm) {
         const haystack = [
+          resource.vpnConnectionId,
           resource.displayName,
+          resource.transitGatewayId,
           resource.vpnGatewayId,
-          this.getAccountLabel(resource),
-          resource.attachedVpcSummary
+          resource.customerGatewayId
         ]
           .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-        if (!haystack.includes(term)) return false;
+          .map((value) => value!.toString().toLowerCase());
+
+        if (!haystack.some((value) => value.includes(this.searchTerm))) {
+          return false;
+        }
       }
 
       if (this.regionFilter && resource.region !== this.regionFilter) return false;
       if (this.accountFilter && this.getAccountLabel(resource) !== this.accountFilter) return false;
-      if (this.typeFilter && (resource.type || '').toLowerCase() !== this.typeFilter.toLowerCase()) return false;
-      if (this.stateFilter && (resource.state || '').toLowerCase() !== this.stateFilter.toLowerCase()) return false;
-      if (this.availabilityZoneFilter && (resource.availabilityZone || '') !== this.availabilityZoneFilter) return false;
-
-      if (this.attachmentFilter === 'attached' && resource.attachedVpcCount === 0) return false;
-      if (this.attachmentFilter === 'detached' && resource.attachedVpcCount > 0) return false;
+      if (this.stateFilter && this.normalizeState(resource.state) !== this.normalizeState(this.stateFilter)) return false;
+      if (this.typeFilter && this.normalizeState(resource.type) !== this.normalizeState(this.typeFilter)) return false;
 
       return true;
     });
 
+    this.currentPage = 1;
     if (this.sortColumn) {
       this.sortData(this.sortColumn);
     } else {
-      this.updatePaginationAfterChange();
+      this.recomputePagination();
     }
   }
 
-  // Sorting --------------------------------------------------------------------
+  // Sorting -------------------------------------------------------------------
   sortData(column: ColumnKey): void {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -387,41 +392,44 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
       this.sortDirection = 'asc';
     }
 
-    const dir = this.sortDirection === 'asc' ? 1 : -1;
+    const direction = this.sortDirection === 'asc' ? 1 : -1;
 
-    this.filteredResources = [...this.filteredResources].sort((a, b) => {
-      const valueA = this.getSortValue(a, column);
-      const valueB = this.getSortValue(b, column);
+    this.filteredResources.sort((a, b) => {
+      const left = this.getSortValue(a, column);
+      const right = this.getSortValue(b, column);
 
-      if (valueA === valueB) return 0;
-
-      if (typeof valueA === 'number' && typeof valueB === 'number') {
-        return (valueA - valueB) * dir;
-      }
-
-      const stringA = String(valueA ?? '').toLowerCase();
-      const stringB = String(valueB ?? '').toLowerCase();
-      return stringA.localeCompare(stringB) * dir;
+      if (left < right) return -1 * direction;
+      if (left > right) return 1 * direction;
+      return 0;
     });
 
-    this.updatePaginationAfterChange();
+    this.recomputePagination();
   }
 
-  private getSortValue(resource: NormalizedVpnGateway, column: ColumnKey): string | number {
+  private getSortValue(resource: NormalizedVpnConnection, column: ColumnKey): any {
     switch (column) {
-      case 'attachedVpcCount':
-        return resource.attachedVpcCount;
-      case 'amazonSideAsn':
-        return resource.amazonSideAsn ?? 0;
-      case 'accountName':
-        return this.getAccountLabel(resource).toLowerCase();
+      case 'tunnelsUp':
+      case 'tunnelCount':
+        return resource[column] ?? 0;
       case 'createdAt':
       case 'updatedAt':
         return resource[column] ? new Date(resource[column] as string).getTime() : 0;
+      case 'state':
+      case 'type':
+      case 'category':
+        return this.formatTitle(resource[column] as string | undefined).toLowerCase();
+      case 'accountName':
+        return this.getAccountLabel(resource).toLowerCase();
+      case 'displayName':
+        return (resource.displayName || '').toLowerCase();
+      case 'tunnelStatus': {
+        const [up, total] = resource.tunnelStatus.split('/').map((value) => parseInt(value, 10));
+        return Number.isNaN(up) || Number.isNaN(total) ? 0 : up / Math.max(total, 1);
+      }
       default: {
         const value = (resource as any)[column];
         if (typeof value === 'number') return value;
-        if (typeof value === 'string') return value;
+        if (typeof value === 'string') return value.toLowerCase();
         return value ? 1 : 0;
       }
     }
@@ -487,7 +495,7 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
   }
 
   // Detail modal ---------------------------------------------------------------
-  showDetails(resource: NormalizedVpnGateway): void {
+  showDetails(resource: NormalizedVpnConnection): void {
     this.selectedResource = resource;
   }
 
@@ -502,9 +510,9 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
     const columns: ExportColumn[] = visible.map((column) => ({
       key: column.key,
       label: column.label,
-      transform: column.transform ?? ((resource: NormalizedVpnGateway) => (resource as any)[column.key] ?? '')
+      transform: column.transform ?? ((resource: NormalizedVpnConnection) => (resource as any)[column.key] ?? '')
     }));
-    this.exportService.exportDataToCSV(this.filteredResources, columns, 'vpn-gateways.csv');
+    this.exportService.exportDataToCSV(this.filteredResources, columns, 'vpn-connections.csv');
   }
 
   exportToXLSX(): void {
@@ -513,28 +521,35 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
     const columns: ExportColumn[] = visible.map((column) => ({
       key: column.key,
       label: column.label,
-      transform: column.transform ?? ((resource: NormalizedVpnGateway) => (resource as any)[column.key] ?? '')
+      transform: column.transform ?? ((resource: NormalizedVpnConnection) => (resource as any)[column.key] ?? '')
     }));
-    this.exportService.exportDataToXLSX(this.filteredResources, columns, 'vpn-gateways.xlsx');
+    this.exportService.exportDataToXLSX(this.filteredResources, columns, 'vpn-connections.xlsx');
   }
 
   // Helpers --------------------------------------------------------------------
-  getColumnValue(column: ColumnDefinition, resource: NormalizedVpnGateway): string {
+  getColumnValue(column: ColumnDefinition, resource: NormalizedVpnConnection): string {
     if (column.transform) return column.transform(resource);
     const value = (resource as any)[column.key];
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return this.formatBoolean(value);
     if (Array.isArray(value)) return value.join(', ');
+    if (typeof value === 'number') return value.toLocaleString();
     return String(value);
   }
 
-  getStateClass(resource: NormalizedVpnGateway): string {
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
+  }
+
+  getStateClass(resource: NormalizedVpnConnection): string {
     const state = (resource.state || '').toLowerCase();
     switch (state) {
       case 'available':
         return 'status-running';
       case 'pending':
+      case 'modifying':
         return 'status-warning';
+      case 'down':
       case 'deleted':
       case 'deleting':
       case 'failed':
@@ -544,7 +559,7 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
     }
   }
 
-  getAccountLabel(resource: VPNGateway): string {
+  getAccountLabel(resource: VPNConnection): string {
     return resource.accountName || resource.accountId || 'Unknown Account';
   }
 
@@ -576,90 +591,72 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
     }
   }
 
-  private normalizeVpnGateway(item: VPNGateway | any): NormalizedVpnGateway {
+  private normalizeVpnConnection(item: VPNConnection | any): NormalizedVpnConnection {
     const displayName =
-      item?.vpnGatewayName ||
+      item?.vpnConnectionName ||
       item?.name ||
       this.extractNameFromTags(item?.tags) ||
-      item?.vpnGatewayId ||
-      'VPN Gateway';
+      item?.vpnConnectionId ||
+      'VPN Connection';
 
-    const attachedVpcList = this.normalizeAttachedVpcs(
-      item?.attachedVpcIds ?? item?.attachedVpcId ?? item?.vpcAttachments ?? item?.attachments
-    );
+    const tunnelCount = this.normalizeNumber(item?.tunnelCount ?? item?.tunnelsTotal ?? item?.tunnels_total);
+    const tunnelsUp = this.normalizeNumber(item?.tunnelsUp ?? item?.tunnels_up ?? item?.tunnelsHealthy);
+    const resolvedTunnelCount = tunnelCount ?? tunnelsUp ?? 0;
+    const resolvedTunnelsUp = tunnelsUp ?? resolvedTunnelCount;
+    const tunnelsDown = Math.max(resolvedTunnelCount - resolvedTunnelsUp, 0);
 
-    const normalized: NormalizedVpnGateway = {
+    const normalized: NormalizedVpnConnection = {
       ...item,
       displayName,
-      type: item?.type || item?.VpnType || item?.vpnType,
-      state: item?.state || item?.VpnState || item?.status,
-      amazonSideAsn: this.normalizeNumber(item?.amazonSideAsn ?? item?.AmazonSideAsn),
-      availabilityZone: item?.availabilityZone || item?.AvailabilityZone || item?.az,
-      attachedVpcList,
-      attachedVpcCount: attachedVpcList.length,
-      attachedVpcSummary: attachedVpcList.length ? attachedVpcList.join(', ') : 'None'
-    } as NormalizedVpnGateway;
-
-    if (normalized.attachedVpcCount && !normalized.vpcId) {
-      normalized.vpcId = normalized.attachedVpcList[0];
-    }
-
-    if (normalized.attachmentCount == null) {
-      normalized.attachmentCount = normalized.attachedVpcCount;
-    }
+      vpnConnectionId: item?.vpnConnectionId || item?.VpnConnectionId || item?.id,
+      state: item?.state || item?.status,
+      type: item?.type || item?.vpnConnectionType || item?.VpnConnectionType,
+      category: item?.category,
+      tunnelCount: resolvedTunnelCount,
+      tunnelsUp: resolvedTunnelsUp,
+      tunnelsDown,
+      tunnelStatus: resolvedTunnelCount > 0 ? `${resolvedTunnelsUp}/${resolvedTunnelCount}` : `${resolvedTunnelsUp}`
+    } as NormalizedVpnConnection;
 
     return normalized;
   }
 
-  private normalizeAttachedVpcs(value: unknown): string[] {
-    if (!value) return [];
+  private extractNameFromTags(tags: any): string | undefined {
+    if (!tags) return undefined;
 
-    const push = (input: string, target: string[]) => {
-      const trimmed = input.trim();
-      if (trimmed) target.push(trimmed);
-    };
-
-    const result: string[] = [];
-
-    if (Array.isArray(value)) {
-      value.forEach((entry) => {
-        if (typeof entry === 'string') {
-          push(entry, result);
-        } else if (entry && typeof entry === 'object') {
-          const vpcId = entry.vpcId || entry.VpcId || entry.vpc || entry.resourceId;
-          if (typeof vpcId === 'string') push(vpcId, result);
-        }
-      });
-      return [...new Set(result)];
+    if (Array.isArray(tags)) {
+      const nameTag = tags.find((tag) => tag?.Key === 'Name' || tag?.key === 'Name');
+      if (nameTag && typeof nameTag.Value === 'string' && nameTag.Value.trim()) {
+        return nameTag.Value.trim();
+      }
+      const normalized = tags.find((tag) => tag?.Key === 'name');
+      if (normalized && typeof normalized.Value === 'string' && normalized.Value.trim()) {
+        return normalized.Value.trim();
+      }
+      return undefined;
     }
 
-    if (typeof value === 'string') {
-      const trimmed = value.trim();
-      if (!trimmed) return [];
+    if (typeof tags === 'string') {
+      const trimmed = tags.trim();
+      if (!trimmed.length) return undefined;
       if (trimmed.startsWith('[')) {
         try {
-          const parsed = JSON.parse(trimmed);
-          return this.normalizeAttachedVpcs(parsed);
+          return this.extractNameFromTags(JSON.parse(trimmed));
         } catch {
-          // fallback
+          return undefined;
         }
       }
-      trimmed.split(/[;,]/).forEach((part) => push(part, result));
-      return [...new Set(result)];
+      return undefined;
     }
 
-    if (typeof value === 'object') {
-      const vpcId = (value as any).vpcId || (value as any).VpcId;
-      if (typeof vpcId === 'string') return [vpcId.trim()];
+    if (typeof tags === 'object') {
+      const candidate = tags.Name || tags.name || tags.NAME;
+      if (typeof candidate === 'string' && candidate.trim()) {
+        return candidate.trim();
+      }
     }
 
-    return [];
-  }
-
-  private extractNameFromTags(tags: any): string | undefined {
-    if (!tags || typeof tags !== 'object') return undefined;
-    const name = tags.Name || tags.name || tags.NAME;
-    return typeof name === 'string' && name.trim().length ? name : undefined;
+    return undefined;
   }
 
   private buildUniqueList(values: (string | undefined | null)[]): string[] {
@@ -673,5 +670,9 @@ export class VpnGatewaysComponent implements OnInit, OnDestroy {
       if (!Number.isNaN(parsed)) return parsed;
     }
     return undefined;
+  }
+
+  private normalizeState(value: string | undefined | null): string {
+    return value ? value.trim().toLowerCase() : '';
   }
 }

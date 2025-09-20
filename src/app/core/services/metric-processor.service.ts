@@ -225,14 +225,17 @@ export class MetricProcessorService {
       return [];
     }
 
-    const total = distribution.reduce((sum, item) => sum + (item.count || 0), 0);
+    const total = distribution.reduce((sum, item) => sum + this.ensureNumber(item.count), 0);
     
-    return distribution.map(item => ({
-      accountId: item.accountId || 'Unknown',
-      accountName: this.getAccountDisplayName(item.accountName, item.accountId),
-      count: item.count || 0,
-      percentage: total > 0 ? Math.round((item.count / total) * 100) : 0
-    })).sort((a, b) => b.count - a.count);
+    return distribution.map(item => {
+      const count = this.ensureNumber(item.count);
+      return {
+        accountId: item.accountId || 'Unknown',
+        accountName: this.getAccountDisplayName(item.accountName, item.accountId),
+        count,
+        percentage: total > 0 ? Math.round((count / total) * 100) : 0
+      };
+    }).sort((a, b) => b.count - a.count);
   }
 
   /**
@@ -245,13 +248,16 @@ export class MetricProcessorService {
       return [];
     }
 
-    const total = distribution.reduce((sum, item) => sum + (item.count || 0), 0);
+    const total = distribution.reduce((sum, item) => sum + this.ensureNumber(item.count), 0);
     
-    return distribution.map(item => ({
-      region: this.getRegionDisplayName(item.region),
-      count: item.count || 0,
-      percentage: total > 0 ? Math.round((item.count / total) * 100) : 0
-    })).sort((a, b) => b.count - a.count);
+    return distribution.map(item => {
+      const count = this.ensureNumber(item.count);
+      return {
+        region: this.getRegionDisplayName(item.region),
+        count,
+        percentage: total > 0 ? Math.round((count / total) * 100) : 0
+      };
+    }).sort((a, b) => b.count - a.count);
   }
 
   /**
@@ -266,15 +272,15 @@ export class MetricProcessorService {
 
     return resources.map(resource => {
       const identifier = resource.identifier || '';
-      const parts = identifier.split('-');
-      const accountId = parts[0] || '';
+      const accountId = this.extractAccountId(identifier);
+      const createdAt = this.parseDate(resource.createdAt);
       
       return {
-        resourceType: this.formatResourceType(resource.resourceType),
+        resourceType: this.formatResourceType(resource.resourceType || 'Unknown'),
         region: this.getRegionDisplayName(resource.region),
-        createdAt: new Date(resource.createdAt),
-        identifier: identifier,
-        accountId: accountId,
+        createdAt,
+        identifier,
+        accountId,
         resourceName: this.extractResourceName(identifier)
       };
     }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -440,5 +446,42 @@ export class MetricProcessorService {
   private extractResourceName(identifier: string): string {
     const parts = identifier.split('-');
     return parts.length > 3 ? parts.slice(-1)[0] : identifier;
+  }
+
+  private ensureNumber(value: any): number {
+    if (typeof value === 'number' && !isNaN(value)) {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    return 0;
+  }
+
+  private parseDate(value: any): Date {
+    if (value instanceof Date) {
+      return value;
+    }
+
+    if (typeof value === 'string' || typeof value === 'number') {
+      const parsed = new Date(value);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+
+    return new Date();
+  }
+
+  private extractAccountId(identifier: string): string {
+    if (!identifier) {
+      return '';
+    }
+
+    const [accountId] = identifier.split('-');
+    return accountId || '';
   }
 }

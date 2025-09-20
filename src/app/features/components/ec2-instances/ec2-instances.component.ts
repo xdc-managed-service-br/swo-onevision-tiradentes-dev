@@ -7,6 +7,7 @@ import { ResourceTagsComponent } from '../../../shared/components/resource-tags/
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { TagFormatter } from '../../../shared/utils/tag-formatter';
 import { EC2Instance } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -20,7 +21,7 @@ type ColumnKey = keyof EC2Instance | 'instancePrivateIps' | 'instancePublicIps' 
 @Component({
   selector: 'app-ec2-instances',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './ec2-instances.component.html',
 })
 export class EC2InstancesComponent implements OnInit, OnDestroy {
@@ -59,6 +60,36 @@ export class EC2InstancesComponent implements OnInit, OnDestroy {
   // Columns customization
   showColumnCustomizer = false;
   selectedColumns: Set<string> = new Set();
+
+  private readonly columnMinWidths: Record<string, number> = {
+    instanceId: 140,
+    instanceName: 180,
+    instanceType: 120,
+    instanceState: 120,
+    healthStatus: 140,
+    cwAgentMemoryDetected: 140,
+    instancePrivateIps: 200,
+    instancePublicIps: 200,
+    region: 140,
+    accountId: 150,
+    accountName: 170,
+    platformDetails: 140,
+    amiName: 180,
+    iamRole: 200,
+    ssmStatus: 150,
+    ssmPingStatus: 160,
+    ssmVersion: 150,
+    ssmLastPingTime: 200,
+    swoMonitor: 140,
+    swoPatch: 140,
+    swoBackup: 140,
+    swoRiskClass: 140,
+    patchGroup: 140,
+    autoStart: 140,
+    autoShutdown: 140,
+    saturday: 160,
+    sunday: 160,
+  };
 
   availableColumns: ColumnDefinition[] = [
     { key: 'instanceId', label: 'Instance ID', sortable: true },
@@ -342,6 +373,10 @@ export class EC2InstancesComponent implements OnInit, OnDestroy {
     if (fullyHealthy) return 'status-running';
     const failing = (typeof r.healthChecksPassed === 'number' && typeof r.healthChecksTotal === 'number' && r.healthChecksPassed < r.healthChecksTotal) || r.systemStatus === 'failed' || r.instanceStatus === 'failed' || r.ebsStatus === 'failed';
     return failing ? 'status-warning' : 'status-warning';
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   shouldBeFullWidth(key: string): boolean {

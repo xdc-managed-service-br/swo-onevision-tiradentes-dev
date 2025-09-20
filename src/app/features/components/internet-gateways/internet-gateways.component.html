@@ -69,6 +69,10 @@
       <thead>
         <tr>
           <th *ngFor="let column of getVisibleColumns()"
+              ovResizableCol
+              [tableId]="'internetGatewaysTable'"
+              [columnKey]="column.key"
+              [min]="getColumnMinWidth(column.key)"
               (click)="column.sortable !== false ? sortData(column.key) : null"
               [class.sortable]="column.sortable !== false">
             {{ column.label }}
@@ -76,7 +80,7 @@
               {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
           </th>
-          <th class="ov-cell--right">Actions</th>
+          <th class="ov-cell--right ov-col--actions">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -86,7 +90,7 @@
               {{ getColumnValue(column, resource) }}
             </span>
           </td>
-          <td>
+          <td class="ov-col--actions ov-cell--right">
             <div class="ov-actions">
               <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
             </div>

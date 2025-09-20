@@ -14,10 +14,14 @@
   </header>
 
   <section class="summary-grid">
-    <article class="summary-card" *ngFor="let tile of summaryTiles">
+    <a
+      class="summary-card"
+      *ngFor="let tile of summaryTiles"
+      [routerLink]="tile.route"
+      [attr.aria-label]="tile.ariaLabel || tile.label">
       <span class="summary-value">{{ tile.value }}</span>
       <span class="summary-label">{{ tile.label }}</span>
-    </article>
+    </a>
   </section>
 
   <section class="section-card" *ngIf="resourceHealthCards.length">
@@ -103,6 +107,89 @@
         </div>
         <p class="monitor-description">Instances with SSM Agent connected</p>
       </div>
+    </article>
+  </section>
+
+  <section class="metric-summary-grid" *ngIf="dashboardData as data">
+    <article class="metric-summary-card">
+      <header class="metric-summary-header">
+        <div>
+          <h3>Resources by Account</h3>
+          <span class="metric-summary-subtitle">{{ formatNumber(getAccountTotal()) }} total resources</span>
+        </div>
+      </header>
+
+      <ng-container *ngIf="data.accountDistribution as accounts; else emptyAccounts">
+        <div class="metric-summary-list">
+          <div class="metric-summary-item" *ngFor="let account of accounts">
+            <div class="metric-summary-item-head">
+              <span class="metric-summary-label">{{ account.accountName }}</span>
+              <span class="metric-summary-value">{{ formatNumber(account.count) }}</span>
+            </div>
+            <div class="metric-summary-bar">
+              <div class="metric-summary-bar-fill" [style.width.%]="getBarWidth(account.count, accountMaxCount)"></div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyAccounts>
+        <p class="metric-summary-empty">No account distribution data available</p>
+      </ng-template>
+    </article>
+
+    <article class="metric-summary-card">
+      <header class="metric-summary-header">
+        <div>
+          <h3>Resources by Region</h3>
+          <span class="metric-summary-subtitle">{{ data.summary.totalRegions || 0 }} regions tracked</span>
+        </div>
+      </header>
+
+      <ng-container *ngIf="getTopRegions() as regions; else emptyRegions">
+        <div class="metric-summary-list">
+          <div class="metric-summary-item" *ngFor="let region of regions">
+            <div class="metric-summary-item-head">
+              <span class="metric-summary-label">{{ region.region }}</span>
+              <span class="metric-summary-value">{{ formatNumber(region.count) }}</span>
+            </div>
+            <div class="metric-summary-bar">
+              <div class="metric-summary-bar-fill" [style.width.%]="getBarWidth(region.count, regionMaxCount)"></div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyRegions>
+        <p class="metric-summary-empty">No region distribution data available</p>
+      </ng-template>
+    </article>
+
+    <article class="metric-summary-card">
+      <header class="metric-summary-header">
+        <div>
+          <h3>Resources by Type</h3>
+          <span class="metric-summary-subtitle">{{ formatNumber(data.summary.totalResources || 0) }} total resources</span>
+        </div>
+      </header>
+
+      <ng-container *ngIf="resourceTypes.length; else emptyResourceTypes">
+        <div class="metric-summary-list">
+          <div class="metric-summary-item" *ngFor="let resource of resourceTypes">
+            <div class="metric-summary-item-head">
+              <span class="metric-summary-label">{{ getResourceDisplayName(resource.name) }}</span>
+              <span class="metric-summary-value">{{ formatNumber(resource.count) }}</span>
+            </div>
+            <div class="metric-summary-bar">
+              <div class="metric-summary-bar-fill" [style.width.%]="getBarWidth(resource.count, resourceTypeMaxCount)"></div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyResourceTypes>
+        <p class="metric-summary-empty">No resource count data available</p>
+      </ng-template>
     </article>
   </section>
 

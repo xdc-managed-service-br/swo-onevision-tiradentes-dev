@@ -7,6 +7,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { Subnet } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -20,7 +21,7 @@ type ColumnKey = keyof Subnet | 'accountName' | 'vpcId';
 @Component({
   selector: 'app-subnets',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './subnets.component.html'
 })
 export class SubnetsComponent implements OnInit, OnDestroy {
@@ -57,6 +58,20 @@ export class SubnetsComponent implements OnInit, OnDestroy {
   showColumnCustomizer = false;
   private readonly LS_KEY = 'subnets-columns';
   selectedColumns: Set<string> = new Set();
+  private readonly columnMinWidths: Record<string, number> = {
+    subnetName: 180,
+    subnetId: 160,
+    cidrBlock: 180,
+    availabilityZone: 140,
+    availabilityZoneId: 150,
+    availableIpAddressCount: 150,
+    state: 130,
+    region: 140,
+    accountName: 170,
+    vpcId: 170,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   availableColumns: ColumnDefinition[] = [
     { key: 'subnetName', label: 'Subnet Name', sortable: true },
@@ -468,6 +483,10 @@ export class SubnetsComponent implements OnInit, OnDestroy {
     if (typeof raw === 'boolean') return this.formatBoolean(raw);
     if (typeof raw === 'number') return this.formatNumber(raw);
     return String(raw);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getColumnClass(key: ColumnKey, resource: Subnet): string {

@@ -8,6 +8,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { InternetGateway } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -29,7 +30,7 @@ type ColumnKey =
 @Component({
   selector: 'app-internet-gateways',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './internet-gateways.component.html'
 })
 export class InternetGatewaysComponent implements OnInit, OnDestroy {
@@ -61,6 +62,16 @@ export class InternetGatewaysComponent implements OnInit, OnDestroy {
 
   private readonly LS_KEY = 'internet-gateways-columns';
   private readonly destroy$ = new Subject<void>();
+  private readonly columnMinWidths: Record<string, number> = {
+    internetGatewayName: 180,
+    internetGatewayId: 170,
+    attachmentCount: 140,
+    attachedVpcs: 240,
+    region: 140,
+    accountName: 170,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   availableColumns: ColumnDefinition[] = [
     {
@@ -437,6 +448,10 @@ export class InternetGatewaysComponent implements OnInit, OnDestroy {
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     if (Array.isArray(value)) return value.join(', ');
     return String(value);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getColumnClass(key: ColumnKey, resource: InternetGateway): string {

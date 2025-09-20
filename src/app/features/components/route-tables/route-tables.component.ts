@@ -8,6 +8,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { RouteTable } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -41,7 +42,7 @@ type NormalizedRouteTable = RouteTable & {
 @Component({
   selector: 'app-route-tables',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './route-tables.component.html'
 })
 export class RouteTablesComponent implements OnInit, OnDestroy {
@@ -93,6 +94,22 @@ export class RouteTablesComponent implements OnInit, OnDestroy {
     'accountName',
     'createdAt'
   ];
+
+  private readonly columnMinWidths: Record<string, number> = {
+    routeTableName: 200,
+    routeTableId: 190,
+    vpcId: 180,
+    routeCount: 160,
+    hasInternetRoute: 170,
+    hasNatRoute: 170,
+    hasVpcPeeringRoute: 190,
+    isMain: 150,
+    associationCount: 170,
+    region: 140,
+    accountName: 170,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   readonly availableColumns: ColumnDefinition[] = [
     {
@@ -517,7 +534,12 @@ export class RouteTablesComponent implements OnInit, OnDestroy {
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return this.formatBoolean(value);
     if (Array.isArray(value)) return value.join(', ');
+    if (typeof value === 'number') return value.toLocaleString();
     return String(value);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getBooleanClass(value: boolean | undefined | null): string {

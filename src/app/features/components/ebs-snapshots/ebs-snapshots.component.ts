@@ -6,6 +6,7 @@ import { takeUntil } from 'rxjs/operators';
 import { ResourceService } from '../../../core/services/resource.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: string;
@@ -18,7 +19,7 @@ interface ColumnDefinition {
 @Component({
   selector: 'app-ebs-snapshots',
   standalone: true,
-  imports: [CommonModule, FormsModule, ResourceTagsComponent],
+  imports: [CommonModule, FormsModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './ebs-snapshots.component.html',
 })
 export class EBSSnapshotsComponent implements OnInit, OnDestroy {
@@ -66,6 +67,16 @@ export class EBSSnapshotsComponent implements OnInit, OnDestroy {
   pageEndIndex = 0;
 
   private destroy$ = new Subject<void>();
+  private readonly columnMinWidths: Record<string, number> = {
+    snapshotId: 180,
+    snapshotName: 200,
+    snapshotState: 140,
+    volumeSize: 150,
+    region: 140,
+    accountName: 170,
+    createdAt: 180,
+    encrypted: 140,
+  };
 
   constructor(
     private resourceService: ResourceService,
@@ -241,7 +252,12 @@ export class EBSSnapshotsComponent implements OnInit, OnDestroy {
     const v = r[col.key];
     if (v === null || v === undefined) return 'N/A';
     if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+    if (typeof v === 'number') return v.toLocaleString();
     return String(v);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getSnapshotStateClass(state?: string): string {

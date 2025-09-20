@@ -7,6 +7,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { SecurityGroup } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -20,7 +21,7 @@ type ColumnKey = keyof SecurityGroup;
 @Component({
   selector: 'app-security-groups',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './security-groups.component.html'
 })
 export class SecurityGroupsComponent implements OnInit, OnDestroy {
@@ -52,6 +53,19 @@ export class SecurityGroupsComponent implements OnInit, OnDestroy {
   showColumnCustomizer = false;
   private readonly LS_KEY = 'security-groups-columns';
   selectedColumns: Set<string> = new Set();
+  private readonly columnMinWidths: Record<string, number> = {
+    groupName: 200,
+    groupNameTag: 200,
+    groupId: 180,
+    description: 240,
+    vpcId: 180,
+    region: 140,
+    accountName: 170,
+    ingressRuleCount: 150,
+    egressRuleCount: 150,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   availableColumns: ColumnDefinition[] = [
     { key: 'groupName', label: 'Group Name', sortable: true },
@@ -455,7 +469,12 @@ export class SecurityGroupsComponent implements OnInit, OnDestroy {
     if (raw === null || raw === undefined) return 'N/A';
     if (Array.isArray(raw)) return raw.join(', ');
     if (typeof raw === 'boolean') return raw ? 'Yes' : 'No';
+    if (typeof raw === 'number') return raw.toLocaleString();
     return String(raw);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getColumnClass(key: ColumnKey): string {

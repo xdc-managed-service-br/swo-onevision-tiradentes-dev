@@ -380,9 +380,10 @@
 @media (max-width: 900px) { .ov-tablewrap { display: none; } }
 
 .ov-table {
-  border-collapse: collapse;
-  width: 100%;
   table-layout: fixed;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .ov-table thead {
@@ -396,9 +397,14 @@
   font-size: var(--ov-text-sm);
   font-weight: 600;
   color: var(--ov-text-secondary);
-  white-space: nowrap;
+  min-width: 120px;
+}
+
+.ov-table th,
+.ov-table td {
+  overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 120px; 
+  white-space: nowrap;
 }
 
 .ov-table th.sortable { cursor: pointer; user-select: none; transition: var(--ov-transition-fast); }
@@ -424,9 +430,6 @@
   color: var(--ov-text);
   vertical-align: middle;
   min-width: 120px;          /* garante largura mínima por coluna */
-  white-space: normal;       /* <- multi-linha em todas as colunas */
-  overflow-wrap: anywhere;   /* quebra mesmo em tokens longos como IDs/IPs */
-  word-break: break-word;
   box-sizing: border-box;
 }
 /* Wrapper interno garante que a quebra/ellipses respeite a largura da célula */
@@ -440,9 +443,29 @@
 }
 
 .ov-col--actions {
-  width: 120px;
-  min-width: 120px;
+  width: 140px;
+  min-width: 140px;
   text-align: right;
+}
+
+.ov-table th.ov-col--actions {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  background-color: var(--ov-surface-raised);
+  box-shadow: -1px 0 0 var(--ov-border);
+}
+
+.ov-table td.ov-col--actions {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background-color: var(--ov-surface);
+  box-shadow: -1px 0 0 var(--ov-border);
+}
+
+.ov-table tbody tr:hover td.ov-col--actions {
+  background-color: var(--ov-surface-raised);
 }
 
 /* célula multilinha */
@@ -451,6 +474,10 @@
   overflow-wrap: anywhere;    /* quebra mesmo sem espaço “bonito” */
   word-break: break-word;     /* garante a quebra */
   line-height: 1.4;
+}
+
+.ov-col-resizer:hover {
+  background: rgba(148, 163, 184, 0.25);
 }
 
 /* ========================================

@@ -82,55 +82,49 @@
     <table class="ov-table" role="table" aria-label="Resources table">
       <thead>
         <tr>
-          <th (click)="sortData('resourceType')" class="sortable">
+          <th ovResizableCol [tableId]="'allResourcesTable'" [columnKey]="'type'" [min]="getColumnMinWidth('type')" (click)="sortData('resourceType')" class="sortable">
             Type
             <span *ngIf="sortColumn === 'resourceType'" aria-hidden="true">
               {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
           </th>
-          <th (click)="sortData('identifier')" class="sortable">
+          <th ovResizableCol [tableId]="'allResourcesTable'" [columnKey]="'identifier'" [min]="getColumnMinWidth('identifier')" (click)="sortData('identifier')" class="sortable">
             Identifier
             <span *ngIf="sortColumn === 'identifier'" aria-hidden="true">
               {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
           </th>
-          <th (click)="sortData('resourceName')" class="sortable">
+          <th ovResizableCol [tableId]="'allResourcesTable'" [columnKey]="'name'" [min]="getColumnMinWidth('name')" (click)="sortData('resourceName')" class="sortable">
             Name
             <span *ngIf="sortColumn === 'resourceName'" aria-hidden="true">
               {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
           </th>
-          <th (click)="sortData('region')" class="sortable">
+          <th ovResizableCol [tableId]="'allResourcesTable'" [columnKey]="'region'" [min]="getColumnMinWidth('region')" (click)="sortData('region')" class="sortable">
             Region
             <span *ngIf="sortColumn === 'region'" aria-hidden="true">
               {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
           </th>
-          <th (click)="sortData('accountId')" class="sortable">
+          <th ovResizableCol [tableId]="'allResourcesTable'" [columnKey]="'account'" [min]="getColumnMinWidth('account')" (click)="sortData('accountId')" class="sortable">
             Account
             <span *ngIf="sortColumn === 'accountId'" aria-hidden="true">
               {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
           </th>
-          <th (click)="sortData('createdAt')" class="sortable">
+          <th ovResizableCol [tableId]="'allResourcesTable'" [columnKey]="'created'" [min]="getColumnMinWidth('created')" (click)="sortData('createdAt')" class="sortable">
             Created
             <span *ngIf="sortColumn === 'createdAt'" aria-hidden="true">
               {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
           </th>
-          <th (click)="sortData('state')" class="sortable">
+          <th ovResizableCol [tableId]="'allResourcesTable'" [columnKey]="'state'" [min]="getColumnMinWidth('state')" (click)="sortData('state')" class="sortable">
             State
             <span *ngIf="sortColumn === 'state'" aria-hidden="true">
               {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
           </th>
-          <th (click)="sortData('cost')" class="sortable">
-            Monthly Cost
-            <span *ngIf="sortColumn === 'cost'" aria-hidden="true">
-              {{ sortDirection === 'asc' ? '▲' : '▼' }}
-            </span>
-          </th>
-          <th class="ov-cell--right">Actions</th>
+          <th class="ov-cell--right ov-col--actions">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -142,8 +136,7 @@
           <td>{{ resource.accountName || resource.accountId }}</td>
           <td>{{ formatDate(resource.createdAt) }}</td>
           <td>{{ resource.state || 'N/A' }}</td>
-          <td>{{ resource.cost ? ('$' + resource.cost.toFixed(2)) : 'N/A' }}</td>
-          <td>
+          <td class="ov-col--actions ov-cell--right">
             <div class="ov-actions">
               <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">
                 View Details
@@ -170,7 +163,6 @@
         <div><div class="ov-k">Region</div><div class="ov-v">{{ resource.region }}</div></div>
         <div><div class="ov-k">Account</div><div class="ov-v">{{ resource.accountName || resource.accountId }}</div></div>
         <div><div class="ov-k">Created</div><div class="ov-v">{{ formatDate(resource.createdAt) }}</div></div>
-        <div><div class="ov-k">Cost</div><div class="ov-v">{{ resource.cost ? ('$' + resource.cost.toFixed(2)) : 'N/A' }}</div></div>
       </div>
 
       <div>
@@ -199,7 +191,6 @@
           <tr><th>Account</th><td>{{ selectedResource.accountName || selectedResource.accountId }}</td></tr>
           <tr><th>Created</th><td>{{ formatDate(selectedResource.createdAt) }}</td></tr>
           <tr><th>State</th><td>{{ selectedResource.state || 'N/A' }}</td></tr>
-          <tr><th>Cost</th><td>{{ selectedResource.cost ? ('$' + selectedResource.cost.toFixed(2)) : 'N/A' }}</td></tr>
         </table>
         <div *ngIf="selectedResource.tags">
           <h3>Tags</h3>

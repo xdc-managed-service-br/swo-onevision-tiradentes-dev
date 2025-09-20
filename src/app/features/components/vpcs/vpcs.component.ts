@@ -7,6 +7,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { VPC } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -20,7 +21,7 @@ type ColumnKey = keyof VPC | 'accountName';
 @Component({
   selector: 'app-vpcs',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './vpcs.component.html'
 })
 export class VPCsComponent implements OnInit, OnDestroy {
@@ -58,6 +59,21 @@ export class VPCsComponent implements OnInit, OnDestroy {
   showColumnCustomizer = false;
   private readonly LS_KEY = 'vpcs-columns';
   selectedColumns: Set<string> = new Set();
+  private readonly columnMinWidths: Record<string, number> = {
+    vpcName: 180,
+    vpcId: 170,
+    cidrBlock: 200,
+    instanceTenancy: 150,
+    state: 140,
+    region: 140,
+    accountName: 170,
+    flowLogsEnabled: 150,
+    enableDnsHostnames: 170,
+    enableDnsSupport: 170,
+    isDefault: 140,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   availableColumns: ColumnDefinition[] = [
     { key: 'vpcName', label: 'VPC Name', sortable: true },
@@ -492,7 +508,12 @@ export class VPCsComponent implements OnInit, OnDestroy {
     if (raw === null || raw === undefined) return 'N/A';
     if (Array.isArray(raw)) return raw.join(', ');
     if (typeof raw === 'boolean') return this.formatBoolean(raw);
+    if (typeof raw === 'number') return raw.toLocaleString();
     return String(raw);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getColumnClass(key: ColumnKey, resource: VPC): string {

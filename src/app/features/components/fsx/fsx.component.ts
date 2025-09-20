@@ -8,6 +8,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { FSxFileSystem } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -34,7 +35,7 @@ type ColumnKey =
 @Component({
   selector: 'app-fsx-file-systems',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './fsx.component.html'
 })
 export class FSXFileSystemsComponent implements OnInit, OnDestroy {
@@ -71,6 +72,21 @@ export class FSXFileSystemsComponent implements OnInit, OnDestroy {
 
   private readonly LS_KEY = 'fsx-filesystems-columns';
   private readonly destroy$ = new Subject<void>();
+  private readonly columnMinWidths: Record<string, number> = {
+    fileSystemId: 200,
+    fileSystemType: 160,
+    deploymentType: 160,
+    storageCapacity: 160,
+    throughputCapacity: 180,
+    automaticBackupRetentionDays: 180,
+    dailyAutomaticBackupStartTime: 170,
+    copyTagsToBackups: 150,
+    lifecycle: 150,
+    region: 140,
+    accountName: 170,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   availableColumns: ColumnDefinition[] = [
     {
@@ -494,7 +510,12 @@ export class FSXFileSystemsComponent implements OnInit, OnDestroy {
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     if (Array.isArray(value)) return value.join(', ');
+    if (typeof value === 'number') return this.formatNumber(value);
     return String(value);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getColumnClass(key: ColumnKey, resource: FSxFileSystem): string {

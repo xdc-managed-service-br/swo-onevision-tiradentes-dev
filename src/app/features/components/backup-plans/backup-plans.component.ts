@@ -8,6 +8,7 @@ import { ResourceService } from '../../../core/services/resource.service';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { BackupPlan } from '../../../models/resource.model';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 interface ColumnDefinition {
   key: ColumnKey;
@@ -33,7 +34,7 @@ type ColumnKey =
 @Component({
   selector: 'app-backup-plans',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './backup-plans.component.html'
 })
 export class BackupPlansComponent implements OnInit, OnDestroy {
@@ -70,6 +71,20 @@ export class BackupPlansComponent implements OnInit, OnDestroy {
 
   private readonly LS_KEY = 'backup-plans-columns';
   private readonly destroy$ = new Subject<void>();
+  private readonly columnMinWidths: Record<string, number> = {
+    backupPlanName: 200,
+    backupPlanId: 180,
+    targetBackupVault: 180,
+    schedules: 240,
+    selectionTypesCount: 150,
+    windowStart: 150,
+    windowDuration: 150,
+    lastExecutionDate: 180,
+    region: 140,
+    accountName: 170,
+    createdAt: 180,
+    updatedAt: 180,
+  };
 
   availableColumns: ColumnDefinition[] = [
     {
@@ -492,7 +507,12 @@ export class BackupPlansComponent implements OnInit, OnDestroy {
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     if (Array.isArray(value)) return value.join(', ');
+    if (typeof value === 'number') return this.formatNumber(value);
     return String(value);
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
 
   getColumnClass(key: ColumnKey, resource: BackupPlan): string {

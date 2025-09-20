@@ -1,6 +1,7 @@
 // src/app/features/dashboard/dashboard.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { Subject, forkJoin, takeUntil } from 'rxjs';
 import { MetricService } from '../../core/services/metric.service';
 import { MetricProcessorService, ProcessedMetricData } from '../../core/services/metric-processor.service';
@@ -15,7 +16,7 @@ interface ResourceHealthState {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: `./dashboard.component.html`,
   styleUrls: ['./dashboard.component.css']
 })
@@ -25,6 +26,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isLoading = false;
   dashboardData: ProcessedMetricData | null = null;
   resourceTypes: { name: string; count: number }[] = [];
+  accountMaxCount = 0;
+  regionMaxCount = 0;
+  resourceTypeMaxCount = 0;
   networkHealth = {
     directConnectConnections: this.createEmptyHealthState(),
     directConnectVirtualInterfaces: this.createEmptyHealthState(),
@@ -49,6 +53,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   loadDashboardData() {
     this.isLoading = true;
+    this.accountMaxCount = 0;
+    this.regionMaxCount = 0;
     
     this.metricService.getCurrentMetrics()
       .pipe(takeUntil(this.destroy$))
@@ -60,7 +66,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
           // Extrai tipos de recursos
           this.extractResourceTypes();
 
-          // Atualiza cards de saúde para recursos de rede
+          // Atualiza limites auxiliares
+          this.updateMetricSummaryBounds();
+
+          // Carrega dados de saúde adicionais para recursos de rede
           this.loadNetworkResourceHealth();
 
           this.isLoading = false;
@@ -86,8 +95,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.resourceTypes = Array.from(this.dashboardData.resourceCounts.entries())
       .map(([name, count]) => ({ name, count }))
       .filter(type => type.count > 0)
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 12); // Top 12 resource types
+      .sort((a, b) => b.count - a.count);
+  }
+
+  private updateMetricSummaryBounds() {
+    this.accountMaxCount = this.calculateMaxCount(this.dashboardData?.accountDistribution);
+    this.regionMaxCount = this.calculateMaxCount(this.dashboardData?.regionDistribution);
+    this.resourceTypeMaxCount = this.calculateMaxCount(this.resourceTypes);
+  }
+
+  private calculateMaxCount(items?: Array<{ count?: number }>): number {
+    if (!items?.length) {
+      return 0;
+    }
+
+    return items.reduce((max, item) => Math.max(max, item?.count ?? 0), 0);
+  }
+
+  getBarWidth(count: number, max: number): number {
+    if (!max) {
+      return 0;
+    }
+
+    return Math.round((count / max) * 100);
   }
 
   // Métodos auxiliares para o template
@@ -128,12 +158,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getTopRegions() {
     if (!this.dashboardData?.regionDistribution) return [];
-    return this.dashboardData.regionDistribution.slice(0, 10);
-  }
-
-  getRecentResources() {
-    if (!this.dashboardData?.recentResources) return [];
-    return this.dashboardData.recentResources.slice(0, 10);
+    return this.dashboardData.regionDistribution;
   }
 
   getResourceIcon(resourceType: string): string {
@@ -178,31 +203,51 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return [
       {
         label: 'Total Resources',
-        value: this.formatNumber(this.dashboardData?.summary?.totalResources || 0)
+        value: this.formatNumber(this.dashboardData?.summary?.totalResources || 0),
+        route: '/resources',
+        ariaLabel: 'View all resources'
       },
       {
         label: 'EC2 Instances',
-        value: this.formatNumber(this.getResourceCount('EC2Instance'))
+        value: this.formatNumber(this.getResourceCount('EC2Instance')),
+        route: '/resources/ec2',
+        ariaLabel: 'View EC2 instances'
       },
       {
         label: 'RDS Instances',
-        value: this.formatNumber(this.getResourceCount('RDSInstance'))
+        value: this.formatNumber(this.getResourceCount('RDSInstance')),
+        route: '/resources/rds',
+        ariaLabel: 'View RDS instances'
       },
       {
         label: 'S3 Buckets',
-        value: this.formatNumber(this.getResourceCount('S3Bucket'))
+        value: this.formatNumber(this.getResourceCount('S3Bucket')),
+        route: '/resources/s3',
+        ariaLabel: 'View S3 buckets'
       },
       {
         label: 'Transit Gateways',
-        value: this.formatNumber(this.getResourceCount('TransitGateway'))
+        value: this.formatNumber(this.getResourceCount('TransitGateway')),
+        route: '/resources/transit-gateways',
+        ariaLabel: 'View Transit Gateways'
       },
       {
         label: 'EBS Volumes',
-        value: this.formatNumber(this.getResourceCount('EBSVolume'))
+        value: this.formatNumber(this.getResourceCount('EBSVolume')),
+        route: '/resources/ebs-volumes',
+        ariaLabel: 'View EBS volumes'
       },
       {
-        label: 'Snapshots',
-        value: this.formatNumber(this.getSnapshotCount())
+        label: 'EBS Snapshots',
+        value: this.formatNumber(this.getResourceCount('EBSSnapshot')),
+        route: '/resources/ebs-snapshots',
+        ariaLabel: 'View EBS snapshots'
+      },
+      {
+        label: 'AMI Snapshots',
+        value: this.formatNumber(this.getResourceCount('AMI')),
+        route: '/resources/ami-snapshots',
+        ariaLabel: 'View AMI snapshots'
       }
     ];
   }
@@ -374,21 +419,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.dashboardData.resourceCounts.get(type) || 0;
   }
 
-  /**
-   * Método auxiliar para obter total de snapshots
-   */
-  getSnapshotCount(): number {
-    const ebs = this.getResourceCount('EBSSnapshot');
-    const ami = this.getResourceCount('AMI');
-    const storageTotal = this.dashboardData?.storage?.totalSnapshots;
-    
-    // Usa o valor de storage se disponível, senão soma EBS + AMI
-    return storageTotal || (ebs + ami);
-  }
-
   formatNumber(value: number | undefined): string {
     const formatter = new Intl.NumberFormat('en-US');
     return formatter.format(value || 0);
+  }
+
+  getResourceDisplayName(type: string): string {
+    const nameMap: { [key: string]: string } = {
+      'EC2Instance': 'EC2 Instances',
+      'RDSInstance': 'RDS Instances',
+      'S3Bucket': 'S3 Buckets',
+      'EBSVolume': 'EBS Volumes',
+      'EBSSnapshot': 'EBS Snapshots',
+      'AMI': 'AMIs',
+      'VPNConnection': 'VPN Connections',
+      'NetworkACL': 'Network ACLs',
+      'RouteTable': 'Route Tables',
+      'SecurityGroup': 'Security Groups',
+      'TransitGateway': 'Transit Gateways',
+      'TransitGatewayAttachment': 'TGW Attachments',
+      'InternetGateway': 'Internet Gateways',
+      'FSxFileSystem': 'FSx File Systems',
+      'EFSFileSystem': 'EFS File Systems',
+      'BackupPlan': 'Backup Plans',
+      'BackupVault': 'Backup Vaults',
+      'RDSClusterSnapshot': 'RDS Cluster Snapshots',
+      'AutoScalingGroup': 'Auto Scaling Groups',
+      'ElasticIP': 'Elastic IPs',
+      'DirectConnectConnection': 'Direct Connect Connections',
+      'DirectConnectVirtualInterface': 'Direct Connect Virtual Interfaces',
+      'VPCEndpoint': 'VPC Endpoints'
+    };
+
+    if (nameMap[type]) {
+      return nameMap[type];
+    }
+
+    return type
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/_/g, ' ')
+      .replace(/^./, (char) => char.toUpperCase());
   }
 
   private loadNetworkResourceHealth(): void {
@@ -462,9 +532,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     let healthy = 0;
 
     (interfaces || []).forEach(iface => {
-      const peers = Array.isArray(iface?.bgpPeers) ? iface.bgpPeers : [];
-      const hasHealthyPeer = peers.some(peer => this.normalizeState((peer as any)?.bgpStatus) === 'up');
-      if (hasHealthyPeer) {
+      if (this.isDirectConnectVirtualInterfaceHealthy(iface)) {
         healthy += 1;
       }
     });
@@ -474,6 +542,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
       healthy,
       unhealthy: Math.max(total - healthy, 0)
     };
+  }
+
+  private isDirectConnectVirtualInterfaceHealthy(iface: any): boolean {
+    if (!iface) {
+      return false;
+    }
+
+    if (typeof iface?.bgpAllUp === 'boolean') {
+      return iface.bgpAllUp;
+    }
+
+    if (typeof iface?.bgpAnyUp === 'boolean') {
+      return iface.bgpAnyUp;
+    }
+
+    const status =
+      this.normalizeState(iface?.bgpStatus) ||
+      this.normalizeState(iface?.bgpStatusIpv4) ||
+      this.normalizeState(iface?.bgpStatusIpv6);
+
+    if (status) {
+      return status === 'up';
+    }
+
+    const peers = Array.isArray(iface?.bgpPeers) ? iface.bgpPeers : [];
+    if (peers.length) {
+      return peers.some((peer: any) => {
+        const peerStatus = this.normalizeState(peer?.bgpStatus);
+        if (peerStatus) {
+          return peerStatus === 'up';
+        }
+        const peerState = this.normalizeState(peer?.bgpPeerState);
+        return peerState === 'available';
+      });
+    }
+
+    return false;
   }
 
   private normalizeState(value: unknown): string | undefined {

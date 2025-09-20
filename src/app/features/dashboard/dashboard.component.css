@@ -92,6 +92,25 @@
   flex-direction: column;
   gap: 0.4rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.summary-card:hover,
+.summary-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--ov-accent) 35%, transparent);
+  box-shadow: 0 16px 32px rgba(14, 165, 233, 0.18);
+}
+
+.summary-card:active {
+  transform: translateY(-2px);
+}
+
+.summary-card:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ov-accent) 80%, transparent);
+  outline-offset: 4px;
 }
 
 .summary-value {
@@ -315,6 +334,93 @@
   color: var(--ov-danger);
 }
 
+.metric-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.2rem;
+}
+
+.metric-summary-card {
+  background: var(--ov-surface);
+  border-radius: 1.25rem;
+  padding: 1.8rem;
+  border: 1px solid color-mix(in srgb, var(--ov-border) 60%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.metric-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.metric-summary-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.metric-summary-subtitle {
+  color: var(--ov-text-secondary);
+  font-size: 0.85rem;
+}
+
+.metric-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.metric-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.metric-summary-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.metric-summary-label {
+  font-weight: 600;
+  color: var(--ov-text);
+}
+
+.metric-summary-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ov-accent);
+}
+
+.metric-summary-bar {
+  height: 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ov-text-secondary) 18%, transparent);
+  overflow: hidden;
+}
+
+.metric-summary-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ov-accent), var(--ov-accent-hover));
+  transition: width 0.3s ease;
+}
+
+.metric-summary-empty {
+  margin: 0;
+  padding: 1.25rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--ov-text-secondary);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--ov-border) 15%, transparent);
+}
+
 .loading-overlay {
   position: fixed;
   inset: 0;
@@ -368,5 +474,9 @@
 
   .summary-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .metric-summary-grid {
+    grid-template-columns: 1fr;
   }
 }

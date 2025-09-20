@@ -5,11 +5,12 @@ import { takeUntil } from 'rxjs/operators';
 import { ResourceService } from '../../../core/services/resource.service';
 import { ResourceTagsComponent } from '../../../shared/components/resource-tags/resource-tags.component';
 import { ExportService, ExportColumn } from '../../../core/services/export.service';
+import { OvResizableColDirective } from '../../../shared/directives/ov-resizable-col.directive';
 
 @Component({
   selector: 'app-resources',
   standalone: true,
-  imports: [CommonModule, ResourceTagsComponent],
+  imports: [CommonModule, ResourceTagsComponent, OvResizableColDirective],
   templateUrl: './all-resources.component.html',
 })
 export class ResourcesComponent implements OnInit, OnDestroy {
@@ -65,15 +66,21 @@ export class ResourcesComponent implements OnInit, OnDestroy {
       label: 'Created',
       transform: (resource) => this.formatDate(resource.createdAt)
     },
-    { key: 'state', label: 'State' },
-    { 
-      key: 'cost', 
-      label: 'Monthly Cost',
-      transform: (resource) => resource.cost ? `${resource.cost.toFixed(2)}` : 'N/A'
-    }
+    { key: 'state', label: 'State' }
   ];
   
   private destroy$ = new Subject<void>();
+
+  private readonly columnMinWidths: Record<string, number> = {
+    type: 150,
+    identifier: 200,
+    name: 200,
+    region: 140,
+    account: 170,
+    created: 180,
+    state: 150,
+    actions: 140,
+  };
   
   constructor(
     private resourceService: ResourceService,
@@ -82,6 +89,10 @@ export class ResourcesComponent implements OnInit, OnDestroy {
   
   ngOnInit(): void {
     this.loadResources();
+  }
+
+  getColumnMinWidth(key: string): number {
+    return this.columnMinWidths[key] ?? 120;
   }
   
   loadResources(): void {
@@ -239,13 +250,6 @@ export class ResourcesComponent implements OnInit, OnDestroy {
           : dateB.getTime() - dateA.getTime();
       }
       
-      // Special handling for cost
-      if (column === 'cost') {
-        const costA = typeof valueA === 'number' ? valueA : 0;
-        const costB = typeof valueB === 'number' ? valueB : 0;
-        return this.sortDirection === 'asc' ? costA - costB : costB - costA;
-      }
-      
       // Default string comparison
       if (typeof valueA === 'string' && typeof valueB === 'string') {
         return this.sortDirection === 'asc'
@@ -320,12 +324,7 @@ exportColumnsCsv: ExportColumn[] = [
     label: 'Created',
     transform: (r) => this.formatDate(r.createdAt)
   },
-  { key: 'state', label: 'State' },
-  {
-    key: 'cost',
-    label: 'Monthly Cost',
-    transform: (r) => (typeof r.cost === 'number' ? `$${r.cost.toFixed(2)}` : 'N/A')
-  }
+  { key: 'state', label: 'State' }
 ];
 
   // === Export columns (XLSX → valores “crus” quando possível) ===
@@ -337,9 +336,7 @@ exportColumnsCsv: ExportColumn[] = [
     { key: 'accountId', label: 'Account', transform: (r) => r.accountName || r.accountId },
     // passe uma data parseável por Excel; ISO é seguro
     { key: 'createdAt', label: 'Created', transform: (r) => (r.createdAt ? new Date(r.createdAt).toISOString() : '') },
-    { key: 'state', label: 'State' },
-    // número cru para o Excel poder formatar como moeda
-    { key: 'cost', label: 'Monthly Cost', transform: (r) => (typeof r.cost === 'number' ? r.cost : null) }
+    { key: 'state', label: 'State' }
   ];
 
   exportToCSV(): void {

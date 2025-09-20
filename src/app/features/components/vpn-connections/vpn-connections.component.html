@@ -1,0 +1,230 @@
+<!-- src/app/features/components/vpn-connections/vpn-connections.component.html -->
+<article class="ov-container" aria-labelledby="vpn-connections-title">
+  <div class="ov-section">
+    <div class="ov-header ov-bleed">
+      <h1 id="vpn-connections-title" class="ov-title">VPN Connections</h1>
+
+      <div class="ov-filterbar">
+        <div class="ov-filter">
+          <label for="vpnConnectionAccountFilter">Account</label>
+          <select id="vpnConnectionAccountFilter" (change)="filterByAccount($event)">
+            <option value="">All Accounts</option>
+            <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="vpnConnectionRegionFilter">Region</label>
+          <select id="vpnConnectionRegionFilter" (change)="filterByRegion($event)">
+            <option value="">All Regions</option>
+            <option *ngFor="let region of uniqueRegions" [value]="region">{{ region }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="vpnConnectionStateFilter">State</label>
+          <select id="vpnConnectionStateFilter" (change)="filterByState($event)">
+            <option value="">All States</option>
+            <option *ngFor="let state of uniqueStates" [value]="state">{{ formatTitle(state) }}</option>
+          </select>
+        </div>
+
+        <div class="ov-filter">
+          <label for="vpnConnectionTypeFilter">Type</label>
+          <select id="vpnConnectionTypeFilter" (change)="filterByType($event)">
+            <option value="">All Types</option>
+            <option *ngFor="let type of uniqueTypes" [value]="type">{{ formatTitle(type) }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ov-header-actions">
+        <div class="ov-search">
+          <input
+            id="vpnConnectionSearch"
+            type="search"
+            placeholder="Search by Connection ID, Name, or Gateway"
+            (input)="searchVpnConnections($event)"
+            #searchInput />
+          <button
+            type="button"
+            class="ov-clear-btn"
+            *ngIf="searchTerm"
+            (click)="clearSearch(searchInput)"
+            aria-label="Clear search"></button>
+        </div>
+
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToCSV()">Export to CSV</button>
+          <button class="ov-btn ov-btn--subtle" *ngIf="!loading && filteredResources.length" (click)="exportToXLSX()">Export to XLSX</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="resetFilters()">Reset Filters</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="refresh()">Refresh</button>
+          <button type="button" class="ov-btn ov-btn--subtle" (click)="openColumnCustomizer()">Columns</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="ov-loading">Loading VPN connections…</div>
+  <div *ngIf="!loading && filteredResources.length === 0" class="ov-empty">
+    No VPN connections found matching the current filters.
+  </div>
+
+  <section class="ov-tablewrap" *ngIf="!loading && filteredResources.length > 0">
+    <table class="ov-table" aria-label="VPN connections table">
+      <thead>
+        <tr>
+          <th *ngFor="let column of getVisibleColumns()"
+              ovResizableCol
+              [tableId]="'vpnConnectionsTable'"
+              [columnKey]="column.key"
+              [min]="getColumnMinWidth(column.key)"
+              (click)="column.sortable !== false ? sortData(column.key) : null"
+              [class.sortable]="column.sortable !== false">
+            {{ column.label }}
+            <span *ngIf="sortColumn === column.key && column.sortable !== false" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th class="ov-cell--right ov-col--actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let resource of paginatedResources">
+          <td *ngFor="let column of getVisibleColumns()">
+            <span [ngClass]="column.key === 'state' ? getStateClass(resource) : ''">
+              {{ getColumnValue(column, resource) }}
+            </span>
+          </td>
+          <td class="ov-col--actions ov-cell--right">
+            <div class="ov-actions">
+              <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="ov-cards" *ngIf="!loading && filteredResources.length > 0">
+    <article class="ov-card" *ngFor="let resource of paginatedResources">
+      <header class="ov-card__head">
+        <div>
+          <div class="ov-card__title">{{ resource.displayName }}</div>
+          <div class="ov-card__sub ov-text--mono">{{ resource.vpnConnectionId }}</div>
+        </div>
+        <span [ngClass]="getStateClass(resource)">{{ formatTitle(resource.state) }}</span>
+      </header>
+
+      <div class="ov-card__grid">
+        <div><div class="ov-k">Region</div><div class="ov-v">{{ resource.region || 'N/A' }}</div></div>
+        <div><div class="ov-k">Account</div><div class="ov-v">{{ getAccountLabel(resource) }}</div></div>
+        <div><div class="ov-k">Type</div><div class="ov-v">{{ formatTitle(resource.type) }}</div></div>
+        <div><div class="ov-k">Category</div><div class="ov-v">{{ formatTitle(resource.category) }}</div></div>
+        <div><div class="ov-k">Transit Gateway</div><div class="ov-v">{{ resource.transitGatewayId || 'N/A' }}</div></div>
+        <div><div class="ov-k">Tunnels</div><div class="ov-v">{{ resource.tunnelStatus }} ({{ resource.tunnelsUp }} up / {{ resource.tunnelsDown }} down)</div></div>
+      </div>
+
+      <div class="ov-card__footer">
+        <app-resource-tags *ngIf="resource.tags" [tags]="resource.tags"></app-resource-tags>
+        <div class="ov-actions">
+          <button class="ov-btn ov-btn--primary" (click)="showDetails(resource)">View Details</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="ov-modal" *ngIf="showColumnCustomizer" (click)="closeColumnCustomizer()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="vpn-connection-columns-title" (click)="$event.stopPropagation()">
+      <div class="ov-modal__head">
+        <h2 id="vpn-connection-columns-title" class="ov-modal__title">Customize Columns</h2>
+        <button class="ov-btn" (click)="closeColumnCustomizer()" aria-label="Close dialog">×</button>
+      </div>
+      <div class="ov-modal__body">
+        <div class="ov-actions" style="justify-content:flex-start; margin-bottom: var(--ov-space-4);">
+          <button class="ov-btn" (click)="selectAllColumns()">Select All</button>
+          <button class="ov-btn" (click)="deselectAllColumns()">Deselect All</button>
+        </div>
+        <div class="column-list">
+          <label *ngFor="let column of availableColumns">
+            <input type="checkbox"
+                   [checked]="isColumnSelected(column.key)"
+                   (change)="toggleColumn(column.key)"
+                   [disabled]="isRequiredColumn(column.key)" />
+            <span [class.required]="isRequiredColumn(column.key)">
+              {{ column.label }}
+              <span *ngIf="isRequiredColumn(column.key)" class="required-badge">Required</span>
+            </span>
+          </label>
+        </div>
+      </div>
+      <div class="ov-modal__foot">
+        <button class="ov-btn" (click)="applyColumnSelection()">Apply</button>
+        <button class="ov-btn ov-btn--primary" (click)="closeColumnCustomizer()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ov-modal" *ngIf="selectedResource as connection" (click)="closeDetails()">
+    <div class="ov-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="vpn-connection-details-title" (click)="$event.stopPropagation()" style="max-width: 760px;">
+      <div class="ov-modal__head">
+        <h2 id="vpn-connection-details-title" class="ov-modal__title">VPN Connection Details — {{ connection.vpnConnectionId }}</h2>
+        <button class="ov-btn" (click)="closeDetails()" aria-label="Close dialog">×</button>
+      </div>
+
+      <div class="ov-modal__body">
+        <section aria-labelledby="vpn-connection-info-section">
+          <h3 id="vpn-connection-info-section">Connection Information</h3>
+          <table class="ov-details-table">
+            <tr><th>Name</th><td>{{ connection.displayName }}</td></tr>
+            <tr><th>Connection ID</th><td class="ov-text--mono">{{ connection.vpnConnectionId }}</td></tr>
+            <tr><th>State</th><td><span [ngClass]="getStateClass(connection)">{{ formatTitle(connection.state) }}</span></td></tr>
+            <tr><th>Type</th><td>{{ formatTitle(connection.type) }}</td></tr>
+            <tr><th>Category</th><td>{{ formatTitle(connection.category) }}</td></tr>
+            <tr><th>Transit Gateway</th><td>{{ connection.transitGatewayId || 'N/A' }}</td></tr>
+            <tr><th>VPN Gateway</th><td>{{ connection.vpnGatewayId || 'N/A' }}</td></tr>
+            <tr><th>Customer Gateway</th><td>{{ connection.customerGatewayId || 'N/A' }}</td></tr>
+          </table>
+        </section>
+
+        <section aria-labelledby="vpn-connection-tunnels-section">
+          <h3 id="vpn-connection-tunnels-section">Tunnel Status</h3>
+          <table class="ov-details-table">
+            <tr><th>Tunnels Up</th><td>{{ formatNumber(connection.tunnelsUp) }}</td></tr>
+            <tr><th>Tunnel Count</th><td>{{ formatNumber(connection.tunnelCount) }}</td></tr>
+            <tr><th>Tunnels Down</th><td>{{ formatNumber(connection.tunnelsDown) }}</td></tr>
+            <tr><th>Status Summary</th><td>{{ connection.tunnelStatus }}</td></tr>
+          </table>
+        </section>
+
+        <section aria-labelledby="vpn-connection-metadata-section">
+          <h3 id="vpn-connection-metadata-section">Metadata</h3>
+          <table class="ov-details-table">
+            <tr><th>Region</th><td>{{ connection.region || 'N/A' }}</td></tr>
+            <tr><th>Account</th><td>{{ getAccountLabel(connection) }}</td></tr>
+            <tr><th>Created</th><td>{{ formatDate(connection.createdAt) }}</td></tr>
+            <tr><th>Updated</th><td>{{ formatDate(connection.updatedAt) }}</td></tr>
+          </table>
+        </section>
+
+        <section *ngIf="connection.tags" aria-labelledby="vpn-connection-tags-section">
+          <h3 id="vpn-connection-tags-section">Tags</h3>
+          <app-resource-tags [tags]="connection.tags"></app-resource-tags>
+        </section>
+      </div>
+
+      <div class="ov-modal__foot">
+        <button class="ov-btn ov-btn--primary" (click)="closeDetails()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="ov-pagination" *ngIf="!loading && filteredResources.length > pageSize">
+    <button class="ov-btn ov-btn--subtle" (click)="goToFirstPage()" [disabled]="currentPage === 1">«</button>
+    <button class="ov-btn ov-btn--subtle" (click)="goToPreviousPage()" [disabled]="currentPage === 1">‹</button>
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    <button class="ov-btn ov-btn--subtle" (click)="goToNextPage()" [disabled]="currentPage === totalPages">›</button>
+    <button class="ov-btn ov-btn--subtle" (click)="goToLastPage()" [disabled]="currentPage === totalPages">»</button>
+    <span *ngIf="filteredResources.length">Showing {{ pageStartIndex }}–{{ pageEndIndex }} of {{ filteredResources.length }} connections</span>
+  </nav>
+</article>
